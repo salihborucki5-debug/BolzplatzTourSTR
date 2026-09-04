@@ -70,7 +70,7 @@
         <tr class="border-b border-stone-100 hover:bg-stone-50">
           <td class="p-2 font-bold">${t.checked_in ? '🟢 Anwesend' : '🔴 Ausstehend'}</td>
           <td class="p-2 font-bold text-gray-900">${t.team_name} <span class="font-normal text-stone-500">(${t.captain_info || 'Kein Kapitän'})</span></td>
-          <td class="p-2 text-center">${t.has_underage ? '⚠️ Ja' : 'Nein'}</td>
+          <td class="p-2 text-center">${t.has_underage ? 'Ja' : 'Nein'}</td>
           <td class="p-2 text-right font-mono text-pink-600 font-bold">${t.team_code}</td>
         </tr>
       `).join('');
@@ -96,8 +96,7 @@
         title.innerText = `✅ Check-In Erfolgreich: ${team.team_name}`;
         title.className = "text-xl font-bold text-emerald-700 mb-1";
         
-        let u18Warning = team.has_underage ? "<br><span class='text-amber-700 font-bold'>⚠️ U18 Spieler dabei: Muttizettel prüfen!</span>" : "";
-        details.innerHTML = `Kapitän: ${team.captain_info || 'N/A'} | Spieler: ${team.player_count} | Code: ${team.team_code}${u18Warning}`;
+        details.innerHTML = `Kapitän: ${team.captain_info || 'N/A'} | Code: ${team.team_code}`;
       } else {
         box.classList.add('bg-rose-50', 'border-rose-500');
         title.innerText = "❌ Code nicht gefunden!";
