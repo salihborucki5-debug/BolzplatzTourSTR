@@ -3,71 +3,83 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BolzplatzTour STR - Mannschaftsanmeldung</title>
+  <title>BolzplatzTour STR - Team Anmeldung</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- QR Code Generator Bibliothek -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
+<body class="bg-gray-900 text-white min-h-screen p-4 flex flex-col items-center justify-center">
 
-  <div class="max-w-md w-full bg-gray-800 p-6 rounded-2xl shadow-2xl border border-gray-700" id="app">
-    
+  <div class="max-w-md w-full bg-gray-800 p-6 rounded-2xl shadow-2xl border border-gray-700">
     <header class="text-center mb-6">
-      <h1 class="text-3xl font-black text-green-400">⚽ BolzplatzTour STR</h1>
-      <p class="text-gray-400 text-sm mt-1">Mannschaftsanmeldung</p>
+      <h1 class="text-2xl font-black text-green-400 uppercase tracking-wider">⚽ BolzplatzTour STR</h1>
+      <p class="text-gray-400 text-xs mt-1">Offizielle Team-Anmeldung</p>
     </header>
 
-    <!-- FORMULAR -->
-    <form id="regForm" class="space-y-4">
+    <!-- ANMELDEFORMULAR -->
+    <form id="regForm" onsubmit="registerTeam(event)" class="space-y-4">
       <div>
-        <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Mannschaftsname *</label>
-        <input type="text" id="teamName" required placeholder="z.B. FC Ballspieler" class="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:outline-none focus:border-green-400">
+        <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Teamname *</label>
+        <input type="text" id="teamName" required placeholder="z. B. Kickers Stuttgart"
+          class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500">
       </div>
 
       <div>
         <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Anzahl Spieler *</label>
-        <input type="number" id="playerCount" min="1" max="20" required placeholder="z.B. 8" class="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:outline-none focus:border-green-400">
+        <input type="number" id="playerCount" min="5" max="12" required placeholder="z. B. 7"
+          class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500">
       </div>
 
-      <div class="grid grid-cols-2 gap-2">
-        <div>
-          <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Ansprechpartner *</label>
-          <input type="text" id="contactName" required placeholder="Vor- & Nachname" class="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:outline-none focus:border-green-400">
-        </div>
-        <div>
-          <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Telefonnummer *</label>
-          <input type="tel" id="contactPhone" required placeholder="0176..." class="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:outline-none focus:border-green-400">
-        </div>
+      <!-- MINDERJÄHRIGE FRAGE -->
+      <div>
+        <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Sind Spieler unter 18 Jahren dabei? *</label>
+        <select id="hasUnderage" onchange="toggleMuttizettelInfo()" required
+          class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500">
+          <option value="false">Nein (Alle 18+)</option>
+          <option value="true">Ja (Unter 18 dabei)</option>
+        </select>
       </div>
 
-      <div class="bg-gray-700/50 p-3 rounded-lg border border-gray-600 flex items-center gap-3">
-        <input type="checkbox" id="hasUnderage" class="w-5 h-5 text-green-500 rounded focus:ring-0">
-        <label for="hasUnderage" class="text-sm text-gray-300">Sind Spieler unter 18 Jahren dabei?</label>
+      <!-- MUTTIZETTEL HINWEIS & DOWNLOAD -->
+      <div id="muttizettelBox" class="hidden p-3 bg-yellow-900/40 border border-yellow-500/50 rounded-xl text-xs text-yellow-200">
+        ⚠️ <strong>Achtung:</strong> Alle U18-Spieler müssen am Turniertag einen unterschriebenen Muttizettel mitbringen!
+        <a href="muttizettel.pdf" target="_blank" download class="block mt-2 font-bold underline text-yellow-400 hover:text-yellow-300">
+          📄 Muttizettel-Vorlage hier herunterladen (PDF)
+        </a>
       </div>
 
-      <button type="submit" id="btnSubmit" class="w-full bg-green-500 hover:bg-green-600 text-black font-extrabold py-3 rounded-xl transition-all duration-200">
-        🟢 Mannschaft anmelden
+      <!-- AGB CHECKBOX -->
+      <div class="flex items-start gap-2 pt-2">
+        <input type="checkbox" id="agbCheck" required class="mt-1 accent-green-500 rounded">
+        <label for="agbCheck" class="text-xs text-gray-400">
+          Ich akzeptiere die Turniertregeln, AGBs und bestätige die Richtigkeit der Angaben. *
+        </label>
+      </div>
+
+      <button type="submit" id="submitBtn"
+        class="w-full bg-green-500 hover:bg-green-600 text-black font-extrabold py-3 rounded-xl transition-all shadow-lg mt-4">
+        🚀 Team verbindlich anmelden
       </button>
     </form>
 
-    <!-- ERFOLGSANZEIGE + QR CODE -->
-    <div id="ticket" class="hidden text-center space-y-4 py-4">
-      <div class="inline-block bg-green-500/20 text-green-400 px-4 py-1 rounded-full text-sm font-bold">
-        🎉 Anmeldung erfolgreich!
+    <!-- ERFOLGS-ANZEIGE MIT QR-CODE (Initial versteckt) -->
+    <div id="successBox" class="hidden text-center space-y-4">
+      <div class="p-4 bg-green-900/40 border border-green-500 rounded-2xl">
+        <h2 class="text-xl font-bold text-green-400 mb-1">🎉 Anmeldung Erfolgreich!</h2>
+        <p class="text-xs text-gray-300">Mach jetzt einen <strong>Screenshot</strong> von diesem Ticket. Du brauchst den QR-Code zum Check-in am Turniertag!</p>
       </div>
-      
-      <h2 id="teamDisplay" class="text-2xl font-black"></h2>
-      <p id="codeDisplay" class="text-sm text-gray-400 font-mono"></p>
 
-      <div class="flex justify-center p-4 bg-white rounded-2xl w-fit mx-auto shadow-inner">
+      <!-- QR-CODE CONTAINER -->
+      <div class="bg-white p-4 rounded-xl inline-block shadow-xl">
         <div id="qrcode"></div>
       </div>
 
-      <p class="text-xs text-gray-400">
-        📸 <strong>Wichtig:</strong> Mache JETZT einen Screenshot von diesem QR-Code.<br>Du brauchst ihn am Turniertag beim Check-in!
-      </p>
+      <div>
+        <p class="text-xs text-gray-400">Dein Team-Code:</p>
+        <p id="teamCodeDisplay" class="text-xl font-mono font-bold text-green-400"></p>
+      </div>
     </div>
-
   </div>
 
   <script>
@@ -77,56 +89,60 @@
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    document.getElementById('regForm').addEventListener('submit', async (e) => {
+    function toggleMuttizettelInfo() {
+      const hasUnderage = document.getElementById('hasUnderage').value === "true";
+      const box = document.getElementById('muttizettelBox');
+      if (hasUnderage) {
+        box.classList.remove('hidden');
+      } else {
+        box.classList.add('hidden');
+      }
+    }
+
+    async function registerTeam(e) {
       e.preventDefault();
-      
-      const btn = document.getElementById('btnSubmit');
-      btn.innerText = "Wird gespeichert...";
-      btn.disabled = true;
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerText = "Speichere...";
 
-      const teamName = document.getElementById('teamName').value;
+      const teamName = document.getElementById('teamName').value.trim();
       const playerCount = parseInt(document.getElementById('playerCount').value);
-      const contactName = document.getElementById('contactName').value;
-      const contactPhone = document.getElementById('contactPhone').value;
-      const hasUnderage = document.getElementById('hasUnderage').checked;
+      const hasUnderage = document.getElementById('hasUnderage').value === "true";
 
-      // Zufällige Team-ID generieren (z.B. STR-4821)
-      const teamCode = 'STR-' + Math.floor(1000 + Math.random() * 9000);
+      // Einzigartigen Team-Code generieren (z. B. STR-8F2A)
+      const teamCode = "STR-" + Math.random().toString(36).substring(2, 6).toUpperCase();
 
-      // In Supabase speichern
-      const { data, error } = await supabase
-        .from('teams')
-        .insert([
-          {
-            team_code: teamCode,
-            team_name: teamName,
-            player_count: playerCount,
-            contact_name: contactName,
-            contact_phone: contactPhone,
-            has_underage: hasUnderage
-          }
-        ]);
+      const { data, error } = await supabase.from('teams').insert([
+        { 
+          team_name: teamName, 
+          player_count: playerCount, 
+          has_underage: hasUnderage,
+          team_code: teamCode,
+          checked_in: false
+        }
+      ]).select();
 
       if (error) {
-        alert("Fehler beim Speichern: " + error.message);
-        btn.innerText = "🟢 Mannschaft anmelden";
-        btn.disabled = false;
-        return;
+        alert("Fehler bei der Anmeldung: " + error.message);
+        submitBtn.disabled = false;
+        submitBtn.innerText = "🚀 Team verbindlich anmelden";
+      } else {
+        // Formular ausblenden & Erfolgsbox mit QR-Code anzeigen
+        document.getElementById('regForm').classList.add('hidden');
+        document.getElementById('successBox').classList.remove('hidden');
+        document.getElementById('teamCodeDisplay').innerText = teamCode;
+
+        // QR Code auf der Seite rendern
+        new QRCode(document.getElementById("qrcode"), {
+          text: teamCode,
+          width: 180,
+          height: 180,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        });
       }
-
-      // Formular ausblenden & Ticket anzeigen
-      document.getElementById('regForm').classList.add('hidden');
-      document.getElementById('ticket').classList.remove('hidden');
-      document.getElementById('teamDisplay').innerText = teamName;
-      document.getElementById('codeDisplay').innerText = "Dein Code: " + teamCode;
-
-      // QR Code generieren
-      new QRCode(document.getElementById("qrcode"), {
-        text: teamCode,
-        width: 180,
-        height: 180
-      });
-    });
+    }
   </script>
 </body>
 </html>
