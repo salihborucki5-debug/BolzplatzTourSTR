@@ -86,12 +86,12 @@
     </div>
   </div>
 
- <script>
-    // ⚠️ TRAGE HIER DEINE SUPABASE-DATEN EIN! ⚠️
-    const SUPABASE_URL = "https://rsujqzvudncqrpdwikyr.supabase.co/rest/v1/";
+  <script>
+    // DEINE SUPABASE-DATEN (KORRIGIERT)
+    const SUPABASE_URL = "https://rsujqzvudncqrpdwikyr.supabase.co";
     const SUPABASE_KEY = "sb_publishable_9c2p0DsLdUh4K4wq3xYIHw_ah2wyOQu";
 
-    // Namenskonflikt behoben: 'db' statt 'supabase'
+    // 'db' statt 'supabase', um Safari-Konflikte zu vermeiden
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function registerTeam(e) {
@@ -139,3 +139,5 @@
       }
     }
   </script>
+</body>
+</html>
