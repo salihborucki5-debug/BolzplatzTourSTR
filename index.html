@@ -12,27 +12,22 @@
 
   <div class="max-w-md w-full bg-white p-6 rounded-2xl shadow-xl border border-stone-200">
     <header class="text-center mb-6">
-      <h1 class="text-2xl font-black text-pink-500 uppercase tracking-wider"> BOLZPLATZTOUR STR</h1>
+      <h1 class="text-2xl font-black text-pink-500 uppercase tracking-wider">BOLZPLATZTOUR STR</h1>
       <p class="text-stone-500 text-xs mt-1">Offizielle Team-Anmeldung</p>
     </header>
 
     <!-- ANMELDEFORMULAR -->
     <form id="regForm" onsubmit="registerTeam(event)" class="space-y-4">
+      
       <div>
-        <label class="block text-xs font-bold uppercase text-stone-600 mb-1">Teamname *</label>
-        <input type="text" id="teamName" required placeholder="z. B. Kickers Stuttgart"
+        <label class="block text-xs font-bold uppercase text-stone-600 mb-1">Name des Kapitäns *</label>
+        <input type="text" id="captainName" required placeholder="z. B. Max Mustermann"
           class="w-full bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-500 text-gray-900 placeholder-stone-400">
       </div>
 
       <div>
-        <label class="block text-xs font-bold uppercase text-stone-600 mb-1">Team-Kapitän (Name & Handynummer) *</label>
-        <input type="text" id="captainName" required placeholder="z. B. Max Mustermann (0176 1234567)"
-          class="w-full bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-500 text-gray-900 placeholder-stone-400">
-      </div>
-
-      <div>
-        <label class="block text-xs font-bold uppercase text-stone-600 mb-1">Anzahl Spieler *</label>
-        <input type="number" id="playerCount" min="5" max="12" required placeholder="z. B. 7"
+        <label class="block text-xs font-bold uppercase text-stone-600 mb-1">E-Mail-Adresse *</label>
+        <input type="email" id="captainEmail" required placeholder="z. B. max@beispiel.de"
           class="w-full bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-500 text-gray-900 placeholder-stone-400">
       </div>
 
@@ -46,6 +41,15 @@
       </div>
 
       <div class="space-y-2 pt-2 border-t border-stone-200">
+        
+        <!-- PFLICHT-CHECKBOX: 5+1 KADER -->
+        <div class="flex items-start gap-2 bg-pink-50 p-3 rounded-xl border border-pink-200">
+          <input type="checkbox" id="kaderCheck" required class="mt-1 accent-pink-500 h-4 w-4 rounded cursor-pointer">
+          <label for="kaderCheck" class="text-xs text-stone-800 font-medium">
+            Wir treten mit mindestens <strong>5+1 Spielern</strong> an. Mir ist bewusst, dass wir ohne vollzähliges Team nicht mitspielen können. *
+          </label>
+        </div>
+
         <p class="text-xs text-amber-700 font-medium bg-amber-50 p-2.5 rounded-lg border border-amber-200">
           📄 Bei Spielern unter 18 Jahren bitte vorher den 
           <a href="muttizettel.pdf" target="_blank" download class="underline font-bold hover:text-amber-900">Muttizettel herunterladen (PDF)</a> 
@@ -72,7 +76,8 @@
     <div id="successBox" class="hidden text-center space-y-4">
       <div class="p-4 bg-pink-50 border border-pink-200 rounded-2xl">
         <h2 class="text-xl font-bold text-pink-600 mb-1">🎉 Anmeldung Erfolgreich!</h2>
-        <p class="text-xs text-stone-600 mb-2">Mach jetzt einen <strong>Screenshot</strong> von diesem Ticket. Du brauchst den QR-Code zum Check-in am Turniertag!</p>
+        <p class="text-sm font-bold text-gray-800" id="assignedTeamName"></p>
+        <p class="text-xs text-stone-600 mt-1">Mach jetzt einen <strong>Screenshot</strong> von diesem Ticket. Du brauchst den QR-Code zum Check-in am Turniertag!</p>
       </div>
 
       <div class="bg-white p-4 rounded-xl inline-block shadow-md border border-stone-200">
@@ -96,20 +101,43 @@
       e.preventDefault();
       const submitBtn = document.getElementById('submitBtn');
       submitBtn.disabled = true;
+      submitBtn.innerText = "Prüfe Plätze...";
+
+      // 1. Prüfen, wie viele Teams bereits angemeldet sind
+      const { data: existingTeams, error: countError } = await db.from('teams').select('id');
+      
+      if (countError) {
+        alert("Fehler beim Abrufen der Anmeldungen: " + countError.message);
+        submitBtn.disabled = false;
+        submitBtn.innerText = "🚀 Team verbindlich anmelden";
+        return;
+      }
+
+      if (existingTeams.length >= 30) {
+        alert("Leider sind bereits alle 30 Startplätze vergeben!");
+        submitBtn.disabled = false;
+        submitBtn.innerText = "❌ Turnier ausgebucht";
+        return;
+      }
+
       submitBtn.innerText = "Speichere...";
 
-      const teamName = document.getElementById('teamName').value.trim();
+      // 2. Fortlaufende Zahl vergeben (1 bis 30)
+      const nextTeamNumber = existingTeams.length + 1;
+      const teamName = `Team ${nextTeamNumber}`;
+
       const captainName = document.getElementById('captainName').value.trim();
-      const playerCount = parseInt(document.getElementById('playerCount').value);
+      const captainEmail = document.getElementById('captainEmail').value.trim();
       const hasUnderage = document.getElementById('hasUnderage').value === "true";
 
       const teamCode = "STR-" + Math.random().toString(36).substring(2, 6).toUpperCase();
 
+      // 3. In Datenbank speichern
       const { data, error } = await db.from('teams').insert([
         { 
           team_name: teamName,
-          captain_info: captainName,
-          player_count: playerCount, 
+          captain_info: `${captainName} (${captainEmail})`,
+          player_count: 6, // Standard 5+1
           has_underage: hasUnderage,
           team_code: teamCode,
           checked_in: false
@@ -123,6 +151,7 @@
       } else {
         document.getElementById('regForm').classList.add('hidden');
         document.getElementById('successBox').classList.remove('hidden');
+        document.getElementById('assignedTeamName').innerText = `Du startest als: ${teamName}`;
         document.getElementById('teamCodeDisplay').innerText = teamCode;
 
         document.getElementById("qrcode").innerHTML = "";
