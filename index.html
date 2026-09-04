@@ -13,7 +13,7 @@
 
   <div class="max-w-md w-full bg-gray-800 p-6 rounded-2xl shadow-2xl border border-gray-700">
     <header class="text-center mb-6">
-      <h1 class="text-2xl font-black text-green-400 uppercase tracking-wider">⚽ BolzplatzTour STR</h1>
+      <h1 class="text-2xl font-black text-green-400 uppercase tracking-wider">⚽ BOLZPLATZTOUR STR</h1>
       <p class="text-gray-400 text-xs mt-1">Offizielle Team-Anmeldung</p>
     </header>
 
@@ -22,47 +22,51 @@
       <div>
         <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Teamname *</label>
         <input type="text" id="teamName" required placeholder="z. B. Kickers Stuttgart"
-          class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500">
+          class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500 text-white">
+      </div>
+
+      <!-- NEU: Team-Kapitän -->
+      <div>
+        <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Team-Kapitän (Name & Handynummer) *</label>
+        <input type="text" id="captainName" required placeholder="z. B. Max Mustermann (0176 1234567)"
+          class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500 text-white">
       </div>
 
       <div>
         <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Anzahl Spieler *</label>
         <input type="number" id="playerCount" min="5" max="12" required placeholder="z. B. 7"
-          class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500">
+          class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500 text-white">
       </div>
 
-      <!-- MINDERJÄHRIGE FRAGE -->
       <div>
         <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Sind Spieler unter 18 Jahren dabei? *</label>
-        <select id="hasUnderage" onchange="toggleMuttizettelInfo()" required
-          class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500">
+        <select id="hasUnderage" required
+          class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500 text-white">
           <option value="false">Nein (Alle 18+)</option>
           <option value="true">Ja (Unter 18 dabei)</option>
         </select>
       </div>
 
-      <!-- MUTTIZETTEL HINWEIS & DOWNLOAD -->
-      <div id="muttizettelBox" class="hidden p-3 bg-yellow-900/40 border border-yellow-500/50 rounded-xl text-xs text-yellow-200">
-        ⚠️ <strong>Achtung:</strong> Alle U18-Spieler müssen am Turniertag einen unterschriebenen Muttizettel mitbringen!
-        <a href="muttizettel.pdf" target="_blank" download class="block mt-2 font-bold underline text-yellow-400 hover:text-yellow-300">
-          📄 Muttizettel-Vorlage hier herunterladen (PDF)
-        </a>
-      </div>
+      <!-- DIREKTE LINKS: MUTTIZETTEL & AGBS -->
+      <div class="space-y-2 pt-2 border-t border-gray-700/50">
+        <p class="text-xs text-yellow-400 font-medium">
+          📄 Bei Spielern unter 18 Jahren bitte vorher den 
+          <a href="muttizettel.pdf" target="_blank" download class="underline font-bold hover:text-yellow-300">Muttizettel herunterladen (PDF)</a> 
+          und ausgefüllt mitbringen.
+        </p>
 
-      <!-- AGB CHECKBOX MIT PDF LINK -->
-      <div class="flex items-start gap-2 pt-2">
-        <input type="checkbox" id="agbCheck" required class="mt-1 accent-green-500 rounded">
-        <label for="agbCheck" class="text-xs text-gray-400">
-          Ich akzeptiere die 
-          <a href="agb.pdf" target="_blank" class="text-green-400 underline font-bold">
-            Turnierregeln & AGBs (PDF)
-          </a> 
-          und bestätige die Richtigkeit der Angaben. *
-        </label>
+        <div class="flex items-start gap-2 pt-1">
+          <input type="checkbox" id="agbCheck" required class="mt-1 accent-green-500 rounded cursor-pointer">
+          <label for="agbCheck" class="text-xs text-gray-400">
+            Ich akzeptiere die 
+            <a href="agb.pdf" target="_blank" class="text-green-400 underline font-bold hover:text-green-300">Turnierregeln & AGBs (PDF)</a> 
+            und bestätige die Richtigkeit der Angaben. *
+          </label>
+        </div>
       </div>
 
       <button type="submit" id="submitBtn"
-        class="w-full bg-green-500 hover:bg-green-600 text-black font-extrabold py-3 rounded-xl transition-all shadow-lg mt-4">
+        class="w-full bg-green-500 hover:bg-green-600 text-black font-extrabold py-3 rounded-xl transition-all shadow-lg mt-4 cursor-pointer">
         🚀 Team verbindlich anmelden
       </button>
     </form>
@@ -71,7 +75,7 @@
     <div id="successBox" class="hidden text-center space-y-4">
       <div class="p-4 bg-green-900/40 border border-green-500 rounded-2xl">
         <h2 class="text-xl font-bold text-green-400 mb-1">🎉 Anmeldung Erfolgreich!</h2>
-        <p class="text-xs text-gray-300">Mach jetzt einen <strong>Screenshot</strong> von diesem Ticket. Du brauchst den QR-Code zum Check-in am Turniertag!</p>
+        <p class="text-xs text-gray-300 mb-2">Mach jetzt einen <strong>Screenshot</strong> von diesem Ticket. Du brauchst den QR-Code zum Check-in am Turniertag!</p>
       </div>
 
       <div class="bg-white p-4 rounded-xl inline-block shadow-xl">
@@ -92,16 +96,6 @@
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    function toggleMuttizettelInfo() {
-      const hasUnderage = document.getElementById('hasUnderage').value === "true";
-      const box = document.getElementById('muttizettelBox');
-      if (hasUnderage) {
-        box.classList.remove('hidden');
-      } else {
-        box.classList.add('hidden');
-      }
-    }
-
     async function registerTeam(e) {
       e.preventDefault();
       const submitBtn = document.getElementById('submitBtn');
@@ -109,14 +103,16 @@
       submitBtn.innerText = "Speichere...";
 
       const teamName = document.getElementById('teamName').value.trim();
+      const captainName = document.getElementById('captainName').value.trim();
       const playerCount = parseInt(document.getElementById('playerCount').value);
       const hasUnderage = document.getElementById('hasUnderage').value === "true";
 
       const teamCode = "STR-" + Math.random().toString(36).substring(2, 6).toUpperCase();
 
+      // Speichern in Supabase (Teamname enthält nun optional auch den Kapitän zur Übersicht)
       const { data, error } = await supabase.from('teams').insert([
         { 
-          team_name: teamName, 
+          team_name: `${teamName} (${captainName})`, 
           player_count: playerCount, 
           has_underage: hasUnderage,
           team_code: teamCode,
@@ -133,6 +129,8 @@
         document.getElementById('successBox').classList.remove('hidden');
         document.getElementById('teamCodeDisplay').innerText = teamCode;
 
+        // QR Code rendern
+        document.getElementById("qrcode").innerHTML = "";
         new QRCode(document.getElementById("qrcode"), {
           text: teamCode,
           width: 180,
