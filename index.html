@@ -33,11 +33,25 @@
 
       <div>
         <label class="block text-xs font-bold uppercase text-stone-600 mb-1">Sind Spieler unter 18 Jahren dabei? *</label>
-        <select id="hasUnderage" required
+        <select id="hasUnderage" onchange="toggleMuttizettelOption()" required
           class="w-full bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-500 text-gray-900">
           <option value="false">Nein (Alle 18+)</option>
           <option value="true">Ja (Unter 18 dabei)</option>
         </select>
+      </div>
+
+      <!-- MUTTIZETTEL HINWEIS & BESTÄTIGUNG (Nur sichtbar wenn U18 ausgewählt ist) -->
+      <div id="muttizettelBox" class="hidden space-y-2 p-3 bg-amber-50 rounded-xl border border-amber-200 transition-all">
+        <p class="text-xs text-amber-900 font-medium">
+          📄 Für alle Spieler unter 18 Jahren muss eine Einverständniserklärung vorliegen: 
+          <a href="muttizettel.pdf" target="_blank" download class="underline font-bold text-amber-950 hover:text-pink-600">Muttizettel herunterladen (PDF)</a>
+        </p>
+        <div class="flex items-start gap-2 pt-1">
+          <input type="checkbox" id="muttizettelCheck" class="mt-1 accent-pink-500 rounded cursor-pointer">
+          <label for="muttizettelCheck" class="text-xs text-amber-900 font-semibold">
+            Ich habe den Muttizettel gelesen und bestätige, dass alle minderjährigen Spieler diesen ausgefüllt und unterschrieben zum Check-In mitbringen. *
+          </label>
+        </div>
       </div>
 
       <div class="space-y-2 pt-2 border-t border-stone-200">
@@ -49,12 +63,6 @@
             Wir treten mit mindestens <strong>5+1 Spielern</strong> an. Mir ist bewusst, dass wir ohne vollzähliges Team nicht mitspielen können. *
           </label>
         </div>
-
-        <p class="text-xs text-amber-700 font-medium bg-amber-50 p-2.5 rounded-lg border border-amber-200">
-          📄 Bei Spielern unter 18 Jahren bitte vorher den 
-          <a href="muttizettel.pdf" target="_blank" download class="underline font-bold hover:text-amber-900">Muttizettel herunterladen (PDF)</a> 
-          und ausgefüllt mitbringen.
-        </p>
 
         <div class="flex items-start gap-2 pt-1">
           <input type="checkbox" id="agbCheck" required class="mt-1 accent-pink-500 rounded cursor-pointer">
@@ -97,8 +105,32 @@
 
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    function toggleMuttizettelOption() {
+      const isUnderage = document.getElementById('hasUnderage').value === "true";
+      const muttizettelBox = document.getElementById('muttizettelBox');
+      const muttizettelCheck = document.getElementById('muttizettelCheck');
+
+      if (isUnderage) {
+        muttizettelBox.classList.remove('hidden');
+        muttizettelCheck.required = true;
+      } else {
+        muttizettelBox.classList.add('hidden');
+        muttizettelCheck.required = false;
+        muttizettelCheck.checked = false;
+      }
+    }
+
     async function registerTeam(e) {
       e.preventDefault();
+
+      const hasUnderage = document.getElementById('hasUnderage').value === "true";
+      const muttizettelCheck = document.getElementById('muttizettelCheck');
+
+      if (hasUnderage && !muttizettelCheck.checked) {
+        alert("Bitte bestätige, dass du den Muttizettel gelesen hast und alle unter 18-jährigen Spielern diesen mitbringen.");
+        return;
+      }
+
       const submitBtn = document.getElementById('submitBtn');
       submitBtn.disabled = true;
       submitBtn.innerText = "Prüfe Plätze...";
@@ -128,7 +160,6 @@
 
       const captainName = document.getElementById('captainName').value.trim();
       const captainEmail = document.getElementById('captainEmail').value.trim();
-      const hasUnderage = document.getElementById('hasUnderage').value === "true";
 
       const teamCode = "STR-" + Math.random().toString(36).substring(2, 6).toUpperCase();
 
@@ -137,7 +168,7 @@
         { 
           team_name: teamName,
           captain_info: `${captainName} (${captainEmail})`,
-          player_count: 6, // Standard 5+1
+          player_count: 6,
           has_underage: hasUnderage,
           team_code: teamCode,
           checked_in: false
