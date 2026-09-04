@@ -12,29 +12,25 @@
   <div class="max-w-xl w-full space-y-6">
     <header class="text-center py-4 border-b border-gray-800">
       <h1 class="text-2xl font-black text-green-400 uppercase tracking-wider">💻 Laptop Check-In Station</h1>
-      <p class="text-gray-400 text-xs mt-1">USB Scanner Bereit halten</p>
+      <p class="text-gray-400 text-xs mt-1">USB Scanner bereit halten</p>
     </header>
 
-    <!-- SCANNER EINGABE -->
     <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-2xl">
       <label class="block text-xs font-bold uppercase text-green-400 mb-2">Code Scannen oder Tippen:</label>
       <input type="text" id="scanInput" autofocus placeholder="Klicke hier & scanne den QR-Code..."
         onchange="processScan()"
         class="w-full bg-gray-900 border-2 border-green-500 rounded-xl px-4 py-3 text-lg font-mono text-center tracking-widest text-white focus:outline-none focus:ring-2 focus:ring-green-400">
-      <p class="text-2xs text-gray-500 mt-2 text-center">Tipp: Nach dem Scannen automatisch Enter drücken lassen.</p>
     </div>
 
-    <!-- SCAN-RESULTAT ANZEIGE -->
     <div id="resultBox" class="hidden p-4 rounded-2xl border transition-all">
       <h2 id="resultTitle" class="text-xl font-bold mb-1"></h2>
       <p id="resultDetails" class="text-sm"></p>
     </div>
 
-    <!-- GESAMTE TEAMLISTE (ALLE ANMELDUNGEN) -->
     <section class="bg-gray-800 p-5 rounded-2xl border border-gray-700 shadow-xl">
       <div class="flex justify-between items-center mb-3">
         <h2 class="text-sm font-bold text-gray-300 uppercase tracking-wider">📋 Alle angemeldeten Teams</h2>
-        <button onclick="loadTeamList()" class="text-2xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-gray-300">🔄 Aktualisieren</button>
+        <button onclick="loadTeamList()" class="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded text-gray-300">🔄 Aktualisieren</button>
       </div>
       
       <div class="overflow-x-auto">
@@ -56,15 +52,14 @@
   </div>
 
   <script>
-    // ⚠️ TRAGE HIER DEINE SUPABASE-DATEN EIN! ⚠️
-    const SUPABASE_URL = "https://rsujqzvudncqrpdwikyr.supabase.co/rest/v1/";
+    // DEINE SUPABASE-DATEN (KORRIGIERT)
+    const SUPABASE_URL = "https://rsujqzvudncqrpdwikyr.supabase.co";
     const SUPABASE_KEY = "sb_publishable_9c2p0DsLdUh4K4wq3xYIHw_ah2wyOQu";
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Alle Anmeldungen laden und auflisten
     async function loadTeamList() {
-      const { data: teams, error } = await supabase.from('teams').select('*').order('created_at', { ascending: false });
+      const { data: teams, error } = await db.from('teams').select('*').order('created_at', { ascending: false });
       const tbody = document.getElementById('teamTableBody');
 
       if (!teams || teams.length === 0) {
@@ -75,7 +70,7 @@
       tbody.innerHTML = teams.map(t => `
         <tr class="border-b border-gray-700/50 hover:bg-gray-800/50">
           <td class="p-2 font-bold">${t.checked_in ? '🟢 Anwesend' : '🔴 Ausstehend'}</td>
-          <td class="p-2 font-bold text-white">${t.team_name}</td>
+          <td class="p-2 font-bold text-white">${t.team_name} (${t.captain_info || 'Kein Kapitän'})</td>
           <td class="p-2 text-center">${t.has_underage ? '⚠️ Ja' : 'Nein'}</td>
           <td class="p-2 text-right font-mono text-green-400">${t.team_code}</td>
         </tr>
@@ -87,7 +82,7 @@
       const code = input.value.trim();
       if (!code) return;
 
-      const { data: teams, error } = await supabase.from('teams').select('*').eq('team_code', code);
+      const { data: teams, error } = await db.from('teams').select('*').eq('team_code', code);
       const box = document.getElementById('resultBox');
       const title = document.getElementById('resultTitle');
       const details = document.getElementById('resultDetails');
@@ -96,16 +91,14 @@
 
       if (teams && teams.length > 0) {
         const team = teams[0];
-        
-        // Status auf Anwesend setzen
-        await supabase.from('teams').update({ checked_in: true }).eq('id', team.id);
+        await db.from('teams').update({ checked_in: true }).eq('id', team.id);
 
         box.classList.add('bg-green-900/40', 'border-green-500');
         title.innerText = `✅ Check-In Erfolgreich: ${team.team_name}`;
         title.className = "text-xl font-bold text-green-400 mb-1";
         
         let u18Warning = team.has_underage ? "<br><span class='text-yellow-400 font-bold'>⚠️ U18 Spieler dabei: Muttizettel prüfen!</span>" : "";
-        details.innerHTML = `Spieleranzahl: ${team.player_count} | Code: ${team.team_code}${u18Warning}`;
+        details.innerHTML = `Kapitän: ${team.captain_info || 'N/A'} | Spieler: ${team.player_count} | Code: ${team.team_code}${u18Warning}`;
       } else {
         box.classList.add('bg-red-900/40', 'border-red-500');
         title.innerText = "❌ Code nicht gefunden!";
@@ -115,7 +108,7 @@
 
       input.value = "";
       input.focus();
-      loadTeamList(); // Liste aktualisieren
+      loadTeamList();
     }
 
     loadTeamList();
