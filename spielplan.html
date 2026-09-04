@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BolzplatzTour STR - King of the Hill</title>
+  <title>BolzplatzTour STR - King of the Hill & KO-Phase</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -11,20 +11,23 @@
 
   <div class="max-w-3xl w-full space-y-6">
     <header class="text-center py-4 border-b border-stone-200">
-      <h1 class="text-3xl font-black text-pink-500 uppercase tracking-wider">Gewinner Bleibt</h1>
-      <p class="text-stone-500 text-xs mt-1">3 Siege in Folge = Endrunde | Niederlage/Remis = K.O.</p>
+      <h1 class="text-3xl font-black text-pink-500 uppercase tracking-wider">Turnier-Dashboard</h1>
+      <p class="text-stone-500 text-xs mt-1">Vorrunde: King of the Hill | Endrunde: K.O.-System</p>
     </header>
 
     <div class="flex gap-4 justify-center">
       <button onclick="startTournament()" class="bg-pink-500 hover:bg-pink-600 text-white font-extrabold px-4 py-2 rounded-xl text-xs transition-all shadow-md cursor-pointer">
-        🎲 Turnier Starten / Zurücksetzen
+        🎲 Vorrunde Starten / Reset
+      </button>
+      <button onclick="startKnockoutPhase()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-4 py-2 rounded-xl text-xs transition-all shadow-md cursor-pointer">
+        🏆 K.O.-Baum Generieren
       </button>
       <button onclick="loadDashboard()" class="bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold px-4 py-2 rounded-xl text-xs border border-stone-300 transition-all cursor-pointer">
         🔄 Aktualisieren
       </button>
     </div>
 
-    <!-- QUALIFIZIERTE TEAMS -->
+    <!-- QUALIFIZIERTE TEAMS FOR KO -->
     <section class="bg-emerald-50 p-5 rounded-2xl border border-emerald-200 shadow-sm">
       <h2 class="text-lg font-bold text-emerald-700 uppercase tracking-wider mb-2">⭐ Qualifiziert für die Endrunde (3 Siege in Folge)</h2>
       <ul id="qualifiedList" class="list-disc list-inside text-sm font-bold text-emerald-900 space-y-1">
@@ -32,17 +35,25 @@
       </ul>
     </section>
 
-    <!-- AKTUELLES SPIEL -->
+    <!-- AKTUELLES SPIEL (VORRUNDE ODER KO) -->
     <section class="bg-white p-6 rounded-2xl border-2 border-pink-500 shadow-xl">
-      <h2 class="text-lg font-bold text-pink-600 uppercase tracking-wider mb-4 text-center">⚔️ Aktuelles Match</h2>
+      <h2 id="matchBoxTitle" class="text-lg font-bold text-pink-600 uppercase tracking-wider mb-4 text-center">⚔️ Aktuelles Match</h2>
       <div id="currentMatchContainer">
-        <p class="text-center text-stone-400 text-sm">Lade match...</p>
+        <p class="text-center text-stone-400 text-sm">Lade Match...</p>
+      </div>
+    </section>
+
+    <!-- KO BAUM ANZEIGE -->
+    <section class="bg-white p-5 rounded-2xl border border-stone-200 shadow-xl">
+      <h2 class="text-lg font-bold text-gray-900 uppercase tracking-wider mb-4">🏆 K.O.-Runden Spielplan</h2>
+      <div id="koMatchesContainer" class="space-y-3">
+        <p class="text-stone-400 text-xs text-center">Der K.O.-Baum wird erstellt, sobald die Vorrunde beendet ist.</p>
       </div>
     </section>
 
     <!-- ELIMINIERTE TEAMS -->
     <section class="bg-white p-5 rounded-2xl border border-stone-200 shadow-xl">
-      <h2 class="text-sm font-bold text-rose-600 uppercase tracking-wider mb-3">💀 Ausgeschiedene Teams</h2>
+      <h2 class="text-sm font-bold text-rose-600 uppercase tracking-wider mb-3">💀 In der Vorrunde ausgeschieden</h2>
       <div id="eliminatedContainer" class="flex flex-wrap gap-2 text-xs">
         <span class="text-stone-400">Keine.</span>
       </div>
@@ -64,49 +75,49 @@
       const teamMap = {};
       teams.forEach(t => teamMap[t.id] = t);
 
-      // Berechne den aktuellen Turnier-Status
       const qualified = [];
       const eliminated = new Set();
-      const currentStreak = {}; // Team-ID -> Siege in Folge
-
+      const currentStreak = {};
       teams.forEach(t => currentStreak[t.id] = 0);
 
       let currentMatch = null;
+      const koMatches = [];
 
       (matches || []).forEach(m => {
-        if (m.is_finished) {
-          const t1 = m.team1_id;
-          const t2 = m.team2_id;
+        if (m.round === 'King of the Hill') {
+          if (m.is_finished) {
+            const t1 = m.team1_id;
+            const t2 = m.team2_id;
 
-          if (m.score_team1 > m.score_team2) {
-            // Team 1 gewinnt
-            currentStreak[t1] = (currentStreak[t1] || 0) + 1;
-            eliminated.add(t2);
-
-            if (currentStreak[t1] === 3) {
-              qualified.push(teamMap[t1]);
-            }
-          } else if (m.score_team2 > m.score_team1) {
-            // Team 2 gewinnt
-            currentStreak[t2] = (currentStreak[t2] || 0) + 1;
-            eliminated.add(t1);
-
-            if (currentStreak[t2] === 3) {
-              qualified.push(teamMap[t2]);
+            if (m.score_team1 > m.score_team2) {
+              currentStreak[t1] = (currentStreak[t1] || 0) + 1;
+              eliminated.add(t2);
+              if (currentStreak[t1] === 3) qualified.push(teamMap[t1]);
+            } else if (m.score_team2 > m.score_team1) {
+              currentStreak[t2] = (currentStreak[t2] || 0) + 1;
+              eliminated.add(t1);
+              if (currentStreak[t2] === 3) qualified.push(teamMap[t2]);
+            } else {
+              // Remis = Beide raus
+              eliminated.add(t1);
+              eliminated.add(t2);
             }
           } else {
-            // UNENTSCHIEDEN -> Beide Raus!
-            eliminated.add(t1);
-            eliminated.add(t2);
+            currentMatch = m;
           }
         } else {
-          currentMatch = m;
+          // KO Phase Spiel
+          koMatches.push(m);
+          if (!m.is_finished && !currentMatch) {
+            currentMatch = m;
+          }
         }
       });
 
       renderQualified(qualified);
       renderEliminated(eliminated, teamMap);
-      renderCurrentMatch(currentMatch, teamMap, currentStreak, teams, eliminated, qualified, matches || []);
+      renderCurrentMatch(currentMatch, teamMap, currentStreak);
+      renderKOMatches(koMatches, teamMap);
     }
 
     function renderQualified(qualified) {
@@ -128,15 +139,15 @@
       container.innerHTML = names.map(n => `<span class="bg-rose-100 text-rose-800 px-2.5 py-1 rounded-lg border border-rose-200 font-semibold">${n}</span>`).join('');
     }
 
-    function renderCurrentMatch(match, teamMap, currentStreak, teams, eliminated, qualified, allMatches) {
+    function renderCurrentMatch(match, teamMap, currentStreak) {
       const container = document.getElementById('currentMatchContainer');
 
       if (!match) {
         container.innerHTML = `
           <div class="text-center space-y-3">
-            <p class="text-stone-500 font-medium">Kein aktives Spiel. Nächstes Spiel vorbereiten?</p>
+            <p class="text-stone-500 font-medium">Kein aktives Spiel im Gange.</p>
             <button onclick="nextMatch()" class="bg-pink-500 hover:bg-pink-600 text-white font-extrabold px-6 py-3 rounded-xl text-sm transition-all shadow-md cursor-pointer">
-              ▶️ Nächstes Match aufrufen
+              ▶️ Nächstes Vorrunden-Match aufrufen
             </button>
           </div>
         `;
@@ -145,22 +156,22 @@
 
       const t1 = teamMap[match.team1_id];
       const t2 = teamMap[match.team2_id];
-
-      const streak1 = currentStreak[t1.id] || 0;
+      const isKO = match.round !== 'King of the Hill';
 
       container.innerHTML = `
         <div class="flex flex-col items-center gap-4">
+          <div class="text-xs font-bold text-pink-600 bg-pink-50 px-3 py-1 rounded-full border border-pink-200">${match.round}</div>
           <div class="flex items-center justify-between w-full text-base font-bold">
             <div class="text-center w-5/12">
-              <span class="text-lg text-gray-900 block">${t1 ? t1.team_name : 'Team 1'}</span>
-              <span class="text-xs text-pink-600 font-normal">🔥 ${streak1} Siege in Folge</span>
+              <span class="text-lg text-gray-900 block">${t1 ? t1.team_name : 'Freilos / TBD'}</span>
+              ${!isKO ? `<span class="text-xs text-pink-600 font-normal">🔥 ${currentStreak[t1?.id] || 0} Siege in Folge</span>` : ''}
             </div>
 
             <div class="text-xl font-black text-stone-300">VS</div>
 
             <div class="text-center w-5/12">
-              <span class="text-lg text-gray-900 block">${t2 ? t2.team_name : 'Team 2'}</span>
-              <span class="text-xs text-stone-400 font-normal">Herausforderer</span>
+              <span class="text-lg text-gray-900 block">${t2 ? t2.team_name : 'Freilos / TBD'}</span>
+              ${!isKO ? `<span class="text-xs text-stone-400 font-normal">Herausforderer</span>` : ''}
             </div>
           </div>
 
@@ -170,11 +181,35 @@
             <input type="number" id="s2" placeholder="0" class="w-12 text-center text-2xl font-mono font-bold text-pink-600 bg-transparent focus:outline-none">
           </div>
 
+          ${isKO ? `<p class="text-xs text-amber-700 font-semibold bg-amber-50 p-2 rounded-lg border border-amber-200">⚠️ In der K.O.-Runde gibt es kein Unentschieden! Bei Remis direkt 9m-Schießen.</p>` : ''}
+
           <button onclick="saveCurrentMatch(${match.id})" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-extrabold py-3 rounded-xl text-sm transition-all shadow-md cursor-pointer">
-            💾 Ergebnis Speichern & Nächstes Spiel
+            💾 Ergebnis Speichern & Fortfahren
           </button>
         </div>
       `;
+    }
+
+    function renderKOMatches(koMatches, teamMap) {
+      const container = document.getElementById('koMatchesContainer');
+      if (koMatches.length === 0) {
+        container.innerHTML = '<p class="text-stone-400 text-xs text-center">Der K.O.-Baum wird erstellt, sobald die Vorrunde beendet ist.</p>';
+        return;
+      }
+
+      container.innerHTML = koMatches.map(m => {
+        const t1 = teamMap[m.team1_id] ? teamMap[m.team1_id].team_name : (m.team1_id ? `Team ${m.team1_id}` : 'Freilos');
+        const t2 = teamMap[m.team2_id] ? teamMap[m.team2_id].team_name : (m.team2_id ? `Team ${m.team2_id}` : 'Freilos');
+        const isFinished = m.is_finished;
+
+        return `
+          <div class="bg-stone-50 p-3 rounded-xl border border-stone-200 flex justify-between items-center text-xs">
+            <span class="font-bold text-pink-600 w-1/4">${m.round}</span>
+            <span class="font-bold text-gray-900 text-center w-2/4">${t1} <span class="text-pink-600 font-mono px-2">${m.score_team1 ?? '-'} : ${m.score_team2 ?? '-'}</span> ${t2}</span>
+            <span class="w-1/4 text-right ${isFinished ? 'text-emerald-600 font-bold' : 'text-amber-600'}">${isFinished ? '✅ Beendet' : '⏳ Offen'}</span>
+          </div>
+        `;
+      }).join('');
     }
 
     async function saveCurrentMatch(matchId) {
@@ -186,15 +221,24 @@
         return;
       }
 
-      // 1. Ergebnis eintragen
+      const { data: match } = await db.from('matches').select('*').eq('id', matchId).single();
+
+      if (match.round !== 'King of the Hill' && s1 === s2) {
+        alert("In der K.O.-Phase darf ein Spiel nicht Unentschieden enden! Bitte tragt das Ergebnis nach dem Entscheidungsschießen (z.B. 9m) ein.");
+        return;
+      }
+
       await db.from('matches').update({
         score_team1: s1,
         score_team2: s2,
         is_finished: true
       }).eq('id', matchId);
 
-      // 2. Direkt nächstes Match aufrufen
-      await nextMatch();
+      if (match.round === 'King of the Hill') {
+        await nextMatch();
+      } else {
+        loadDashboard();
+      }
     }
 
     async function nextMatch() {
@@ -216,7 +260,7 @@
 
       let lastMatch = null;
 
-      (matches || []).forEach(m => {
+      (matches || []).filter(m => m.round === 'King of the Hill').forEach(m => {
         if (m.is_finished) {
           lastMatch = m;
           const t1 = m.team1_id;
@@ -231,14 +275,12 @@
             eliminated.add(t1);
             if (currentStreak[t2] === 3) qualified.add(t2);
           } else {
-            // Unentschieden -> Beide raus
             eliminated.add(t1);
             eliminated.add(t2);
           }
         }
       });
 
-      // Bestimme King (Wer bleibt auf dem Platz?)
       let kingId = null;
       if (lastMatch && lastMatch.is_finished) {
         if (lastMatch.score_team1 > lastMatch.score_team2 && !qualified.has(lastMatch.team1_id)) {
@@ -248,11 +290,10 @@
         }
       }
 
-      // Welches ist das nächste freie Team, das noch nicht gespielt/eliminiert/qualifiziert ist?
       const availableTeams = teams.filter(t => !eliminated.has(t.id) && !qualified.has(t.id) && t.id !== kingId);
 
       if (availableTeams.length === 0 && !kingId) {
-        alert("Keine weiteren Teams verfügbar! Vorrunde ist beendet.");
+        alert("Vorrunde beendet! Klicke auf '🏆 K.O.-Baum Generieren', um die Endrunde zu starten.");
         loadDashboard();
         return;
       }
@@ -268,7 +309,7 @@
       }
 
       if (!team1Id || !team2Id) {
-        alert("Kein weiteres Match möglich (zu wenige verfügbare Teams)!");
+        alert("Keine weiteren Teams verfügbar für die Vorrunde!");
         loadDashboard();
         return;
       }
@@ -285,8 +326,95 @@
       loadDashboard();
     }
 
+    // GENERIERT DEN FAIR-PLAY K.O.-BAUM MIT LUCKY LOSER (MEISTE TORE)
+    async function startKnockoutPhase() {
+      const { data: teams } = await db.from('teams').select('*');
+      const { data: matches } = await db.from('matches').select('*').eq('round', 'King of the Hill');
+
+      const teamMap = {};
+      teams.forEach(t => teamMap[t.id] = t);
+
+      const qualifiedIds = [];
+      const currentStreak = {};
+      const teamGoals = {}; // Speichert die erzielten Tore aller Teams
+      const eliminatedIds = new Set();
+
+      teams.forEach(t => teamGoals[t.id] = 0);
+
+      (matches || []).forEach(m => {
+        if (m.is_finished) {
+          const s1 = m.score_team1 || 0;
+          const s2 = m.score_team2 || 0;
+
+          teamGoals[m.team1_id] = (teamGoals[m.team1_id] || 0) + s1;
+          teamGoals[m.team2_id] = (teamGoals[m.team2_id] || 0) + s2;
+
+          if (s1 > s2) {
+            currentStreak[m.team1_id] = (currentStreak[m.team1_id] || 0) + 1;
+            eliminatedIds.add(m.team2_id);
+            if (currentStreak[m.team1_id] === 3 && !qualifiedIds.includes(m.team1_id)) {
+              qualifiedIds.push(m.team1_id);
+            }
+          } else if (s2 > s1) {
+            currentStreak[m.team2_id] = (currentStreak[m.team2_id] || 0) + 1;
+            eliminatedIds.add(m.team1_id);
+            if (currentStreak[m.team2_id] === 3 && !qualifiedIds.includes(m.team2_id)) {
+              qualifiedIds.push(m.team2_id);
+            }
+          } else {
+            eliminatedIds.add(m.team1_id);
+            eliminatedIds.add(m.team2_id);
+          }
+        }
+      });
+
+      if (qualifiedIds.length < 2) {
+        alert("Es müssen mindestens 2 Teams für die Endrunde qualifiziert sein!");
+        return;
+      }
+
+      // Prüfen, ob Anzahl ungerade ist
+      if (qualifiedIds.length % 2 !== 0) {
+        // Suche nach dem ausgeschiedenen Team mit den MEISTEN TOREN (Lucky Loser)
+        let luckyLoserId = null;
+        let maxGoals = -1;
+
+        eliminatedIds.forEach(id => {
+          if (!qualifiedIds.includes(id)) {
+            const goals = teamGoals[id] || 0;
+            if (goals > maxGoals) {
+              maxGoals = goals;
+              luckyLoserId = id;
+            }
+          }
+        });
+
+        if (luckyLoserId) {
+          qualifiedIds.push(luckyLoserId);
+          alert(`ℹ️ Ungerade Teamzahl (${qualifiedIds.length - 1} Teams): ${teamMap[luckyLoserId].team_name} rückt als 'Lucky Loser' in die K.O.-Runde nach (Meiste Tore der Ausgeschiedenen: ${maxGoals} Tore)!`);
+        }
+      }
+
+      if (!confirm(`Es treten ${qualifiedIds.length} Teams in der K.O.-Endrunde an. K.O.-Baum jetzt erstellen?`)) return;
+
+      const shuffled = [...qualifiedIds].sort(() => Math.random() - 0.5);
+      const newMatches = [];
+
+      for (let i = 0; i < shuffled.length; i += 2) {
+        newMatches.push({
+          round: 'K.O. Runde 1',
+          team1_id: shuffled[i],
+          team2_id: shuffled[i + 1],
+          is_finished: false
+        });
+      }
+
+      await db.from('matches').insert(newMatches);
+      loadDashboard();
+    }
+
     async function startTournament() {
-      if (!confirm("Möchtest du das Turnier neu starten? Alle bisherigen Spiele werden gelöscht!")) return;
+      if (!confirm("Möchtest du das gesamte Turnier neu starten? Alle Spiele werden gelöscht!")) return;
 
       await db.from('matches').delete().neq('id', 0);
       await nextMatch();
