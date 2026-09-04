@@ -8,90 +8,88 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
-<body class="bg-gray-900 text-white min-h-screen p-4 flex flex-col items-center justify-center">
+<body class="bg-[#fcfbf7] text-gray-900 min-h-screen p-4 flex flex-col items-center justify-center">
 
-  <div class="max-w-md w-full bg-gray-800 p-6 rounded-2xl shadow-2xl border border-gray-700">
+  <div class="max-w-md w-full bg-white p-6 rounded-2xl shadow-xl border border-stone-200">
     <header class="text-center mb-6">
-      <h1 class="text-2xl font-black text-green-400 uppercase tracking-wider">⚽ BOLZPLATZTOUR STR</h1>
-      <p class="text-gray-400 text-xs mt-1">Offizielle Team-Anmeldung</p>
+      <h1 class="text-2xl font-black text-pink-500 uppercase tracking-wider">⚽ BOLZPLATZTOUR STR</h1>
+      <p class="text-stone-500 text-xs mt-1">Offizielle Team-Anmeldung</p>
     </header>
 
     <!-- ANMELDEFORMULAR -->
     <form id="regForm" onsubmit="registerTeam(event)" class="space-y-4">
       <div>
-        <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Teamname *</label>
+        <label class="block text-xs font-bold uppercase text-stone-600 mb-1">Teamname *</label>
         <input type="text" id="teamName" required placeholder="z. B. Kickers Stuttgart"
-          class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500 text-white">
+          class="w-full bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-500 text-gray-900 placeholder-stone-400">
       </div>
 
       <div>
-        <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Team-Kapitän (Name & Handynummer) *</label>
+        <label class="block text-xs font-bold uppercase text-stone-600 mb-1">Team-Kapitän (Name & Handynummer) *</label>
         <input type="text" id="captainName" required placeholder="z. B. Max Mustermann (0176 1234567)"
-          class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500 text-white">
+          class="w-full bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-500 text-gray-900 placeholder-stone-400">
       </div>
 
       <div>
-        <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Anzahl Spieler *</label>
+        <label class="block text-xs font-bold uppercase text-stone-600 mb-1">Anzahl Spieler *</label>
         <input type="number" id="playerCount" min="5" max="12" required placeholder="z. B. 7"
-          class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500 text-white">
+          class="w-full bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-500 text-gray-900 placeholder-stone-400">
       </div>
 
       <div>
-        <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Sind Spieler unter 18 Jahren dabei? *</label>
+        <label class="block text-xs font-bold uppercase text-stone-600 mb-1">Sind Spieler unter 18 Jahren dabei? *</label>
         <select id="hasUnderage" required
-          class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-green-500 text-white">
+          class="w-full bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-500 text-gray-900">
           <option value="false">Nein (Alle 18+)</option>
           <option value="true">Ja (Unter 18 dabei)</option>
         </select>
       </div>
 
-      <div class="space-y-2 pt-2 border-t border-gray-700/50">
-        <p class="text-xs text-yellow-400 font-medium">
+      <div class="space-y-2 pt-2 border-t border-stone-200">
+        <p class="text-xs text-amber-700 font-medium bg-amber-50 p-2.5 rounded-lg border border-amber-200">
           📄 Bei Spielern unter 18 Jahren bitte vorher den 
-          <a href="muttizettel.pdf" target="_blank" download class="underline font-bold hover:text-yellow-300">Muttizettel herunterladen (PDF)</a> 
+          <a href="muttizettel.pdf" target="_blank" download class="underline font-bold hover:text-amber-900">Muttizettel herunterladen (PDF)</a> 
           und ausgefüllt mitbringen.
         </p>
 
         <div class="flex items-start gap-2 pt-1">
-          <input type="checkbox" id="agbCheck" required class="mt-1 accent-green-500 rounded cursor-pointer">
-          <label for="agbCheck" class="text-xs text-gray-400">
+          <input type="checkbox" id="agbCheck" required class="mt-1 accent-pink-500 rounded cursor-pointer">
+          <label for="agbCheck" class="text-xs text-stone-600">
             Ich akzeptiere die 
-            <a href="agb.pdf" target="_blank" class="text-green-400 underline font-bold hover:text-green-300">Turnierregeln & AGBs (PDF)</a> 
+            <a href="agb.pdf" target="_blank" class="text-pink-600 underline font-bold hover:text-pink-700">Turnierregeln & AGBs (PDF)</a> 
             und bestätige die Richtigkeit der Angaben. *
           </label>
         </div>
       </div>
 
       <button type="submit" id="submitBtn"
-        class="w-full bg-green-500 hover:bg-green-600 text-black font-extrabold py-3 rounded-xl transition-all shadow-lg mt-4 cursor-pointer">
+        class="w-full bg-pink-500 hover:bg-pink-600 text-white font-extrabold py-3 rounded-xl transition-all shadow-md mt-4 cursor-pointer">
         🚀 Team verbindlich anmelden
       </button>
     </form>
 
     <!-- ERFOLGS-ANZEIGE MIT QR-CODE -->
     <div id="successBox" class="hidden text-center space-y-4">
-      <div class="p-4 bg-green-900/40 border border-green-500 rounded-2xl">
-        <h2 class="text-xl font-bold text-green-400 mb-1">🎉 Anmeldung Erfolgreich!</h2>
-        <p class="text-xs text-gray-300 mb-2">Mach jetzt einen <strong>Screenshot</strong> von diesem Ticket. Du brauchst den QR-Code zum Check-in am Turniertag!</p>
+      <div class="p-4 bg-pink-50 border border-pink-200 rounded-2xl">
+        <h2 class="text-xl font-bold text-pink-600 mb-1">🎉 Anmeldung Erfolgreich!</h2>
+        <p class="text-xs text-stone-600 mb-2">Mach jetzt einen <strong>Screenshot</strong> von diesem Ticket. Du brauchst den QR-Code zum Check-in am Turniertag!</p>
       </div>
 
-      <div class="bg-white p-4 rounded-xl inline-block shadow-xl">
+      <div class="bg-white p-4 rounded-xl inline-block shadow-md border border-stone-200">
         <div id="qrcode"></div>
       </div>
 
       <div>
-        <p class="text-xs text-gray-400">Dein Team-Code:</p>
-        <p id="teamCodeDisplay" class="text-xl font-mono font-bold text-green-400"></p>
+        <p class="text-xs text-stone-500">Dein Team-Code:</p>
+        <p id="teamCodeDisplay" class="text-xl font-mono font-bold text-pink-600"></p>
       </div>
     </div>
   </div>
 
   <script>
-    // DEINE SUPABASE-DATEN (KORRIGIERT)
     const SUPABASE_URL = "https://rsujqzvudncqrpdwikyr.supabase.co";
     const SUPABASE_KEY = "sb_publishable_9c2p0DsLdUh4K4wq3xYIHw_ah2wyOQu";
 
-    // 'db' statt 'supabase', um Safari-Konflikte zu vermeiden
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function registerTeam(e) {
