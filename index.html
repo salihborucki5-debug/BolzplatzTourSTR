@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BolzplatzTour STR - Mannschaftsanmeldung</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
+
+  <div class="max-w-md w-full bg-gray-800 p-6 rounded-2xl shadow-2xl border border-gray-700" id="app">
+    
+    <header class="text-center mb-6">
+      <h1 class="text-3xl font-black text-green-400">⚽ BolzplatzTour STR</h1>
+      <p class="text-gray-400 text-sm mt-1">Mannschaftsanmeldung</p>
+    </header>
+
+    <!-- FORMULAR -->
+    <form id="regForm" class="space-y-4">
+      <div>
+        <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Mannschaftsname *</label>
+        <input type="text" id="teamName" required placeholder="z.B. FC Ballspieler" class="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:outline-none focus:border-green-400">
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Anzahl Spieler *</label>
+        <input type="number" id="playerCount" min="1" max="20" required placeholder="z.B. 8" class="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:outline-none focus:border-green-400">
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Ansprechpartner *</label>
+          <input type="text" id="contactName" required placeholder="Vor- & Nachname" class="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:outline-none focus:border-green-400">
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Telefonnummer *</label>
+          <input type="tel" id="contactPhone" required placeholder="0176..." class="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:outline-none focus:border-green-400">
+        </div>
+      </div>
+
+      <div class="bg-gray-700/50 p-3 rounded-lg border border-gray-600 flex items-center gap-3">
+        <input type="checkbox" id="hasUnderage" class="w-5 h-5 text-green-500 rounded focus:ring-0">
+        <label for="hasUnderage" class="text-sm text-gray-300">Sind Spieler unter 18 Jahren dabei?</label>
+      </div>
+
+      <button type="submit" id="btnSubmit" class="w-full bg-green-500 hover:bg-green-600 text-black font-extrabold py-3 rounded-xl transition-all duration-200">
+        🟢 Mannschaft anmelden
+      </button>
+    </form>
+
+    <!-- ERFOLGSANZEIGE + QR CODE -->
+    <div id="ticket" class="hidden text-center space-y-4 py-4">
+      <div class="inline-block bg-green-500/20 text-green-400 px-4 py-1 rounded-full text-sm font-bold">
+        🎉 Anmeldung erfolgreich!
+      </div>
+      
+      <h2 id="teamDisplay" class="text-2xl font-black"></h2>
+      <p id="codeDisplay" class="text-sm text-gray-400 font-mono"></p>
+
+      <div class="flex justify-center p-4 bg-white rounded-2xl w-fit mx-auto shadow-inner">
+        <div id="qrcode"></div>
+      </div>
+
+      <p class="text-xs text-gray-400">
+        📸 <strong>Wichtig:</strong> Mache JETZT einen Screenshot von diesem QR-Code.<br>Du brauchst ihn am Turniertag beim Check-in!
+      </p>
+    </div>
+
+  </div>
+
+  <script>
+    // ⚠️ TRAGE HIER DEINE SUPABASE-DATEN EIN! ⚠️
+    const SUPABASE_URL = "https://rsujqzvudncqrpdwikyr.supabase.co/rest/v1/";
+    const SUPABASE_KEY = "sb_publishable_9c2p0DsLdUh4K4wq3xYIHw_ah2wyOQu";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    document.getElementById('regForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const btn = document.getElementById('btnSubmit');
+      btn.innerText = "Wird gespeichert...";
+      btn.disabled = true;
+
+      const teamName = document.getElementById('teamName').value;
+      const playerCount = parseInt(document.getElementById('playerCount').value);
+      const contactName = document.getElementById('contactName').value;
+      const contactPhone = document.getElementById('contactPhone').value;
+      const hasUnderage = document.getElementById('hasUnderage').checked;
+
+      // Zufällige Team-ID generieren (z.B. STR-4821)
+      const teamCode = 'STR-' + Math.floor(1000 + Math.random() * 9000);
+
+      // In Supabase speichern
+      const { data, error } = await supabase
+        .from('teams')
+        .insert([
+          {
+            team_code: teamCode,
+            team_name: teamName,
+            player_count: playerCount,
+            contact_name: contactName,
+            contact_phone: contactPhone,
+            has_underage: hasUnderage
+          }
+        ]);
+
+      if (error) {
+        alert("Fehler beim Speichern: " + error.message);
+        btn.innerText = "🟢 Mannschaft anmelden";
+        btn.disabled = false;
+        return;
+      }
+
+      // Formular ausblenden & Ticket anzeigen
+      document.getElementById('regForm').classList.add('hidden');
+      document.getElementById('ticket').classList.remove('hidden');
+      document.getElementById('teamDisplay').innerText = teamName;
+      document.getElementById('codeDisplay').innerText = "Dein Code: " + teamCode;
+
+      // QR Code generieren
+      new QRCode(document.getElementById("qrcode"), {
+        text: teamCode,
+        width: 180,
+        height: 180
+      });
+    });
+  </script>
+</body>
+</html>
