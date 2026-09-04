@@ -17,7 +17,7 @@
 
     <div class="flex gap-4 justify-center">
       <button onclick="generateSchedule()" class="bg-pink-500 hover:bg-pink-600 text-white font-extrabold px-4 py-2 rounded-xl text-xs transition-all shadow-md cursor-pointer">
-        🎲 Spielplan automatisch auslosen
+        🎲 Spielplan auslosen (2 Spiele / Team)
       </button>
       <button onclick="loadDashboard()" class="bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold px-4 py-2 rounded-xl text-xs border border-stone-300 transition-all cursor-pointer">
         🔄 Daten Aktualisieren
@@ -171,29 +171,67 @@
     async function generateSchedule() {
       const { data: teams } = await db.from('teams').select('*').eq('checked_in', true);
 
-      if (!teams || teams.length < 2) {
-        alert("Es müssen mindestens 2 eingecheckte Teams anwesend sein, um einen Spielplan zu erstellen!");
+      if (!teams || teams.length < 3) {
+        alert("Es müssen mindestens 3 eingecheckte Teams anwesend sein, um 2 Spiele pro Team auszulosen!");
         return;
       }
 
-      if (!confirm("Achtung: Dies setzt den aktuellen Spielplan zurück. Fortfahren?")) return;
+      if (!confirm("Achtung: Dies setzt den aktuellen Spielplan zurück und lost für jedes Team 2 Zufallsspiele aus. Fortfahren?")) return;
 
+      // 1. Alten Spielplan löschen
       await db.from('matches').delete().neq('id', 0);
 
-      const newMatches = [];
-      for (let i = 0; i < teams.length; i++) {
-        for (let j = i + 1; j < teams.length; j++) {
-          newMatches.push({
+      // 2. Pairings erstellen (Jedes Team genau 2 Spiele)
+      const matchesToInsert = [];
+      const playedCounts = {};
+      const playedAgainst = {};
+
+      teams.forEach(t => {
+        playedCounts[t.id] = 0;
+        playedAgainst[t.id] = new Set();
+      });
+
+      const shuffledTeams = [...teams].sort(() => Math.random() - 0.5);
+
+      for (let i = 0; i < shuffledTeams.length; i++) {
+        const t1 = shuffledTeams[i];
+
+        while (playedCounts[t1.id] < 2) {
+          const candidates = shuffledTeams.filter(t2 => 
+            t2.id !== t1.id && 
+            playedCounts[t2.id] < 2 && 
+            !playedAgainst[t1.id].has(t2.id)
+          );
+
+          let chosenOpponent = candidates[0];
+          if (!chosenOpponent) {
+            chosenOpponent = shuffledTeams.find(t2 => t2.id !== t1.id && !playedAgainst[t1.id].has(t2.id));
+          }
+
+          if (!chosenOpponent) break;
+
+          matchesToInsert.push({
             round: 'Vorrunde',
-            team1_id: teams[i].id,
-            team2_id: teams[j].id,
+            team1_id: t1.id,
+            team2_id: chosenOpponent.id,
             is_finished: false
           });
+
+          playedCounts[t1.id]++;
+          playedCounts[chosenOpponent.id]++;
+          playedAgainst[t1.id].add(chosenOpponent.id);
+          playedAgainst[chosenOpponent.id].add(t1.id);
         }
       }
 
-      await db.from('matches').insert(newMatches);
-      loadDashboard();
+      // 3. In Supabase speichern
+      const { error } = await db.from('matches').insert(matchesToInsert);
+
+      if (error) {
+        alert("Fehler beim Auslosen: " + error.message);
+      } else {
+        loadDashboard();
+      }
     }
 
     loadDashboard();
