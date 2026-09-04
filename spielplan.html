@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BolzplatzTour STR - King of the Hill & KO-Phase</title>
+  <title>BolzplatzTour STR - King of the Hill & KO-Baum</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -12,15 +12,15 @@
   <div class="max-w-3xl w-full space-y-6">
     <header class="text-center py-4 border-b border-stone-200">
       <h1 class="text-3xl font-black text-pink-500 uppercase tracking-wider">Turnier-Dashboard</h1>
-      <p class="text-stone-500 text-xs mt-1">Vorrunde: King of the Hill | Endrunde: K.O.-System</p>
+      <p class="text-stone-500 text-xs mt-1">Vorrunde: King of the Hill | Endrunde: K.O.-Baum bis zum Finale</p>
     </header>
 
-    <div class="flex gap-4 justify-center">
+    <div class="flex gap-3 justify-center flex-wrap">
       <button onclick="startTournament()" class="bg-pink-500 hover:bg-pink-600 text-white font-extrabold px-4 py-2 rounded-xl text-xs transition-all shadow-md cursor-pointer">
         🎲 Vorrunde Starten / Reset
       </button>
       <button onclick="startKnockoutPhase()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-4 py-2 rounded-xl text-xs transition-all shadow-md cursor-pointer">
-        🏆 K.O.-Baum Generieren
+        🏆 Kompletten K.O.-Baum Generieren
       </button>
       <button onclick="loadDashboard()" class="bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold px-4 py-2 rounded-xl text-xs border border-stone-300 transition-all cursor-pointer">
         🔄 Aktualisieren
@@ -45,7 +45,7 @@
 
     <!-- KO BAUM ANZEIGE -->
     <section class="bg-white p-5 rounded-2xl border border-stone-200 shadow-xl">
-      <h2 class="text-lg font-bold text-gray-900 uppercase tracking-wider mb-4">🏆 K.O.-Runden Spielplan</h2>
+      <h2 class="text-lg font-bold text-gray-900 uppercase tracking-wider mb-4">K.O.-Runden Spielplan</h2>
       <div id="koMatchesContainer" class="space-y-3">
         <p class="text-stone-400 text-xs text-center">Der K.O.-Baum wird erstellt, sobald die Vorrunde beendet ist.</p>
       </div>
@@ -92,13 +92,12 @@
             if (m.score_team1 > m.score_team2) {
               currentStreak[t1] = (currentStreak[t1] || 0) + 1;
               eliminated.add(t2);
-              if (currentStreak[t1] === 3) qualified.push(teamMap[t1]);
+              if (currentStreak[t1] === 3 && !qualified.find(q => q.id === t1)) qualified.push(teamMap[t1]);
             } else if (m.score_team2 > m.score_team1) {
               currentStreak[t2] = (currentStreak[t2] || 0) + 1;
               eliminated.add(t1);
-              if (currentStreak[t2] === 3) qualified.push(teamMap[t2]);
+              if (currentStreak[t2] === 3 && !qualified.find(q => q.id === t2)) qualified.push(teamMap[t2]);
             } else {
-              // Remis = Beide raus
               eliminated.add(t1);
               eliminated.add(t2);
             }
@@ -106,9 +105,9 @@
             currentMatch = m;
           }
         } else {
-          // KO Phase Spiel
           koMatches.push(m);
-          if (!m.is_finished && !currentMatch) {
+          // Erstes ungespieltes KO-Match mit feststehenden Teams ist das aktuelle Match
+          if (!m.is_finished && m.team1_id && m.team2_id && !currentMatch) {
             currentMatch = m;
           }
         }
@@ -145,7 +144,7 @@
       if (!match) {
         container.innerHTML = `
           <div class="text-center space-y-3">
-            <p class="text-stone-500 font-medium">Kein aktives Spiel im Gange.</p>
+            <p class="text-stone-500 font-medium">Kein aktives Spiel bereit.</p>
             <button onclick="nextMatch()" class="bg-pink-500 hover:bg-pink-600 text-white font-extrabold px-6 py-3 rounded-xl text-sm transition-all shadow-md cursor-pointer">
               ▶️ Nächstes Vorrunden-Match aufrufen
             </button>
@@ -163,14 +162,14 @@
           <div class="text-xs font-bold text-pink-600 bg-pink-50 px-3 py-1 rounded-full border border-pink-200">${match.round}</div>
           <div class="flex items-center justify-between w-full text-base font-bold">
             <div class="text-center w-5/12">
-              <span class="text-lg text-gray-900 block">${t1 ? t1.team_name : 'Freilos / TBD'}</span>
+              <span class="text-lg text-gray-900 block">${t1 ? t1.team_name : 'Noch Offen'}</span>
               ${!isKO ? `<span class="text-xs text-pink-600 font-normal">🔥 ${currentStreak[t1?.id] || 0} Siege in Folge</span>` : ''}
             </div>
 
             <div class="text-xl font-black text-stone-300">VS</div>
 
             <div class="text-center w-5/12">
-              <span class="text-lg text-gray-900 block">${t2 ? t2.team_name : 'Freilos / TBD'}</span>
+              <span class="text-lg text-gray-900 block">${t2 ? t2.team_name : 'Noch Offen'}</span>
               ${!isKO ? `<span class="text-xs text-stone-400 font-normal">Herausforderer</span>` : ''}
             </div>
           </div>
@@ -181,7 +180,7 @@
             <input type="number" id="s2" placeholder="0" class="w-12 text-center text-2xl font-mono font-bold text-pink-600 bg-transparent focus:outline-none">
           </div>
 
-          ${isKO ? `<p class="text-xs text-amber-700 font-semibold bg-amber-50 p-2 rounded-lg border border-amber-200">⚠️ In der K.O.-Runde gibt es kein Unentschieden! Bei Remis direkt 9m-Schießen.</p>` : ''}
+          ${isKO ? `<p class="text-xs text-amber-700 font-semibold bg-amber-50 p-2 rounded-lg border border-amber-200 text-center">⚠️ In der K.O.-Runde gibt es kein Remis! Bei Unentschieden direkt 9m-Schießen eintragen.</p>` : ''}
 
           <button onclick="saveCurrentMatch(${match.id})" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-extrabold py-3 rounded-xl text-sm transition-all shadow-md cursor-pointer">
             💾 Ergebnis Speichern & Fortfahren
@@ -198,8 +197,8 @@
       }
 
       container.innerHTML = koMatches.map(m => {
-        const t1 = teamMap[m.team1_id] ? teamMap[m.team1_id].team_name : (m.team1_id ? `Team ${m.team1_id}` : 'Freilos');
-        const t2 = teamMap[m.team2_id] ? teamMap[m.team2_id].team_name : (m.team2_id ? `Team ${m.team2_id}` : 'Freilos');
+        const t1 = teamMap[m.team1_id] ? teamMap[m.team1_id].team_name : 'Wartet auf Sieger...';
+        const t2 = teamMap[m.team2_id] ? teamMap[m.team2_id].team_name : 'Wartet auf Sieger...';
         const isFinished = m.is_finished;
 
         return `
@@ -224,7 +223,7 @@
       const { data: match } = await db.from('matches').select('*').eq('id', matchId).single();
 
       if (match.round !== 'King of the Hill' && s1 === s2) {
-        alert("In der K.O.-Phase darf ein Spiel nicht Unentschieden enden! Bitte tragt das Ergebnis nach dem Entscheidungsschießen (z.B. 9m) ein.");
+        alert("In der K.O.-Phase darf ein Spiel nicht Unentschieden enden! Bitte tragt das Ergebnis nach dem 9m-Schießen ein.");
         return;
       }
 
@@ -237,7 +236,30 @@
       if (match.round === 'King of the Hill') {
         await nextMatch();
       } else {
+        // KO-Gewinner in das nächste Spiel weiterschieben
+        const winnerId = s1 > s2 ? match.team1_id : match.team2_id;
+        await advanceWinnerInKO(match, winnerId);
         loadDashboard();
+      }
+    }
+
+    async function advanceWinnerInKO(completedMatch, winnerId) {
+      const { data: allKO } = await db.from('matches').select('*').neq('round', 'King of the Hill').order('id', { ascending: true });
+      
+      // Finde das nachfolgende Spiel im K.O.-Baum
+      const currentIndex = allKO.findIndex(m => m.id === completedMatch.id);
+      if (currentIndex === -1) return;
+
+      // Die Logik leitet Sieger von Spiel N weiter
+      const nextMatchIndex = Math.floor(currentIndex / 2) + Math.ceil(allKO.length / 2);
+      
+      if (allKO[nextMatchIndex]) {
+        const targetMatch = allKO[nextMatchIndex];
+        if (!targetMatch.team1_id) {
+          await db.from('matches').update({ team1_id: winnerId }).eq('id', targetMatch.id);
+        } else if (!targetMatch.team2_id) {
+          await db.from('matches').update({ team2_id: winnerId }).eq('id', targetMatch.id);
+        }
       }
     }
 
@@ -293,20 +315,13 @@
       const availableTeams = teams.filter(t => !eliminated.has(t.id) && !qualified.has(t.id) && t.id !== kingId);
 
       if (availableTeams.length === 0 && !kingId) {
-        alert("Vorrunde beendet! Klicke auf '🏆 K.O.-Baum Generieren', um die Endrunde zu starten.");
+        alert("Vorrunde beendet! Klicke auf '🏆 Kompletten K.O.-Baum Generieren', um den Turnierbaum zu erstellen.");
         loadDashboard();
         return;
       }
 
-      let team1Id, team2Id;
-
-      if (kingId) {
-        team1Id = kingId;
-        team2Id = availableTeams[0]?.id;
-      } else {
-        team1Id = availableTeams[0]?.id;
-        team2Id = availableTeams[1]?.id;
-      }
+      let team1Id = kingId ? kingId : availableTeams[0]?.id;
+      let team2Id = kingId ? availableTeams[0]?.id : availableTeams[1]?.id;
 
       if (!team1Id || !team2Id) {
         alert("Keine weiteren Teams verfügbar für die Vorrunde!");
@@ -326,7 +341,7 @@
       loadDashboard();
     }
 
-    // GENERIERT DEN FAIR-PLAY K.O.-BAUM MIT LUCKY LOSER (MEISTE TORE)
+    // GENERIERT DEN KOMPLETTEN TURNIERBAUM BIS ZUM FINALE
     async function startKnockoutPhase() {
       const { data: teams } = await db.from('teams').select('*');
       const { data: matches } = await db.from('matches').select('*').eq('round', 'King of the Hill');
@@ -336,7 +351,7 @@
 
       const qualifiedIds = [];
       const currentStreak = {};
-      const teamGoals = {}; // Speichert die erzielten Tore aller Teams
+      const teamGoals = {};
       const eliminatedIds = new Set();
 
       teams.forEach(t => teamGoals[t.id] = 0);
@@ -373,9 +388,8 @@
         return;
       }
 
-      // Prüfen, ob Anzahl ungerade ist
+      // Bei ungerader Zahl: Lucky Loser mit den meisten Toren nachrücken lassen
       if (qualifiedIds.length % 2 !== 0) {
-        // Suche nach dem ausgeschiedenen Team mit den MEISTEN TOREN (Lucky Loser)
         let luckyLoserId = null;
         let maxGoals = -1;
 
@@ -391,22 +405,40 @@
 
         if (luckyLoserId) {
           qualifiedIds.push(luckyLoserId);
-          alert(`ℹ️ Ungerade Teamzahl (${qualifiedIds.length - 1} Teams): ${teamMap[luckyLoserId].team_name} rückt als 'Lucky Loser' in die K.O.-Runde nach (Meiste Tore der Ausgeschiedenen: ${maxGoals} Tore)!`);
+          alert(`ℹ️ Ungerade Teamzahl (${qualifiedIds.length - 1} Teams): ${teamMap[luckyLoserId].team_name} rückt als 'Lucky Loser' nach (Meiste Tore: ${maxGoals})!`);
         }
       }
 
-      if (!confirm(`Es treten ${qualifiedIds.length} Teams in der K.O.-Endrunde an. K.O.-Baum jetzt erstellen?`)) return;
+      if (!confirm(`Es treten ${qualifiedIds.length} Teams an. Soll der komplette K.O.-Baum bis zum FINALE erstellt werden?`)) return;
 
       const shuffled = [...qualifiedIds].sort(() => Math.random() - 0.5);
       const newMatches = [];
 
+      // 1. Erste Runde K.O.
+      let roundName = shuffled.length === 2 ? '🏆 Finale' : (shuffled.length === 4 ? 'Halbfinale' : 'K.O. Runde 1');
       for (let i = 0; i < shuffled.length; i += 2) {
         newMatches.push({
-          round: 'K.O. Runde 1',
+          round: roundName,
           team1_id: shuffled[i],
           team2_id: shuffled[i + 1],
           is_finished: false
         });
+      }
+
+      // 2. Folge-Runden erstellen (z.B. Halbfinale & Finale als leere Plätze vorab vorbereiten)
+      let currentRoundCount = shuffled.length / 2;
+      while (currentRoundCount > 1) {
+        currentRoundCount = currentRoundCount / 2;
+        let rName = currentRoundCount === 1 ? '🏆 Finale' : (currentRoundCount === 2 ? 'Halbfinale' : 'Viertelfinale');
+        
+        for (let i = 0; i < currentRoundCount; i++) {
+          newMatches.push({
+            round: rName,
+            team1_id: null,
+            team2_id: null,
+            is_finished: false
+          });
+        }
       }
 
       await db.from('matches').insert(newMatches);
