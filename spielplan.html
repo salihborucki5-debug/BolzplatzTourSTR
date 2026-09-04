@@ -7,53 +7,52 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-gray-900 text-white min-h-screen p-4 flex flex-col items-center">
+<body class="bg-[#fcfbf7] text-gray-900 min-h-screen p-4 flex flex-col items-center">
 
   <div class="max-w-3xl w-full space-y-6">
-    <header class="text-center py-4 border-b border-gray-800">
-      <h1 class="text-3xl font-black text-green-400 uppercase tracking-wider">⚽ Live-Spielplan & Tabelle</h1>
-      <p class="text-gray-400 text-xs mt-1">BolzplatzTour STR Turnier-Dashboard</p>
+    <header class="text-center py-4 border-b border-stone-200">
+      <h1 class="text-3xl font-black text-pink-500 uppercase tracking-wider">⚽ Live-Spielplan & Tabelle</h1>
+      <p class="text-stone-500 text-xs mt-1">BolzplatzTour STR Turnier-Dashboard</p>
     </header>
 
     <div class="flex gap-4 justify-center">
-      <button onclick="generateSchedule()" class="bg-green-500 hover:bg-green-600 text-black font-extrabold px-4 py-2 rounded-xl text-xs transition-all shadow-lg cursor-pointer">
+      <button onclick="generateSchedule()" class="bg-pink-500 hover:bg-pink-600 text-white font-extrabold px-4 py-2 rounded-xl text-xs transition-all shadow-md cursor-pointer">
         🎲 Spielplan automatisch auslosen
       </button>
-      <button onclick="loadDashboard()" class="bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold px-4 py-2 rounded-xl text-xs border border-gray-700 cursor-pointer">
+      <button onclick="loadDashboard()" class="bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold px-4 py-2 rounded-xl text-xs border border-stone-300 transition-all cursor-pointer">
         🔄 Daten Aktualisieren
       </button>
     </div>
 
-    <section class="bg-gray-800 p-5 rounded-2xl border border-gray-700 shadow-xl">
-      <h2 class="text-lg font-bold text-green-400 uppercase tracking-wider mb-4">🏆 Live-Tabelle</h2>
+    <section class="bg-white p-5 rounded-2xl border border-stone-200 shadow-xl">
+      <h2 class="text-lg font-bold text-pink-600 uppercase tracking-wider mb-4">🏆 Live-Tabelle</h2>
       <div class="overflow-x-auto">
         <table class="w-full text-left text-sm">
           <thead>
-            <tr class="text-gray-400 border-b border-gray-700 text-xs uppercase">
+            <tr class="text-stone-500 border-b border-stone-200 text-xs uppercase">
               <th class="p-2">Platz</th>
               <th class="p-2">Team</th>
               <th class="p-2 text-center">Spiele</th>
               <th class="p-2 text-center">Tore</th>
-              <th class="p-2 text-center font-bold text-green-400">Punkte</th>
+              <th class="p-2 text-center font-bold text-pink-600">Punkte</th>
             </tr>
           </thead>
           <tbody id="tableBody">
-            <tr><td colspan="5" class="p-4 text-center text-gray-500">Lade Tabelle...</td></tr>
+            <tr><td colspan="5" class="p-4 text-center text-stone-400">Lade Tabelle...</td></tr>
           </tbody>
         </table>
       </div>
     </section>
 
-    <section class="bg-gray-800 p-5 rounded-2xl border border-gray-700 shadow-xl">
-      <h2 class="text-lg font-bold text-green-400 uppercase tracking-wider mb-4">⚔️ Anstehende & Beendete Spiele</h2>
+    <section class="bg-white p-5 rounded-2xl border border-stone-200 shadow-xl">
+      <h2 class="text-lg font-bold text-pink-600 uppercase tracking-wider mb-4">⚔️ Anstehende & Beendete Spiele</h2>
       <div id="matchesContainer" class="space-y-3">
-        <p class="text-center text-gray-500 text-xs">Lade Spiele...</p>
+        <p class="text-center text-stone-400 text-xs">Lade Spiele...</p>
       </div>
     </section>
   </div>
 
   <script>
-    // DEINE SUPABASE-DATEN (KORRIGIERT)
     const SUPABASE_URL = "https://rsujqzvudncqrpdwikyr.supabase.co";
     const SUPABASE_KEY = "sb_publishable_9c2p0DsLdUh4K4wq3xYIHw_ah2wyOQu";
 
@@ -107,17 +106,17 @@
 
       const tbody = document.getElementById('tableBody');
       if (sorted.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-gray-500">Keine Teams gefunden.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-stone-400">Keine Teams gefunden.</td></tr>';
         return;
       }
 
       tbody.innerHTML = sorted.map((t, index) => `
-        <tr class="border-b border-gray-700/50 hover:bg-gray-800/50">
-          <td class="p-2 font-bold text-gray-400">#${index + 1}</td>
-          <td class="p-2 font-bold text-white">${t.name}</td>
+        <tr class="border-b border-stone-100 hover:bg-stone-50">
+          <td class="p-2 font-bold text-stone-400">#${index + 1}</td>
+          <td class="p-2 font-bold text-gray-900">${t.name}</td>
           <td class="p-2 text-center">${t.played}</td>
           <td class="p-2 text-center font-mono">${t.goalsFor}:${t.goalsAgainst}</td>
-          <td class="p-2 text-center font-bold text-green-400">${t.points}</td>
+          <td class="p-2 text-center font-bold text-pink-600">${t.points}</td>
         </tr>
       `).join('');
     }
@@ -128,23 +127,23 @@
       teams.forEach(t => teamMap[t.id] = t.team_name);
 
       if (matches.length === 0) {
-        container.innerHTML = '<p class="text-center text-gray-500 text-xs">Noch keine Spiele ausgelost.</p>';
+        container.innerHTML = '<p class="text-center text-stone-400 text-xs">Noch keine Spiele ausgelost.</p>';
         return;
       }
 
       container.innerHTML = matches.map(m => `
-        <div class="bg-gray-900 p-4 rounded-xl border border-gray-700 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div class="text-xs text-gray-400 font-mono">${m.round || 'Vorrunde'}</div>
+        <div class="bg-stone-50 p-4 rounded-xl border border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div class="text-xs text-stone-400 font-mono">${m.round || 'Vorrunde'}</div>
           <div class="flex items-center gap-3 text-sm font-bold w-full sm:w-auto justify-center">
-            <span class="text-right w-32 truncate">${teamMap[m.team1_id] || 'Team 1'}</span>
-            <div class="flex gap-1 items-center bg-gray-800 px-3 py-1 rounded-lg border border-gray-700">
-              <input type="number" id="s1_${m.id}" value="${m.score_team1 ?? ''}" placeholder="0" class="w-10 bg-gray-900 text-center font-mono text-green-400 rounded focus:outline-none">
-              <span>:</span>
-              <input type="number" id="s2_${m.id}" value="${m.score_team2 ?? ''}" placeholder="0" class="w-10 bg-gray-900 text-center font-mono text-green-400 rounded focus:outline-none">
+            <span class="text-right w-32 truncate text-gray-900">${teamMap[m.team1_id] || 'Team 1'}</span>
+            <div class="flex gap-1 items-center bg-white px-3 py-1 rounded-lg border border-stone-300">
+              <input type="number" id="s1_${m.id}" value="${m.score_team1 ?? ''}" placeholder="0" class="w-10 bg-transparent text-center font-mono text-pink-600 font-bold focus:outline-none">
+              <span class="text-stone-400">:</span>
+              <input type="number" id="s2_${m.id}" value="${m.score_team2 ?? ''}" placeholder="0" class="w-10 bg-transparent text-center font-mono text-pink-600 font-bold focus:outline-none">
             </div>
-            <span class="text-left w-32 truncate">${teamMap[m.team2_id] || 'Team 2'}</span>
+            <span class="text-left w-32 truncate text-gray-900">${teamMap[m.team2_id] || 'Team 2'}</span>
           </div>
-          <button onclick="saveScore(${m.id})" class="bg-green-500 hover:bg-green-600 text-black font-extrabold px-3 py-1 rounded-lg text-xs cursor-pointer">
+          <button onclick="saveScore(${m.id})" class="bg-pink-500 hover:bg-pink-600 text-white font-extrabold px-3 py-1 rounded-lg text-xs transition-all cursor-pointer">
             💾 Speichern
           </button>
         </div>
