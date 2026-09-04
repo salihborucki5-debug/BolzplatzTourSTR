@@ -3,38 +3,56 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BolzplatzTour STR - Laptop Check-in</title>
+  <title>BolzplatzTour STR - Orga Check-In</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-gray-900 text-white min-h-screen p-6 flex flex-col items-center">
+<body class="bg-gray-900 text-white min-h-screen p-4 flex flex-col items-center">
 
-  <div class="max-w-lg w-full bg-gray-800 p-6 rounded-2xl shadow-2xl border border-gray-700">
-    <header class="text-center mb-6">
-      <h1 class="text-2xl font-black text-green-400">💻 Laptop Check-In Station</h1>
-      <p class="text-gray-400 text-xs mt-1">USB-Scanner anschließen & Code einlesen</p>
+  <div class="max-w-xl w-full space-y-6">
+    <header class="text-center py-4 border-b border-gray-800">
+      <h1 class="text-2xl font-black text-green-400 uppercase tracking-wider">💻 Laptop Check-In Station</h1>
+      <p class="text-gray-400 text-xs mt-1">USB Scanner Bereit halten</p>
     </header>
 
-    <!-- AUTOMATISCHES SCAN-FELD -->
-    <form id="scanForm" onsubmit="handleScan(event)" class="mb-6">
-      <label class="block text-xs font-bold uppercase text-gray-400 mb-2">Scanner-Eingabe (oder Code tippen):</label>
-      <input type="text" id="codeInput" autofocus placeholder="Hier reinklicken & scannen..." 
-        class="w-full bg-gray-900 border-2 border-green-500 rounded-xl px-4 py-3 text-lg font-mono text-center focus:outline-none focus:ring-2 focus:ring-green-400">
-    </form>
-
-    <!-- STATUS/ERGEBNIS -->
-    <div id="statusResult" class="hidden p-4 rounded-xl text-center space-y-2 mb-6">
-      <h2 id="resultTitle" class="text-xl font-bold"></h2>
-      <p id="resultDetails" class="text-sm text-gray-300"></p>
+    <!-- SCANNER EINGABE -->
+    <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-2xl">
+      <label class="block text-xs font-bold uppercase text-green-400 mb-2">Code Scannen oder Tippen:</label>
+      <input type="text" id="scanInput" autofocus placeholder="Klicke hier & scanne den QR-Code..."
+        onchange="processScan()"
+        class="w-full bg-gray-900 border-2 border-green-500 rounded-xl px-4 py-3 text-lg font-mono text-center tracking-widest text-white focus:outline-none focus:ring-2 focus:ring-green-400">
+      <p class="text-2xs text-gray-500 mt-2 text-center">Tipp: Nach dem Scannen automatisch Enter drücken lassen.</p>
     </div>
 
-    <!-- LIVE-LISTE DER TEAMS -->
-    <div>
-      <h3 class="text-sm font-bold uppercase text-gray-400 mb-3">Angemeldete Teams</h3>
-      <ul id="teamList" class="space-y-2 max-h-60 overflow-y-auto">
-        <li class="text-xs text-gray-500">Lade Teams...</li>
-      </ul>
+    <!-- SCAN-RESULTAT ANZEIGE -->
+    <div id="resultBox" class="hidden p-4 rounded-2xl border transition-all">
+      <h2 id="resultTitle" class="text-xl font-bold mb-1"></h2>
+      <p id="resultDetails" class="text-sm"></p>
     </div>
+
+    <!-- GESAMTE TEAMLISTE (ALLE ANMELDUNGEN) -->
+    <section class="bg-gray-800 p-5 rounded-2xl border border-gray-700 shadow-xl">
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="text-sm font-bold text-gray-300 uppercase tracking-wider">📋 Alle angemeldeten Teams</h2>
+        <button onclick="loadTeamList()" class="text-2xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-gray-300">🔄 Aktualisieren</button>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="text-gray-400 border-b border-gray-700">
+              <th class="p-2">Status</th>
+              <th class="p-2">Team & Kapitän</th>
+              <th class="p-2 text-center">U18</th>
+              <th class="p-2 text-right">Code</th>
+            </tr>
+          </thead>
+          <tbody id="teamTableBody">
+            <tr><td colspan="4" class="p-4 text-center text-gray-500">Lade Teams...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
   </div>
 
   <script>
@@ -44,61 +62,63 @@
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    async function handleScan(e) {
-      e.preventDefault();
-      const input = document.getElementById('codeInput');
-      const code = input.value.trim();
-      if (!code) return;
+    // Alle Anmeldungen laden und auflisten
+    async function loadTeamList() {
+      const { data: teams, error } = await supabase.from('teams').select('*').order('created_at', { ascending: false });
+      const tbody = document.getElementById('teamTableBody');
 
-      // Check-in in Supabase durchführen
-      const { data, error } = await supabase
-        .from('teams')
-        .update({ checked_in: true })
-        .eq('team_code', code)
-        .select();
-
-      const resultBox = document.getElementById('statusResult');
-      resultBox.classList.remove('hidden');
-
-      if (error || !data || data.length === 0) {
-        resultBox.className = "p-4 rounded-xl text-center bg-red-900/50 border border-red-500 text-red-200 animate-pulse";
-        document.getElementById('resultTitle').innerText = "❌ Code ungültig!";
-        document.getElementById('resultDetails').innerText = "Kein Team mit Code: " + code;
-      } else {
-        const team = data[0];
-        resultBox.className = "p-4 rounded-xl text-center bg-green-900/50 border border-green-500 text-green-200";
-        document.getElementById('resultTitle').innerText = "🟢 " + team.team_name + " eingecheckt!";
-        document.getElementById('resultDetails').innerText = `Spieler: ${team.player_count} | U18: ${team.has_underage ? 'JA ⚠️' : 'Nein'}`;
-      }
-
-      input.value = ""; // Feld leeren
-      input.focus();   // Fokus sofort wieder aufs Eingabefeld setzen für den nächsten Scan
-      loadTeams();
-    }
-
-    async function loadTeams() {
-      const { data: teams } = await supabase.from('teams').select('*').order('created_at', { ascending: false });
-      const list = document.getElementById('teamList');
-      
       if (!teams || teams.length === 0) {
-        list.innerHTML = '<li class="text-xs text-gray-500">Noch keine Teams vorhanden.</li>';
+        tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">Noch keine Teams angemeldet.</td></tr>';
         return;
       }
 
-      list.innerHTML = teams.map(t => `
-        <li class="p-3 bg-gray-700/50 rounded-lg border border-gray-600 flex justify-between items-center text-xs">
-          <div>
-            <span class="font-bold text-white">${t.team_name}</span> 
-            <span class="text-gray-400">(${t.team_code})</span>
-          </div>
-          <span class="${t.checked_in ? 'text-green-400 font-bold' : 'text-gray-400'}">
-            ${t.checked_in ? '🟢 Anwesend' : '🔴 Nicht da'}
-          </span>
-        </li>
+      tbody.innerHTML = teams.map(t => `
+        <tr class="border-b border-gray-700/50 hover:bg-gray-800/50">
+          <td class="p-2 font-bold">${t.checked_in ? '🟢 Anwesend' : '🔴 Ausstehend'}</td>
+          <td class="p-2 font-bold text-white">${t.team_name}</td>
+          <td class="p-2 text-center">${t.has_underage ? '⚠️ Ja' : 'Nein'}</td>
+          <td class="p-2 text-right font-mono text-green-400">${t.team_code}</td>
+        </tr>
       `).join('');
     }
 
-    loadTeams();
+    async function processScan() {
+      const input = document.getElementById('scanInput');
+      const code = input.value.trim();
+      if (!code) return;
+
+      const { data: teams, error } = await supabase.from('teams').select('*').eq('team_code', code);
+      const box = document.getElementById('resultBox');
+      const title = document.getElementById('resultTitle');
+      const details = document.getElementById('resultDetails');
+
+      box.classList.remove('hidden', 'bg-green-900/40', 'border-green-500', 'bg-red-900/40', 'border-red-500');
+
+      if (teams && teams.length > 0) {
+        const team = teams[0];
+        
+        // Status auf Anwesend setzen
+        await supabase.from('teams').update({ checked_in: true }).eq('id', team.id);
+
+        box.classList.add('bg-green-900/40', 'border-green-500');
+        title.innerText = `✅ Check-In Erfolgreich: ${team.team_name}`;
+        title.className = "text-xl font-bold text-green-400 mb-1";
+        
+        let u18Warning = team.has_underage ? "<br><span class='text-yellow-400 font-bold'>⚠️ U18 Spieler dabei: Muttizettel prüfen!</span>" : "";
+        details.innerHTML = `Spieleranzahl: ${team.player_count} | Code: ${team.team_code}${u18Warning}`;
+      } else {
+        box.classList.add('bg-red-900/40', 'border-red-500');
+        title.innerText = "❌ Code nicht gefunden!";
+        title.className = "text-xl font-bold text-red-400 mb-1";
+        details.innerText = `Der Code "${code}" ist in der Datenbank nicht registriert.`;
+      }
+
+      input.value = "";
+      input.focus();
+      loadTeamList(); // Liste aktualisieren
+    }
+
+    loadTeamList();
   </script>
 </body>
 </html>
