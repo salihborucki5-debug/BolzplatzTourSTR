@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BolzplatzTour STR - Live Spielplan</title>
+  <title>BolzplatzTour STR - King of the Hill</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -11,43 +11,40 @@
 
   <div class="max-w-3xl w-full space-y-6">
     <header class="text-center py-4 border-b border-stone-200">
-      <h1 class="text-3xl font-black text-pink-500 uppercase tracking-wider">⚽ Live-Spielplan & Tabelle</h1>
-      <p class="text-stone-500 text-xs mt-1">BolzplatzTour STR Turnier-Dashboard</p>
+      <h1 class="text-3xl font-black text-pink-500 uppercase tracking-wider">Gewinner Bleibt</h1>
+      <p class="text-stone-500 text-xs mt-1">3 Siege in Folge = Endrunde | Niederlage/Remis = K.O.</p>
     </header>
 
     <div class="flex gap-4 justify-center">
-      <button onclick="generateSchedule()" class="bg-pink-500 hover:bg-pink-600 text-white font-extrabold px-4 py-2 rounded-xl text-xs transition-all shadow-md cursor-pointer">
-        🎲 Spielplan auslosen (2 Spiele / Team)
+      <button onclick="startTournament()" class="bg-pink-500 hover:bg-pink-600 text-white font-extrabold px-4 py-2 rounded-xl text-xs transition-all shadow-md cursor-pointer">
+        🎲 Turnier Starten / Zurücksetzen
       </button>
       <button onclick="loadDashboard()" class="bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold px-4 py-2 rounded-xl text-xs border border-stone-300 transition-all cursor-pointer">
-        🔄 Daten Aktualisieren
+        🔄 Aktualisieren
       </button>
     </div>
 
-    <section class="bg-white p-5 rounded-2xl border border-stone-200 shadow-xl">
-      <h2 class="text-lg font-bold text-pink-600 uppercase tracking-wider mb-4">🏆 Live-Tabelle</h2>
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm">
-          <thead>
-            <tr class="text-stone-500 border-b border-stone-200 text-xs uppercase">
-              <th class="p-2">Platz</th>
-              <th class="p-2">Team</th>
-              <th class="p-2 text-center">Spiele</th>
-              <th class="p-2 text-center">Tore</th>
-              <th class="p-2 text-center font-bold text-pink-600">Punkte</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody">
-            <tr><td colspan="5" class="p-4 text-center text-stone-400">Lade Tabelle...</td></tr>
-          </tbody>
-        </table>
+    <!-- QUALIFIZIERTE TEAMS -->
+    <section class="bg-emerald-50 p-5 rounded-2xl border border-emerald-200 shadow-sm">
+      <h2 class="text-lg font-bold text-emerald-700 uppercase tracking-wider mb-2">⭐ Qualifiziert für die Endrunde (3 Siege in Folge)</h2>
+      <ul id="qualifiedList" class="list-disc list-inside text-sm font-bold text-emerald-900 space-y-1">
+        <li class="text-stone-400 font-normal">Noch kein Team qualifiziert.</li>
+      </ul>
+    </section>
+
+    <!-- AKTUELLES SPIEL -->
+    <section class="bg-white p-6 rounded-2xl border-2 border-pink-500 shadow-xl">
+      <h2 class="text-lg font-bold text-pink-600 uppercase tracking-wider mb-4 text-center">⚔️ Aktuelles Match</h2>
+      <div id="currentMatchContainer">
+        <p class="text-center text-stone-400 text-sm">Lade match...</p>
       </div>
     </section>
 
+    <!-- ELIMINIERTE TEAMS -->
     <section class="bg-white p-5 rounded-2xl border border-stone-200 shadow-xl">
-      <h2 class="text-lg font-bold text-pink-600 uppercase tracking-wider mb-4">⚔️ Anstehende & Beendete Spiele</h2>
-      <div id="matchesContainer" class="space-y-3">
-        <p class="text-center text-stone-400 text-xs">Lade Spiele...</p>
+      <h2 class="text-sm font-bold text-rose-600 uppercase tracking-wider mb-3">💀 Ausgeschiedene Teams</h2>
+      <div id="eliminatedContainer" class="flex flex-wrap gap-2 text-xs">
+        <span class="text-stone-400">Keine.</span>
       </div>
     </section>
   </div>
@@ -59,179 +56,240 @@
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function loadDashboard() {
-      const { data: teams } = await db.from('teams').select('*');
-      const { data: matches } = await db.from('matches').select('*');
+      const { data: teams } = await db.from('teams').select('*').order('id', { ascending: true });
+      const { data: matches } = await db.from('matches').select('*').order('id', { ascending: true });
 
-      renderTable(teams || [], matches || []);
-      renderMatches(matches || [], teams || []);
-    }
+      if (!teams || teams.length === 0) return;
 
-    function renderTable(teams, matches) {
-      const stats = {};
-      teams.forEach(t => {
-        stats[t.id] = { name: t.team_name, played: 0, goalsFor: 0, goalsAgainst: 0, points: 0 };
-      });
+      const teamMap = {};
+      teams.forEach(t => teamMap[t.id] = t);
 
-      matches.forEach(m => {
-        if (m.is_finished && m.score_team1 !== null && m.score_team2 !== null) {
-          const t1 = stats[m.team1_id];
-          const t2 = stats[m.team2_id];
+      // Berechne den aktuellen Turnier-Status
+      const qualified = [];
+      const eliminated = new Set();
+      const currentStreak = {}; // Team-ID -> Siege in Folge
 
-          if (t1 && t2) {
-            t1.played++;
-            t2.played++;
-            t1.goalsFor += m.score_team1;
-            t1.goalsAgainst += m.score_team2;
-            t2.goalsFor += m.score_team2;
-            t2.goalsAgainst += m.score_team1;
+      teams.forEach(t => currentStreak[t.id] = 0);
 
-            if (m.score_team1 > m.score_team2) {
-              t1.points += 3;
-            } else if (m.score_team2 > m.score_team1) {
-              t2.points += 3;
-            } else {
-              t1.points += 1;
-              t2.points += 1;
+      let currentMatch = null;
+
+      (matches || []).forEach(m => {
+        if (m.is_finished) {
+          const t1 = m.team1_id;
+          const t2 = m.team2_id;
+
+          if (m.score_team1 > m.score_team2) {
+            // Team 1 gewinnt
+            currentStreak[t1] = (currentStreak[t1] || 0) + 1;
+            eliminated.add(t2);
+
+            if (currentStreak[t1] === 3) {
+              qualified.push(teamMap[t1]);
             }
+          } else if (m.score_team2 > m.score_team1) {
+            // Team 2 gewinnt
+            currentStreak[t2] = (currentStreak[t2] || 0) + 1;
+            eliminated.add(t1);
+
+            if (currentStreak[t2] === 3) {
+              qualified.push(teamMap[t2]);
+            }
+          } else {
+            // UNENTSCHIEDEN -> Beide Raus!
+            eliminated.add(t1);
+            eliminated.add(t2);
           }
+        } else {
+          currentMatch = m;
         }
       });
 
-      const sorted = Object.values(stats).sort((a, b) => {
-        if (b.points !== a.points) return b.points - a.points;
-        const diffA = a.goalsFor - a.goalsAgainst;
-        const diffB = b.goalsFor - b.goalsAgainst;
-        return diffB - diffA;
-      });
-
-      const tbody = document.getElementById('tableBody');
-      if (sorted.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-stone-400">Keine Teams gefunden.</td></tr>';
-        return;
-      }
-
-      tbody.innerHTML = sorted.map((t, index) => `
-        <tr class="border-b border-stone-100 hover:bg-stone-50">
-          <td class="p-2 font-bold text-stone-400">#${index + 1}</td>
-          <td class="p-2 font-bold text-gray-900">${t.name}</td>
-          <td class="p-2 text-center">${t.played}</td>
-          <td class="p-2 text-center font-mono">${t.goalsFor}:${t.goalsAgainst}</td>
-          <td class="p-2 text-center font-bold text-pink-600">${t.points}</td>
-        </tr>
-      `).join('');
+      renderQualified(qualified);
+      renderEliminated(eliminated, teamMap);
+      renderCurrentMatch(currentMatch, teamMap, currentStreak, teams, eliminated, qualified, matches || []);
     }
 
-    function renderMatches(matches, teams) {
-      const container = document.getElementById('matchesContainer');
-      const teamMap = {};
-      teams.forEach(t => teamMap[t.id] = t.team_name);
+    function renderQualified(qualified) {
+      const list = document.getElementById('qualifiedList');
+      if (qualified.length === 0) {
+        list.innerHTML = '<li class="text-stone-400 font-normal">Noch kein Team qualifiziert.</li>';
+        return;
+      }
+      list.innerHTML = qualified.map(t => `<li>🎉 ${t.team_name} (Kapitän: ${t.captain_info})</li>`).join('');
+    }
 
-      if (matches.length === 0) {
-        container.innerHTML = '<p class="text-center text-stone-400 text-xs">Noch keine Spiele ausgelost.</p>';
+    function renderEliminated(eliminatedSet, teamMap) {
+      const container = document.getElementById('eliminatedContainer');
+      if (eliminatedSet.size === 0) {
+        container.innerHTML = '<span class="text-stone-400">Keine.</span>';
+        return;
+      }
+      const names = Array.from(eliminatedSet).map(id => teamMap[id] ? teamMap[id].team_name : `Team ${id}`);
+      container.innerHTML = names.map(n => `<span class="bg-rose-100 text-rose-800 px-2.5 py-1 rounded-lg border border-rose-200 font-semibold">${n}</span>`).join('');
+    }
+
+    function renderCurrentMatch(match, teamMap, currentStreak, teams, eliminated, qualified, allMatches) {
+      const container = document.getElementById('currentMatchContainer');
+
+      if (!match) {
+        container.innerHTML = `
+          <div class="text-center space-y-3">
+            <p class="text-stone-500 font-medium">Kein aktives Spiel. Nächstes Spiel vorbereiten?</p>
+            <button onclick="nextMatch()" class="bg-pink-500 hover:bg-pink-600 text-white font-extrabold px-6 py-3 rounded-xl text-sm transition-all shadow-md cursor-pointer">
+              ▶️ Nächstes Match aufrufen
+            </button>
+          </div>
+        `;
         return;
       }
 
-      container.innerHTML = matches.map(m => `
-        <div class="bg-stone-50 p-4 rounded-xl border border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div class="text-xs text-stone-400 font-mono">${m.round || 'Vorrunde'}</div>
-          <div class="flex items-center gap-3 text-sm font-bold w-full sm:w-auto justify-center">
-            <span class="text-right w-32 truncate text-gray-900">${teamMap[m.team1_id] || 'Team 1'}</span>
-            <div class="flex gap-1 items-center bg-white px-3 py-1 rounded-lg border border-stone-300">
-              <input type="number" id="s1_${m.id}" value="${m.score_team1 ?? ''}" placeholder="0" class="w-10 bg-transparent text-center font-mono text-pink-600 font-bold focus:outline-none">
-              <span class="text-stone-400">:</span>
-              <input type="number" id="s2_${m.id}" value="${m.score_team2 ?? ''}" placeholder="0" class="w-10 bg-transparent text-center font-mono text-pink-600 font-bold focus:outline-none">
+      const t1 = teamMap[match.team1_id];
+      const t2 = teamMap[match.team2_id];
+
+      const streak1 = currentStreak[t1.id] || 0;
+
+      container.innerHTML = `
+        <div class="flex flex-col items-center gap-4">
+          <div class="flex items-center justify-between w-full text-base font-bold">
+            <div class="text-center w-5/12">
+              <span class="text-lg text-gray-900 block">${t1 ? t1.team_name : 'Team 1'}</span>
+              <span class="text-xs text-pink-600 font-normal">🔥 ${streak1} Siege in Folge</span>
             </div>
-            <span class="text-left w-32 truncate text-gray-900">${teamMap[m.team2_id] || 'Team 2'}</span>
+
+            <div class="text-xl font-black text-stone-300">VS</div>
+
+            <div class="text-center w-5/12">
+              <span class="text-lg text-gray-900 block">${t2 ? t2.team_name : 'Team 2'}</span>
+              <span class="text-xs text-stone-400 font-normal">Herausforderer</span>
+            </div>
           </div>
-          <button onclick="saveScore(${m.id})" class="bg-pink-500 hover:bg-pink-600 text-white font-extrabold px-3 py-1 rounded-lg text-xs transition-all cursor-pointer">
-            💾 Speichern
+
+          <div class="flex gap-2 items-center bg-stone-50 px-4 py-2 rounded-xl border border-stone-200 my-2">
+            <input type="number" id="s1" placeholder="0" class="w-12 text-center text-2xl font-mono font-bold text-pink-600 bg-transparent focus:outline-none">
+            <span class="text-xl font-bold text-stone-400">:</span>
+            <input type="number" id="s2" placeholder="0" class="w-12 text-center text-2xl font-mono font-bold text-pink-600 bg-transparent focus:outline-none">
+          </div>
+
+          <button onclick="saveCurrentMatch(${match.id})" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-extrabold py-3 rounded-xl text-sm transition-all shadow-md cursor-pointer">
+            💾 Ergebnis Speichern & Nächstes Spiel
           </button>
         </div>
-      `).join('');
+      `;
     }
 
-    async function saveScore(matchId) {
-      const s1 = parseInt(document.getElementById(`s1_${matchId}`).value);
-      const s2 = parseInt(document.getElementById(`s2_${matchId}`).value);
+    async function saveCurrentMatch(matchId) {
+      const s1 = parseInt(document.getElementById('s1').value);
+      const s2 = parseInt(document.getElementById('s2').value);
 
       if (isNaN(s1) || isNaN(s2)) {
-        alert("Bitte trage für beide Teams Tore ein!");
+        alert("Bitte trage für beide Teams das Ergebnis ein!");
         return;
       }
 
+      // 1. Ergebnis eintragen
       await db.from('matches').update({
         score_team1: s1,
         score_team2: s2,
         is_finished: true
       }).eq('id', matchId);
 
-      loadDashboard();
+      // 2. Direkt nächstes Match aufrufen
+      await nextMatch();
     }
 
-    async function generateSchedule() {
-      const { data: teams } = await db.from('teams').select('*').eq('checked_in', true);
+    async function nextMatch() {
+      const { data: teams } = await db.from('teams').select('*').eq('checked_in', true).order('id', { ascending: true });
+      const { data: matches } = await db.from('matches').select('*').order('id', { ascending: true });
 
-      if (!teams || teams.length < 3) {
-        alert("Es müssen mindestens 3 eingecheckte Teams anwesend sein, um 2 Spiele pro Team auszulosen!");
+      if (!teams || teams.length < 2) {
+        alert("Es sind nicht genug Teams eingecheckt!");
         return;
       }
 
-      if (!confirm("Achtung: Dies setzt den aktuellen Spielplan zurück und lost für jedes Team 2 Zufallsspiele aus. Fortfahren?")) return;
+      const teamMap = {};
+      teams.forEach(t => teamMap[t.id] = t);
 
-      // 1. Alten Spielplan löschen
-      await db.from('matches').delete().neq('id', 0);
+      const eliminated = new Set();
+      const qualified = new Set();
+      const currentStreak = {};
+      teams.forEach(t => currentStreak[t.id] = 0);
 
-      // 2. Pairings erstellen (Jedes Team genau 2 Spiele)
-      const matchesToInsert = [];
-      const playedCounts = {};
-      const playedAgainst = {};
+      let lastMatch = null;
 
-      teams.forEach(t => {
-        playedCounts[t.id] = 0;
-        playedAgainst[t.id] = new Set();
+      (matches || []).forEach(m => {
+        if (m.is_finished) {
+          lastMatch = m;
+          const t1 = m.team1_id;
+          const t2 = m.team2_id;
+
+          if (m.score_team1 > m.score_team2) {
+            currentStreak[t1] = (currentStreak[t1] || 0) + 1;
+            eliminated.add(t2);
+            if (currentStreak[t1] === 3) qualified.add(t1);
+          } else if (m.score_team2 > m.score_team1) {
+            currentStreak[t2] = (currentStreak[t2] || 0) + 1;
+            eliminated.add(t1);
+            if (currentStreak[t2] === 3) qualified.add(t2);
+          } else {
+            // Unentschieden -> Beide raus
+            eliminated.add(t1);
+            eliminated.add(t2);
+          }
+        }
       });
 
-      const shuffledTeams = [...teams].sort(() => Math.random() - 0.5);
-
-      for (let i = 0; i < shuffledTeams.length; i++) {
-        const t1 = shuffledTeams[i];
-
-        while (playedCounts[t1.id] < 2) {
-          const candidates = shuffledTeams.filter(t2 => 
-            t2.id !== t1.id && 
-            playedCounts[t2.id] < 2 && 
-            !playedAgainst[t1.id].has(t2.id)
-          );
-
-          let chosenOpponent = candidates[0];
-          if (!chosenOpponent) {
-            chosenOpponent = shuffledTeams.find(t2 => t2.id !== t1.id && !playedAgainst[t1.id].has(t2.id));
-          }
-
-          if (!chosenOpponent) break;
-
-          matchesToInsert.push({
-            round: 'Vorrunde',
-            team1_id: t1.id,
-            team2_id: chosenOpponent.id,
-            is_finished: false
-          });
-
-          playedCounts[t1.id]++;
-          playedCounts[chosenOpponent.id]++;
-          playedAgainst[t1.id].add(chosenOpponent.id);
-          playedAgainst[chosenOpponent.id].add(t1.id);
+      // Bestimme King (Wer bleibt auf dem Platz?)
+      let kingId = null;
+      if (lastMatch && lastMatch.is_finished) {
+        if (lastMatch.score_team1 > lastMatch.score_team2 && !qualified.has(lastMatch.team1_id)) {
+          kingId = lastMatch.team1_id;
+        } else if (lastMatch.score_team2 > lastMatch.score_team1 && !qualified.has(lastMatch.team2_id)) {
+          kingId = lastMatch.team2_id;
         }
       }
 
-      // 3. In Supabase speichern
-      const { error } = await db.from('matches').insert(matchesToInsert);
+      // Welches ist das nächste freie Team, das noch nicht gespielt/eliminiert/qualifiziert ist?
+      const availableTeams = teams.filter(t => !eliminated.has(t.id) && !qualified.has(t.id) && t.id !== kingId);
 
-      if (error) {
-        alert("Fehler beim Auslosen: " + error.message);
-      } else {
+      if (availableTeams.length === 0 && !kingId) {
+        alert("Keine weiteren Teams verfügbar! Vorrunde ist beendet.");
         loadDashboard();
+        return;
       }
+
+      let team1Id, team2Id;
+
+      if (kingId) {
+        team1Id = kingId;
+        team2Id = availableTeams[0]?.id;
+      } else {
+        team1Id = availableTeams[0]?.id;
+        team2Id = availableTeams[1]?.id;
+      }
+
+      if (!team1Id || !team2Id) {
+        alert("Kein weiteres Match möglich (zu wenige verfügbare Teams)!");
+        loadDashboard();
+        return;
+      }
+
+      await db.from('matches').insert([
+        {
+          round: 'King of the Hill',
+          team1_id: team1Id,
+          team2_id: team2Id,
+          is_finished: false
+        }
+      ]);
+
+      loadDashboard();
+    }
+
+    async function startTournament() {
+      if (!confirm("Möchtest du das Turnier neu starten? Alle bisherigen Spiele werden gelöscht!")) return;
+
+      await db.from('matches').delete().neq('id', 0);
+      await nextMatch();
     }
 
     loadDashboard();
