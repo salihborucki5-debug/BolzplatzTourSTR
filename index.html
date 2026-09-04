@@ -86,12 +86,13 @@
     </div>
   </div>
 
-  <script>
+ <script>
     // ⚠️ TRAGE HIER DEINE SUPABASE-DATEN EIN! ⚠️
     const SUPABASE_URL = "https://rsujqzvudncqrpdwikyr.supabase.co/rest/v1/";
     const SUPABASE_KEY = "sb_publishable_9c2p0DsLdUh4K4wq3xYIHw_ah2wyOQu";
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // Namenskonflikt behoben: 'db' statt 'supabase'
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function registerTeam(e) {
       e.preventDefault();
@@ -106,7 +107,7 @@
 
       const teamCode = "STR-" + Math.random().toString(36).substring(2, 6).toUpperCase();
 
-      const { data, error } = await supabase.from('teams').insert([
+      const { data, error } = await db.from('teams').insert([
         { 
           team_name: teamName,
           captain_info: captainName,
@@ -138,5 +139,3 @@
       }
     }
   </script>
-</body>
-</html>
