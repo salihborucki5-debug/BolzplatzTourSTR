@@ -7,19 +7,19 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-gray-900 text-white min-h-screen p-4 flex flex-col items-center">
+<body class="bg-[#fcfbf7] text-gray-900 min-h-screen p-4 flex flex-col items-center">
 
   <div class="max-w-xl w-full space-y-6">
-    <header class="text-center py-4 border-b border-gray-800">
-      <h1 class="text-2xl font-black text-green-400 uppercase tracking-wider">💻 Laptop Check-In Station</h1>
-      <p class="text-gray-400 text-xs mt-1">USB Scanner bereit halten</p>
+    <header class="text-center py-4 border-b border-stone-200">
+      <h1 class="text-2xl font-black text-pink-500 uppercase tracking-wider">💻 Laptop Check-In Station</h1>
+      <p class="text-stone-500 text-xs mt-1">USB Scanner bereit halten</p>
     </header>
 
-    <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-2xl">
-      <label class="block text-xs font-bold uppercase text-green-400 mb-2">Code Scannen oder Tippen:</label>
+    <div class="bg-white p-6 rounded-2xl border border-stone-200 shadow-xl">
+      <label class="block text-xs font-bold uppercase text-pink-600 mb-2">Code Scannen oder Tippen:</label>
       <input type="text" id="scanInput" autofocus placeholder="Klicke hier & scanne den QR-Code..."
         onchange="processScan()"
-        class="w-full bg-gray-900 border-2 border-green-500 rounded-xl px-4 py-3 text-lg font-mono text-center tracking-widest text-white focus:outline-none focus:ring-2 focus:ring-green-400">
+        class="w-full bg-stone-50 border-2 border-pink-500 rounded-xl px-4 py-3 text-lg font-mono text-center tracking-widest text-gray-900 focus:outline-none focus:ring-2 focus:ring-pink-400">
     </div>
 
     <div id="resultBox" class="hidden p-4 rounded-2xl border transition-all">
@@ -27,16 +27,16 @@
       <p id="resultDetails" class="text-sm"></p>
     </div>
 
-    <section class="bg-gray-800 p-5 rounded-2xl border border-gray-700 shadow-xl">
+    <section class="bg-white p-5 rounded-2xl border border-stone-200 shadow-xl">
       <div class="flex justify-between items-center mb-3">
-        <h2 class="text-sm font-bold text-gray-300 uppercase tracking-wider">📋 Alle angemeldeten Teams</h2>
-        <button onclick="loadTeamList()" class="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded text-gray-300">🔄 Aktualisieren</button>
+        <h2 class="text-sm font-bold text-stone-700 uppercase tracking-wider">📋 Alle angemeldeten Teams</h2>
+        <button onclick="loadTeamList()" class="text-xs bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold px-3 py-1 rounded-lg border border-stone-300 transition-all cursor-pointer">🔄 Aktualisieren</button>
       </div>
       
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs">
           <thead>
-            <tr class="text-gray-400 border-b border-gray-700">
+            <tr class="text-stone-500 border-b border-stone-200">
               <th class="p-2">Status</th>
               <th class="p-2">Team & Kapitän</th>
               <th class="p-2 text-center">U18</th>
@@ -44,7 +44,7 @@
             </tr>
           </thead>
           <tbody id="teamTableBody">
-            <tr><td colspan="4" class="p-4 text-center text-gray-500">Lade Teams...</td></tr>
+            <tr><td colspan="4" class="p-4 text-center text-stone-400">Lade Teams...</td></tr>
           </tbody>
         </table>
       </div>
@@ -52,7 +52,6 @@
   </div>
 
   <script>
-    // DEINE SUPABASE-DATEN (KORRIGIERT)
     const SUPABASE_URL = "https://rsujqzvudncqrpdwikyr.supabase.co";
     const SUPABASE_KEY = "sb_publishable_9c2p0DsLdUh4K4wq3xYIHw_ah2wyOQu";
 
@@ -63,16 +62,16 @@
       const tbody = document.getElementById('teamTableBody');
 
       if (!teams || teams.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500">Noch keine Teams angemeldet.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-stone-400">Noch keine Teams angemeldet.</td></tr>';
         return;
       }
 
       tbody.innerHTML = teams.map(t => `
-        <tr class="border-b border-gray-700/50 hover:bg-gray-800/50">
+        <tr class="border-b border-stone-100 hover:bg-stone-50">
           <td class="p-2 font-bold">${t.checked_in ? '🟢 Anwesend' : '🔴 Ausstehend'}</td>
-          <td class="p-2 font-bold text-white">${t.team_name} (${t.captain_info || 'Kein Kapitän'})</td>
+          <td class="p-2 font-bold text-gray-900">${t.team_name} <span class="font-normal text-stone-500">(${t.captain_info || 'Kein Kapitän'})</span></td>
           <td class="p-2 text-center">${t.has_underage ? '⚠️ Ja' : 'Nein'}</td>
-          <td class="p-2 text-right font-mono text-green-400">${t.team_code}</td>
+          <td class="p-2 text-right font-mono text-pink-600 font-bold">${t.team_code}</td>
         </tr>
       `).join('');
     }
@@ -87,22 +86,22 @@
       const title = document.getElementById('resultTitle');
       const details = document.getElementById('resultDetails');
 
-      box.classList.remove('hidden', 'bg-green-900/40', 'border-green-500', 'bg-red-900/40', 'border-red-500');
+      box.classList.remove('hidden', 'bg-emerald-50', 'border-emerald-500', 'bg-rose-50', 'border-rose-500');
 
       if (teams && teams.length > 0) {
         const team = teams[0];
         await db.from('teams').update({ checked_in: true }).eq('id', team.id);
 
-        box.classList.add('bg-green-900/40', 'border-green-500');
+        box.classList.add('bg-emerald-50', 'border-emerald-500');
         title.innerText = `✅ Check-In Erfolgreich: ${team.team_name}`;
-        title.className = "text-xl font-bold text-green-400 mb-1";
+        title.className = "text-xl font-bold text-emerald-700 mb-1";
         
-        let u18Warning = team.has_underage ? "<br><span class='text-yellow-400 font-bold'>⚠️ U18 Spieler dabei: Muttizettel prüfen!</span>" : "";
+        let u18Warning = team.has_underage ? "<br><span class='text-amber-700 font-bold'>⚠️ U18 Spieler dabei: Muttizettel prüfen!</span>" : "";
         details.innerHTML = `Kapitän: ${team.captain_info || 'N/A'} | Spieler: ${team.player_count} | Code: ${team.team_code}${u18Warning}`;
       } else {
-        box.classList.add('bg-red-900/40', 'border-red-500');
+        box.classList.add('bg-rose-50', 'border-rose-500');
         title.innerText = "❌ Code nicht gefunden!";
-        title.className = "text-xl font-bold text-red-400 mb-1";
+        title.className = "text-xl font-bold text-rose-700 mb-1";
         details.innerText = `Der Code "${code}" ist in der Datenbank nicht registriert.`;
       }
 
