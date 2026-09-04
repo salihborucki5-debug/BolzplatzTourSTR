@@ -6,7 +6,6 @@
   <title>BolzplatzTour STR - Team Anmeldung</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- QR Code Generator Bibliothek -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body class="bg-gray-900 text-white min-h-screen p-4 flex flex-col items-center justify-center">
@@ -46,7 +45,6 @@
         </select>
       </div>
 
-      <!-- DIREKTE LINKS: MUTTIZETTEL & AGBS -->
       <div class="space-y-2 pt-2 border-t border-gray-700/50">
         <p class="text-xs text-yellow-400 font-medium">
           📄 Bei Spielern unter 18 Jahren bitte vorher den 
@@ -93,12 +91,7 @@
     const SUPABASE_URL = "https://rsujqzvudncqrpdwikyr.supabase.co/rest/v1/";
     const SUPABASE_KEY = "sb_publishable_9c2p0DsLdUh4K4wq3xYIHw_ah2wyOQu";
 
-    let supabase;
-    try {
-      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    } catch (e) {
-      console.error("Supabase Init Fehler:", e);
-    }
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function registerTeam(e) {
       e.preventDefault();
@@ -106,64 +99,42 @@
       submitBtn.disabled = true;
       submitBtn.innerText = "Speichere...";
 
-      try {
-        if (!SUPABASE_URL || SUPABASE_URL.includes("DEINE_SUPABASE_URL")) {
-          alert("Fehler: Du hast DEINE_SUPABASE_URL_HIER in der index.html noch nicht durch deine echte Supabase URL ersetzt!");
-          submitBtn.disabled = false;
-          submitBtn.innerText = "🚀 Team verbindlich anmelden";
-          return;
+      const teamName = document.getElementById('teamName').value.trim();
+      const captainName = document.getElementById('captainName').value.trim();
+      const playerCount = parseInt(document.getElementById('playerCount').value);
+      const hasUnderage = document.getElementById('hasUnderage').value === "true";
+
+      const teamCode = "STR-" + Math.random().toString(36).substring(2, 6).toUpperCase();
+
+      const { data, error } = await supabase.from('teams').insert([
+        { 
+          team_name: teamName,
+          captain_info: captainName,
+          player_count: playerCount, 
+          has_underage: hasUnderage,
+          team_code: teamCode,
+          checked_in: false
         }
+      ]).select();
 
-        const teamName = document.getElementById('teamName').value.trim();
-        const captainName = document.getElementById('captainName').value.trim();
-        const playerCount = parseInt(document.getElementById('playerCount').value);
-        const hasUnderage = document.getElementById('hasUnderage').value === "true";
-
-        const teamCode = "STR-" + Math.random().toString(36).substring(2, 6).toUpperCase();
-
-        const { data, error } = await supabase.from('teams').insert([
-          { 
-            team_name: `${teamName} (${captainName})`, 
-            player_count: playerCount, 
-            has_underage: hasUnderage,
-            team_code: teamCode,
-            checked_in: false
-          }
-        ]).select();
-
-        if (error) {
-          alert("Supabase Datenbank-Fehler: " + error.message + " (Code: " + error.code + ")");
-          submitBtn.disabled = false;
-          submitBtn.innerText = "🚀 Team verbindlich anmelden";
-          return;
-        }
-
-        // Formular verbergen, Erfolg anzeigen
+      if (error) {
+        alert("Fehler bei der Anmeldung: " + error.message);
+        submitBtn.disabled = false;
+        submitBtn.innerText = "🚀 Team verbindlich anmelden";
+      } else {
         document.getElementById('regForm').classList.add('hidden');
         document.getElementById('successBox').classList.remove('hidden');
         document.getElementById('teamCodeDisplay').innerText = teamCode;
 
-        // QR Code rendern
-        const qrContainer = document.getElementById("qrcode");
-        qrContainer.innerHTML = "";
-        
-        if (typeof QRCode !== "undefined") {
-          new QRCode(qrContainer, {
-            text: teamCode,
-            width: 180,
-            height: 180,
-            colorDark: "#000000",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
-          });
-        } else {
-          alert("QR-Code Bibliothek konnte nicht geladen werden, aber der Team-Code ist: " + teamCode);
-        }
-
-      } catch (err) {
-        alert("Allgemeiner JavaScript Fehler: " + err.message);
-        submitBtn.disabled = false;
-        submitBtn.innerText = "🚀 Team verbindlich anmelden";
+        document.getElementById("qrcode").innerHTML = "";
+        new QRCode(document.getElementById("qrcode"), {
+          text: teamCode,
+          width: 180,
+          height: 180,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        });
       }
     }
   </script>
