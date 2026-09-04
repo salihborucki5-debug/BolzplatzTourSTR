@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BolzplatzTour STR - Spielplan & Live-Tabelle</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen p-4 flex flex-col items-center">
+
+  <div class="max-w-2xl w-full space-y-6">
+    <header class="text-center py-4 border-b border-gray-800">
+      <h1 class="text-3xl font-black text-green-400 uppercase tracking-wider">⚽ Spielplan & Tabelle</h1>
+      <p class="text-gray-400 text-xs mt-1">BolzplatzTour STR Live-Dashboard</p>
+    </header>
+
+    <!-- ADMIN CONTROLS -->
+    <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 flex flex-wrap justify-between items-center gap-2">
+      <span class="text-xs text-gray-400 font-bold uppercase">Turnierleitung Tools:</span>
+      <button onclick="generateRandomMatches()" class="bg-green-500 hover:bg-green-600 text-black text-xs font-extrabold px-4 py-2 rounded-lg transition-all">
+        🎲 2 Zufallsspiele generieren
+      </button>
+    </div>
+
+    <!-- TABELLE -->
+    <section class="bg-gray-800 p-5 rounded-2xl border border-gray-700 shadow-xl">
+      <h2 class="text-lg font-bold mb-3 text-green-400 flex items-center gap-2">
+        🏆 Vorrunden-Tabelle
+      </h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="text-gray-400 border-b border-gray-700">
+              <th class="p-2">#</th>
+              <th class="p-2">Team</th>
+              <th class="p-2 text-center">Sp.</th>
+              <th class="p-2 text-center">Tore</th>
+              <th class="p-2 text-center">Diff.</th>
+              <th class="p-2 text-center font-bold text-white">Pkt.</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr><td colspan="6" class="p-4 text-center text-gray-500">Lade Tabelle...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SPIELPLAN -->
+    <section class="bg-gray-800 p-5 rounded-2xl border border-gray-700 shadow-xl">
+      <h2 class="text-lg font-bold mb-4 text-green-400">📅 Anstehende & Absolvierte Spiele</h2>
+      <div id="matchesList" class="space-y-3">
+        <p class="text-xs text-gray-500 text-center py-4">Lade Spiele...</p>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // ⚠️ TRAGE HIER DEINE SUPABASE-DATEN EIN! ⚠️
+    const SUPABASE_URL = "https://rsujqzvudncqrpdwikyr.supabase.co/rest/v1/";
+    const SUPABASE_KEY = "sb_publishable_9c2p0DsLdUh4K4wq3xYIHw_ah2wyOQu";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function initData() {
+      await loadTable();
+      await loadMatches();
+    }
+
+    // 1. ZUFALLSSPIELE GENERIEREN (Jedes anwesende Team 2 Spiele)
+    async function generateRandomMatches() {
+      if (!confirm("Achtung: Dies generiert für alle anwesenden Teams 2 Zufalls-Spiele! Fortfahren?")) return;
+
+      const { data: teams } = await supabase.from('teams').select('*').eq('checked_in', true);
+
+      if (!teams || teams.length < 2) {
+        alert("Fehler: Es müssen mindestens 2 Teams eingecheckt (🟢 Anwesend) sein!");
+        return;
+      }
+
+      let generatedMatches = [];
+      let matchTracker = {};
+      teams.forEach(t => matchTracker[t.id] = 0);
+
+      // Zufällige Paarungen zusammenstellen
+      for (let round = 1; round <= 2; round++) {
+        let pool = [...teams].sort(() => Math.random() - 0.5);
+        for (let i = 0; i < pool.length - 1; i += 2) {
+          generatedMatches.push({
+            round: 'vorrunde',
+            team1_id: pool[i].id,
+            team2_id: pool[i+1].id
+          });
+        }
+      }
+
+      const { error } = await supabase.from('matches').insert(generatedMatches);
+
+      if (error) {
+        alert("Fehler beim Erstellen der Spiele: " + error.message);
+      } else {
+        alert(`${generatedMatches.length} Vorrunden-Spiele erfolgreich generiert!`);
+        initData();
+      }
+    }
+
+    // 2. ERGEBNIS SPEICHERN
+    async function saveScore(matchId) {
+      const score1 = document.getElementById(`score1_${matchId}`).value;
+      const score2 = document.getElementById(`score2_${matchId}`).value;
+
+      if (score1 === "" || score2 === "") return;
+
+      await supabase.from('matches').update({
+        score_team1: parseInt(score1),
+        score_team2: parseInt(score2),
+        is_finished: true
+      }).eq('id', matchId);
+
+      initData();
+    }
+
+    // 3. SPIELE LADEN
+    async function loadMatches() {
+      const { data: matches } = await supabase
+        .from('matches')
+        .select(`
+          id, round, score_team1, score_team2, is_finished,
+          t1:team1_id(team_name),
+          t2:team2_id(team_name)
+        `)
+        .order('id', { ascending: true });
+
+      const container = document.getElementById('matchesList');
+      if (!matches || matches.length === 0) {
+        container.innerHTML = '<p class="text-xs text-gray-500 text-center py-4">Noch keine Spiele angesetzt.</p>';
+        return;
+      }
+
+      container.innerHTML = matches.map((m, idx) => `
+        <div class="p-3 bg-gray-900 rounded-xl border border-gray-700 flex justify-between items-center text-xs">
+          <span class="font-bold text-gray-500 w-8">#${idx + 1}</span>
+          <div class="flex-1 flex justify-between items-center px-2">
+            <span class="font-bold text-right flex-1">${m.t1 ? m.t1.team_name : 'Unbekannt'}</span>
+            <div class="mx-3 flex items-center gap-1">
+              <input type="number" id="score1_${m.id}" value="${m.score_team1 !== null ? m.score_team1 : ''}" 
+                class="w-10 bg-gray-800 text-center border border-gray-600 rounded p-1 font-bold text-green-400">
+              <span>:</span>
+              <input type="number" id="score2_${m.id}" value="${m.score_team2 !== null ? m.score_team2 : ''}" 
+                class="w-10 bg-gray-800 text-center border border-gray-600 rounded p-1 font-bold text-green-400">
+            </div>
+            <span class="font-bold text-left flex-1">${m.t2 ? m.t2.team_name : 'Unbekannt'}</span>
+          </div>
+          <button onclick="saveScore(${m.id})" class="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-2xs font-bold ml-2">
+            💾
+          </button>
+        </div>
+      `).join('');
+    }
+
+    // 4. TABELLE BERECHNEN & LADEN
+    async function loadTable() {
+      const { data: teams } = await supabase.from('teams').select('*').eq('checked_in', true);
+      const { data: matches } = await supabase.from('matches').select('*').eq('is_finished', true);
+
+      if (!teams) return;
+
+      let stats = {};
+      teams.forEach(t => {
+        stats[t.id] = { name: t.team_name, played: 0, g: 0, gA: 0, pts: 0 };
+      });
+
+      if (matches) {
+        matches.forEach(m => {
+          if (stats[m.team1_id] && stats[m.team2_id]) {
+            stats[m.team1_id].played++;
+            stats[m.team2_id].played++;
+
+            stats[m.team1_id].g += m.score_team1;
+            stats[m.team1_id].gA += m.score_team2;
+            stats[m.team2_id].g += m.score_team2;
+            stats[m.team2_id].gA += m.score_team1;
+
+            if (m.score_team1 > m.score_team2) {
+              stats[m.team1_id].pts += 3;
+            } else if (m.score_team2 > m.score_team1) {
+              stats[m.team2_id].pts += 3;
+            } else {
+              stats[m.team1_id].pts += 1;
+              stats[m.team2_id].pts += 1;
+            }
+          }
+        });
+      }
+
+      let sorted = Object.values(stats).sort((a, b) => {
+        if (b.pts !== a.pts) return b.pts - a.pts;
+        let diffB = b.g - b.gA;
+        let diffA = a.g - a.gA;
+        if (diffB !== diffA) return diffB - diffA;
+        return b.g - a.g;
+      });
+
+      const body = document.getElementById('tableBody');
+      if (sorted.length === 0) {
+        body.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-500">Keine anwesenden Teams.</td></tr>';
+        return;
+      }
+
+      body.innerHTML = sorted.map((t, idx) => `
+        <tr class="border-b border-gray-700/50 hover:bg-gray-800/50">
+          <td class="p-2 font-bold text-gray-400">${idx + 1}</td>
+          <td class="p-2 font-bold text-white">${t.name}</td>
+          <td class="p-2 text-center text-gray-300">${t.played}</td>
+          <td class="p-2 text-center text-gray-300">${t.g}:${t.gA}</td>
+          <td class="p-2 text-center text-gray-300">${t.g - t.gA > 0 ? '+' : ''}${t.g - t.gA}</td>
+          <td class="p-2 text-center font-black text-green-400 text-sm">${t.pts}</td>
+        </tr>
+      `).join('');
+    }
+
+    initData();
+  </script>
+</body>
+</html>
