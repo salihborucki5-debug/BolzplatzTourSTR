@@ -3,40 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BolzplatzTour STR - Admin Check-in</title>
+  <title>BolzplatzTour STR - Laptop Check-in</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
-<body class="bg-gray-900 text-white min-h-screen p-4 flex flex-col items-center">
+<body class="bg-gray-900 text-white min-h-screen p-6 flex flex-col items-center">
 
-  <div class="max-w-md w-full bg-gray-800 p-6 rounded-2xl shadow-2xl border border-gray-700">
+  <div class="max-w-lg w-full bg-gray-800 p-6 rounded-2xl shadow-2xl border border-gray-700">
     <header class="text-center mb-6">
-      <h1 class="text-2xl font-black text-green-400">📲 Admin QR-Scanner</h1>
-      <p class="text-gray-400 text-xs mt-1">Check-in am Turniertag</p>
+      <h1 class="text-2xl font-black text-green-400">💻 Laptop Check-In Station</h1>
+      <p class="text-gray-400 text-xs mt-1">USB-Scanner anschließen & Code einlesen</p>
     </header>
 
-    <!-- KAMERA-START BUTTON -->
-    <div id="startBox" class="text-center mb-6">
-      <button onclick="startScanner()" class="w-full bg-green-500 hover:bg-green-600 text-black font-extrabold py-3 rounded-xl transition-all">
-        📷 Kamera öffnen & scannen
-      </button>
-    </div>
+    <!-- AUTOMATISCHES SCAN-FELD -->
+    <form id="scanForm" onsubmit="handleScan(event)" class="mb-6">
+      <label class="block text-xs font-bold uppercase text-gray-400 mb-2">Scanner-Eingabe (oder Code tippen):</label>
+      <input type="text" id="codeInput" autofocus placeholder="Hier reinklicken & scannen..." 
+        class="w-full bg-gray-900 border-2 border-green-500 rounded-xl px-4 py-3 text-lg font-mono text-center focus:outline-none focus:ring-2 focus:ring-green-400">
+    </form>
 
-    <!-- KAMERA-SCANNER -->
-    <div id="reader" class="overflow-hidden rounded-xl border-2 border-green-500 bg-black mb-6 hidden"></div>
-
-    <!-- ANZEIGE/STATUS -->
+    <!-- STATUS/ERGEBNIS -->
     <div id="statusResult" class="hidden p-4 rounded-xl text-center space-y-2 mb-6">
       <h2 id="resultTitle" class="text-xl font-bold"></h2>
       <p id="resultDetails" class="text-sm text-gray-300"></p>
-      <button onclick="resetScanner()" class="mt-3 bg-gray-700 hover:bg-gray-600 text-white text-xs px-4 py-2 rounded-lg font-bold">
-        Nächstes Team scannen
-      </button>
     </div>
 
     <!-- LIVE-LISTE DER TEAMS -->
-    <div class="mt-4">
+    <div>
       <h3 class="text-sm font-bold uppercase text-gray-400 mb-3">Angemeldete Teams</h3>
       <ul id="teamList" class="space-y-2 max-h-60 overflow-y-auto">
         <li class="text-xs text-gray-500">Lade Teams...</li>
@@ -50,52 +43,37 @@
     const SUPABASE_KEY = "sb_publishable_9c2p0DsLdUh4K4wq3xYIHw_ah2wyOQu";
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    let html5QrcodeScanner;
 
-    async function onScanSuccess(decodedText) {
-      if (html5QrcodeScanner) {
-        await html5QrcodeScanner.clear();
-      }
-      document.getElementById('reader').classList.add('hidden');
+    async function handleScan(e) {
+      e.preventDefault();
+      const input = document.getElementById('codeInput');
+      const code = input.value.trim();
+      if (!code) return;
 
+      // Check-in in Supabase durchführen
       const { data, error } = await supabase
         .from('teams')
         .update({ checked_in: true })
-        .eq('team_code', decodedText)
+        .eq('team_code', code)
         .select();
 
       const resultBox = document.getElementById('statusResult');
       resultBox.classList.remove('hidden');
 
       if (error || !data || data.length === 0) {
-        resultBox.className = "p-4 rounded-xl text-center bg-red-900/50 border border-red-500 text-red-200";
-        document.getElementById('resultTitle').innerText = "❌ Team nicht gefunden!";
-        document.getElementById('resultDetails').innerText = "Code: " + decodedText;
+        resultBox.className = "p-4 rounded-xl text-center bg-red-900/50 border border-red-500 text-red-200 animate-pulse";
+        document.getElementById('resultTitle').innerText = "❌ Code ungültig!";
+        document.getElementById('resultDetails').innerText = "Kein Team mit Code: " + code;
       } else {
         const team = data[0];
         resultBox.className = "p-4 rounded-xl text-center bg-green-900/50 border border-green-500 text-green-200";
-        document.getElementById('resultTitle').innerText = "🟢 Check-in Erfolgreich!";
-        document.getElementById('resultDetails').innerText = `${team.team_name} (${team.player_count} Spieler)`;
-        
-        if (team.has_underage) {
-          document.getElementById('resultDetails').innerText += " | ⚠️ Achtung: U18!";
-        }
+        document.getElementById('resultTitle').innerText = "🟢 " + team.team_name + " eingecheckt!";
+        document.getElementById('resultDetails').innerText = `Spieler: ${team.player_count} | U18: ${team.has_underage ? 'JA ⚠️' : 'Nein'}`;
       }
 
+      input.value = ""; // Feld leeren
+      input.focus();   // Fokus sofort wieder aufs Eingabefeld setzen für den nächsten Scan
       loadTeams();
-    }
-
-    function resetScanner() {
-      document.getElementById('statusResult').classList.add('hidden');
-      document.getElementById('startBox').classList.remove('hidden');
-    }
-
-    function startScanner() {
-      document.getElementById('startBox').classList.add('hidden');
-      document.getElementById('reader').classList.remove('hidden');
-      
-      html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-      html5QrcodeScanner.render(onScanSuccess);
     }
 
     async function loadTeams() {
