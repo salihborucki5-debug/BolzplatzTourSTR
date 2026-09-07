@@ -3,64 +3,52 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BolzplatzTour STR - 32er K.O. Turnier</title>
+  <title>BolzplatzTour STR - Spielplan</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    @keyframes popIn {
-      0% { transform: scale(0.5); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-    .animate-pop {
-      animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    }
-  </style>
 </head>
-<body class="bg-[#fcfbf7] text-gray-900 min-h-screen p-4 flex flex-col items-center relative">
+<body class="bg-stone-900 text-white min-h-screen p-4 md:p-8">
 
-  <!-- TURNIER-SIEGER POPUP MODAL (NUR FÜR DAS FINALE - 5 Sekunden) -->
-  <div id="winnerModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white border-4 border-amber-400 p-8 rounded-3xl shadow-2xl text-center max-w-sm w-full animate-pop flex flex-col items-center">
-      <span class="text-6xl mb-2">🏆👑</span>
-      <h3 class="text-xs font-black tracking-widest text-amber-500 uppercase mb-1">TURNIERSIEGER!</h3>
-      <h2 id="winnerTeamName" class="text-2xl font-extrabold text-stone-900 mb-4">Teamname</h2>
-      <p class="text-xs font-semibold text-stone-400 bg-stone-100 px-3 py-1.5 rounded-full">Herzlichen Glückwunsch zum Turniersieg!</p>
-      <div class="w-full bg-stone-200 h-1.5 rounded-full mt-6 overflow-hidden">
-        <div id="progressBar" class="bg-amber-400 h-full w-full transition-all duration-[5000ms] ease-linear"></div>
+  <div class="max-w-7xl mx-auto">
+    <!-- HEADER -->
+    <header class="flex flex-col md:flex-row justify-between items-center mb-8 pb-4 border-b border-stone-800 gap-4">
+      <div>
+        <h1 class="text-3xl font-black text-pink-500 uppercase tracking-wider">BOLZPLATZTOUR STR</h1>
+        <p class="text-stone-400 text-sm">Turnierbaum</p>
       </div>
-    </div>
-  </div>
 
-  <div class="max-w-3xl w-full space-y-6">
-    <header class="text-center py-4 border-b border-stone-200">
-      <h1 class="text-3xl font-black text-pink-500 uppercase tracking-wider">⚽ 32er K.O.-Turnier</h1>
-      <p class="text-stone-500 text-xs mt-1">4 Damen-Spiele (F1-F8) ➡️ 12 Herren-Spiele (M1-M24) ➡️ Finals</p>
+      <!-- KATEGORIE SWITCHER (HERREN / FRAUEN) -->
+      <div class="flex gap-2 bg-stone-800 p-1.5 rounded-xl border border-stone-700">
+        <button onclick="switchCategory('M')" id="btnM" class="px-5 py-2 rounded-lg font-bold text-sm bg-pink-500 text-white transition-all">
+          🚹 Herren
+        </button>
+        <button onclick="switchCategory('F')" id="btnF" class="px-5 py-2 rounded-lg font-bold text-sm text-stone-400 hover:text-white transition-all">
+          🚺 Frauen
+        </button>
+      </div>
     </header>
 
-    <div class="flex gap-3 justify-center flex-wrap">
-      <button onclick="generateKOBaum()" class="bg-pink-500 hover:bg-pink-600 text-white font-extrabold px-4 py-2 rounded-xl text-xs transition-all shadow-md cursor-pointer">
-        🏆 Turnierbaum Generieren / Reset
-      </button>
-      <button onclick="loadDashboard()" class="bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold px-4 py-2 rounded-xl text-xs border border-stone-300 transition-all cursor-pointer">
+    <!-- STATUS BAR -->
+    <div class="bg-stone-800/80 border border-stone-700 rounded-xl p-4 mb-8 flex justify-between items-center">
+      <div>
+        <span class="text-stone-400 text-xs uppercase font-bold block">Angemeldete Teams</span>
+        <span id="teamCountDisplay" class="text-xl font-bold text-pink-400">Lädt...</span>
+      </div>
+      <div>
+        <span class="text-stone-400 text-xs uppercase font-bold block">Turnierbaum</span>
+        <span id="phaseDisplay" class="text-xl font-bold text-white">-</span>
+      </div>
+      <button onclick="loadTournament()" class="bg-stone-700 hover:bg-stone-600 px-3 py-1.5 rounded-lg text-xs font-bold transition-all">
         🔄 Aktualisieren
       </button>
     </div>
 
-    <!-- AKTUELLES MATCH -->
-    <section class="bg-white p-6 rounded-2xl border-2 border-pink-500 shadow-xl">
-      <h2 class="text-lg font-bold text-pink-600 uppercase tracking-wider mb-4 text-center">⚔️ Aktuelles Match</h2>
-      <div id="currentMatchContainer">
-        <p class="text-center text-stone-400 text-sm">Lade Spiel...</p>
+    <!-- KO-BAUM CONTAINER -->
+    <div class="overflow-x-auto pb-6">
+      <div id="treeGrid" class="flex gap-6 min-w-[800px] justify-start items-stretch">
+        <!-- Wird dynamisch per JS befüllt -->
       </div>
-    </section>
-
-    <!-- KO BAUM ANZEIGE -->
-    <section class="bg-white p-5 rounded-2xl border border-stone-200 shadow-xl space-y-3">
-      <h2 class="text-lg font-bold text-gray-900 uppercase tracking-wider mb-2">🏆 K.O.-Spielplan</h2>
-      <div id="koMatchesContainer" class="space-y-2">
-        <p class="text-stone-400 text-xs text-center">Klicke oben auf "Turnierbaum Generieren", um zu starten.</p>
-      </div>
-    </section>
+    </div>
   </div>
 
   <script>
@@ -68,217 +56,146 @@
     const SUPABASE_KEY = "sb_publishable_9c2p0DsLdUh4K4wq3xYIHw_ah2wyOQu";
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    async function loadDashboard() {
-      const { data: teams } = await db.from('teams').select('*');
-      const { data: matches } = await db.from('matches').select('*').order('id', { ascending: true });
+    let currentCategory = 'M';
 
-      const teamMap = {};
-      (teams || []).forEach(t => teamMap[t.id] = t);
+    function switchCategory(cat) {
+      currentCategory = cat;
+      const btnM = document.getElementById('btnM');
+      const btnF = document.getElementById('btnF');
 
-      let currentMatch = null;
-
-      (matches || []).forEach(m => {
-        if (!m.is_finished && m.team1_id && m.team2_id && !currentMatch) {
-          currentMatch = m;
-        }
-      });
-
-      renderCurrentMatch(currentMatch, teamMap);
-      renderKOMatches(matches || [], teamMap);
+      if (cat === 'M') {
+        btnM.className = "px-5 py-2 rounded-lg font-bold text-sm bg-pink-500 text-white transition-all";
+        btnF.className = "px-5 py-2 rounded-lg font-bold text-sm text-stone-400 hover:text-white transition-all";
+      } else {
+        btnF.className = "px-5 py-2 rounded-lg font-bold text-sm bg-pink-500 text-white transition-all";
+        btnM.className = "px-5 py-2 rounded-lg font-bold text-sm text-stone-400 hover:text-white transition-all";
+      }
+      loadTournament();
     }
 
-    function renderCurrentMatch(match, teamMap) {
-      const container = document.getElementById('currentMatchContainer');
+    async function loadTournament() {
+      const treeGrid = document.getElementById('treeGrid');
+      treeGrid.innerHTML = `<div class="text-stone-400 text-sm">Lade Teams...</div>`;
 
-      if (!match) {
-        container.innerHTML = `<p class="text-center text-stone-500 font-medium">Kein aktives Match offen oder Turnier beendet.</p>`;
+      // Teams aus Supabase holen
+      const { data: teams, error } = await db
+        .from('teams')
+        .select('*')
+        .like('team_name', `${currentCategory}%`);
+
+      if (error || !teams) {
+        treeGrid.innerHTML = `<div class="text-red-400 text-sm">Fehler beim Laden der Teams.</div>`;
         return;
       }
 
-      const t1 = teamMap[match.team1_id];
-      const t2 = teamMap[match.team2_id];
+      const count = teams.length;
+      document.getElementById('teamCountDisplay').innerText = `${count} Teams`;
 
-      container.innerHTML = `
-        <div class="flex flex-col items-center gap-4">
-          <div class="text-xs font-bold text-pink-600 bg-pink-50 px-3 py-1 rounded-full border border-pink-200">${match.round}</div>
-          
-          <div class="flex items-center justify-between w-full text-base font-bold">
-            <div class="text-center w-5/12">
-              <span class="text-lg text-gray-900 block">${t1 ? t1.team_name : 'Offen'}</span>
-            </div>
-            <div class="text-xl font-black text-stone-300">VS</div>
-            <div class="text-center w-5/12">
-              <span class="text-lg text-gray-900 block">${t2 ? t2.team_name : 'Offen'}</span>
-            </div>
-          </div>
+      if (count < 2) {
+        treeGrid.innerHTML = `<div class="text-stone-500 italic text-sm">Mindestens 2 Teams erforderlich.</div>`;
+        document.getElementById('phaseDisplay').innerText = "Wartet auf Anmeldungen";
+        return;
+      }
 
-          <div class="flex gap-2 items-center bg-stone-50 px-4 py-2 rounded-xl border border-stone-200 my-2">
-            <input type="number" id="s1" placeholder="0" class="w-12 text-center text-2xl font-mono font-bold text-pink-600 bg-transparent focus:outline-none">
-            <span class="text-xl font-bold text-stone-400">:</span>
-            <input type="number" id="s2" placeholder="0" class="w-12 text-center text-2xl font-mono font-bold text-pink-600 bg-transparent focus:outline-none">
-          </div>
+      // EXAKTE LOGIK FÜR TURNIERGRÖSSE:
+      let treeSize = 2;
+      if (count > 16) {
+        treeSize = 32; // 17 - 32 Teams -> 32er Baum (Sechzehntelfinale)
+      } else if (count > 8) {
+        treeSize = 16; // 9 - 16 Teams -> 16er Baum (Achtelfinale)
+      } else if (count > 4) {
+        treeSize = 8;  // 5 - 8 Teams -> 8er Baum (Viertelfinale)
+      } else if (count > 2) {
+        treeSize = 4;  // 3 - 4 Teams -> 4er Baum (Halbfinale)
+      } else {
+        treeSize = 2;  // 2 Teams -> Direkt Finale
+      }
 
-          <p class="text-xs text-stone-400">Tipp: Leere Felder werden automatisch als 0 gespeichert!</p>
+      // Runden-Startbezeichnung
+      let startName = "";
+      if (treeSize === 32) startName = "1/16-Finale";
+      else if (treeSize === 16) startName = "Achtelfinale";
+      else if (treeSize === 8) startName = "Viertelfinale";
+      else if (treeSize === 4) startName = "Halbfinale";
+      else startName = "FINALE";
 
-          <button onclick="saveCurrentMatch(${match.id})" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-extrabold py-3 rounded-xl text-sm transition-all shadow-md cursor-pointer">
-            💾 Ergebnis Speichern & Nächstes Spiel
-          </button>
+      document.getElementById('phaseDisplay').innerText = `${treeSize}er Baum (Start: ${startName})`;
+
+      treeGrid.innerHTML = '';
+
+      // Teams durchmischen für Auslosung
+      let shuffled = [...teams].sort(() => Math.random() - 0.5);
+
+      // KO-Baum generieren von der Startrunde bis zum Finale
+      let currentSize = treeSize;
+      let isFirstRound = true;
+
+      while (currentSize >= 2) {
+        let roundTitle = "";
+        if (currentSize === 32) roundTitle = "1/16-Finale";
+        else if (currentSize === 16) roundTitle = "Achtelfinale";
+        else if (currentSize === 8) roundTitle = "Viertelfinale";
+        else if (currentSize === 4) roundTitle = "Halbfinale";
+        else if (currentSize === 2) roundTitle = "FINALE 🏆";
+
+        const col = createColumn(roundTitle);
+        const matchCount = currentSize / 2;
+
+        for (let i = 0; i < matchCount; i++) {
+          let teamA = `Sieger Spiel ${i * 2 + 1}`;
+          let teamB = `Sieger Spiel ${i * 2 + 2}`;
+
+          // In der 1. Runde befüllen wir echte Teams / Platzhalter wenn Plätze frei sind
+          if (isFirstRound) {
+            teamA = shuffled.length > 0 ? shuffled.pop().team_name : " Offen";
+            teamB = shuffled.length > 0 ? shuffled.pop().team_name : " Offen";
+          }
+
+          col.appendChild(createMatchCard(teamA, teamB, `Spiel ${i + 1}`));
+        }
+
+        treeGrid.appendChild(col);
+        currentSize /= 2;
+        isFirstRound = false;
+      }
+    }
+
+    function createColumn(title) {
+      const col = document.createElement('div');
+      col.className = "flex-1 min-w-[220px] flex flex-col justify-around bg-stone-800/40 p-3 rounded-2xl border border-stone-800";
+      
+      const header = document.createElement('h3');
+      header.className = "text-center text-xs font-black uppercase text-pink-500 mb-4 bg-stone-800 py-2 rounded-xl border border-stone-700 tracking-wider";
+      header.innerText = title;
+      
+      col.appendChild(header);
+      return col;
+    }
+
+    function createMatchCard(teamA, teamB, label) {
+      const card = document.createElement('div');
+      card.className = "bg-stone-800 border border-stone-700 rounded-xl p-3 my-2 shadow-md space-y-2";
+
+      const isAOpen = teamA === " Offen";
+      const isBOpen = teamB === " Offen";
+
+      card.innerHTML = `
+        <div class="text-[10px] font-bold text-stone-500 uppercase">${label}</div>
+        <div class="flex justify-between items-center text-sm font-bold ${isAOpen ? 'text-amber-400 italic font-normal' : 'text-white'}">
+          <span>${teamA}</span>
+          <span class="text-xs text-stone-500">-</span>
+        </div>
+        <div class="border-t border-stone-700/60 my-1"></div>
+        <div class="flex justify-between items-center text-sm font-bold ${isBOpen ? 'text-amber-400 italic font-normal' : 'text-white'}">
+          <span>${teamB}</span>
+          <span class="text-xs text-stone-500">-</span>
         </div>
       `;
+
+      return card;
     }
 
-    function renderKOMatches(matches, teamMap) {
-      const container = document.getElementById('koMatchesContainer');
-      if (matches.length === 0) {
-        container.innerHTML = '<p class="text-stone-400 text-xs text-center">Kein Turnierbaum vorhanden.</p>';
-        return;
-      }
-
-      container.innerHTML = matches.map(m => {
-        const t1 = teamMap[m.team1_id] ? teamMap[m.team1_id].team_name : 'Wartet auf Sieger...';
-        const t2 = teamMap[m.team2_id] ? teamMap[m.team2_id].team_name : 'Wartet auf Sieger...';
-
-        return `
-          <div class="bg-stone-50 p-3 rounded-xl border border-stone-200 flex justify-between items-center text-xs">
-            <span class="font-bold text-pink-600 w-1/4">${m.round}</span>
-            <span class="font-bold text-gray-900 text-center w-2/4">${t1} <span class="text-pink-600 font-mono px-2">${m.score_team1 ?? '-'} : ${m.score_team2 ?? '-'}</span> ${t2}</span>
-            <span class="w-1/4 text-right ${m.is_finished ? 'text-emerald-600 font-bold' : 'text-amber-600'}">${m.is_finished ? '✅ Beendet' : '⏳ Offen'}</span>
-          </div>
-        `;
-      }).join('');
-    }
-
-    async function saveCurrentMatch(matchId) {
-      let val1 = document.getElementById('s1').value;
-      let val2 = document.getElementById('s2').value;
-
-      const s1 = val1 === "" ? 0 : parseInt(val1);
-      const s2 = val2 === "" ? 0 : parseInt(val2);
-
-      if (s1 === s2) {
-        alert("In der K.O.-Runde gibt es kein Unentschieden! Bitte entscheide das Spiel (z.B. nach 9m-Schießen).");
-        return;
-      }
-
-      const { data: match } = await db.from('matches').select('*').eq('id', matchId).single();
-
-      await db.from('matches').update({
-        score_team1: s1,
-        score_team2: s2,
-        is_finished: true
-      }).eq('id', matchId);
-
-      const winnerId = s1 > s2 ? match.team1_id : match.team2_id;
-      
-      await advanceWinner(match, winnerId);
-
-      // NUR WENN ES DAS FINALE IST: Pop-up für 5 Sekunden anzeigen!
-      if (match.round.includes('Finale')) {
-        const { data: winnerTeam } = await db.from('teams').select('team_name').eq('id', winnerId).single();
-        showWinnerPopup(winnerTeam ? winnerTeam.team_name : 'Gewinner');
-      } else {
-        loadDashboard();
-      }
-    }
-
-    function showWinnerPopup(winnerName) {
-      const modal = document.getElementById('winnerModal');
-      const winnerNameElem = document.getElementById('winnerTeamName');
-      const progressBar = document.getElementById('progressBar');
-
-      winnerNameElem.innerText = winnerName;
-      
-      progressBar.style.width = '100%';
-      modal.classList.remove('hidden');
-
-      setTimeout(() => {
-        progressBar.style.width = '0%';
-      }, 50);
-
-      setTimeout(() => {
-        modal.classList.add('hidden');
-        loadDashboard();
-      }, 5000);
-    }
-
-    async function advanceWinner(completedMatch, winnerId) {
-      const { data: matches } = await db.from('matches').select('*').order('id', { ascending: true });
-      const currentIndex = matches.findIndex(m => m.id === completedMatch.id);
-      
-      if (currentIndex === -1) return;
-
-      const nextMatchIndex = Math.floor(currentIndex / 2) + 16; 
-
-      if (matches[nextMatchIndex]) {
-        const target = matches[nextMatchIndex];
-        if (!target.team1_id) {
-          await db.from('matches').update({ team1_id: winnerId }).eq('id', target.id);
-        } else if (!target.team2_id) {
-          await db.from('matches').update({ team2_id: winnerId }).eq('id', target.id);
-        }
-      }
-    }
-
-    async function generateKOBaum() {
-      if (!confirm("Möchtest du das Turnier neu starten und den 32er K.O.-Baum generieren? Alle alten Spiele werden gelöscht!")) return;
-
-      const { data: teams } = await db.from('teams').select('*').order('team_name', { ascending: true });
-
-      if (!teams || teams.length === 0) {
-        alert("Keine Teams in der Datenbank gefunden!");
-        return;
-      }
-
-      const womenTeams = teams.filter(t => t.team_name.startsWith('F'));
-      const menTeams = teams.filter(t => t.team_name.startsWith('M'));
-
-      await db.from('matches').delete().neq('id', 0);
-
-      const matchesToInsert = [];
-
-      for (let i = 0; i < womenTeams.length; i += 2) {
-        if (womenTeams[i] && womenTeams[i+1]) {
-          matchesToInsert.push({
-            round: 'Runde 1 (Damen)',
-            team1_id: womenTeams[i].id,
-            team2_id: womenTeams[i+1].id,
-            is_finished: false
-          });
-        }
-      }
-
-      for (let i = 0; i < menTeams.length; i += 2) {
-        if (menTeams[i] && menTeams[i+1]) {
-          matchesToInsert.push({
-            round: 'Runde 1 (Herren)',
-            team1_id: menTeams[i].id,
-            team2_id: menTeams[i+1].id,
-            is_finished: false
-          });
-        }
-      }
-
-      const roundNames = [
-        ...Array(8).fill('Achtelfinale'),
-        ...Array(4).fill('Viertelfinale'),
-        ...Array(2).fill('Halbfinale'),
-        '🏆 Finale'
-      ];
-
-      roundNames.forEach(r => {
-        matchesToInsert.push({
-          round: r,
-          team1_id: null,
-          team2_id: null,
-          is_finished: false
-        });
-      });
-
-      await db.from('matches').insert(matchesToInsert);
-      loadDashboard();
-    }
-
-    loadDashboard();
+    loadTournament();
   </script>
 </body>
 </html>
