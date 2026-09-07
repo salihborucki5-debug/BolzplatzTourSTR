@@ -26,6 +26,14 @@
     hero.style.backgroundImage = `linear-gradient(to bottom, rgba(11, 20, 32, 0.2) 0%, rgba(11, 20, 32, 0.85) 90%), url('${bild}')`;
   }
 
+  // Funktion zum Auf- und Zuklappen der Bildergalerien
+  function toggleGallery(cityId) {
+    const gallery = document.getElementById(cityId);
+    if (gallery) {
+      gallery.classList.toggle("open");
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", function() {
     updateHeroImage();
     window.addEventListener("resize", updateHeroImage);
@@ -157,16 +165,23 @@
 
   /* ---------- DATES ---------- */
   .dates{padding-top:48px;}
+
+  .date-group {
+    border-bottom: 1px solid rgba(245,241,232,0.12);
+  }
+  .date-group:first-of-type {
+    border-top: 1px solid rgba(245,241,232,0.12);
+  }
+
   .date-row{
     display:flex;
     align-items:center;
     gap:16px;
     padding:18px 0;
-    border-bottom:1px solid rgba(245,241,232,0.12);
     text-decoration:none;
     color:inherit;
+    cursor: pointer;
   }
-  .date-row:first-of-type{border-top:1px solid rgba(245,241,232,0.12);}
   .date-day{
     font-family:'Anton', sans-serif;
     font-size:26px;
@@ -207,6 +222,50 @@
   }
   .date-status.past{color:var(--slate);}
   .date-status.loading{color:var(--amber);}
+
+  /* Hover Preview Thumbnail */
+  .preview-thumb {
+    width: 44px;
+    height: 32px;
+    border-radius: 4px;
+    object-fit: cover;
+    opacity: 0.5;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .date-row:hover .preview-thumb {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+
+  /* Ausklappbare Galerie */
+  .gallery-accordion {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease-in-out, padding 0.3s ease;
+    padding: 0;
+  }
+  .gallery-accordion.open {
+    max-height: 600px;
+    padding-bottom: 24px;
+  }
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .gallery-grid img {
+    width: 100%;
+    height: 85px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid rgba(245,241,232,0.15);
+    transition: transform 0.2s ease, filter 0.2s ease;
+  }
+  .gallery-grid img:hover {
+    transform: scale(1.04);
+    filter: brightness(1.1);
+  }
 
   /* ---------- ABOUT ---------- */
   .about p{
@@ -292,43 +351,75 @@
   <h2>Jeder Bolzplatz&nbsp;zählt</h2>
 
   <!-- MÜNCHEN -->
-  <div class="date-row" style="opacity: 0.6;">
-    <div class="date-day">22<small>Aug</small></div>
-    <div class="date-info">
-      <div class="date-city">München</div>
-      <div class="date-venue">Bolzplatz Tour</div>
+  <div class="date-group">
+    <div class="date-row" onclick="toggleGallery('gallery-muenchen')">
+      <div class="date-day">22<small>Aug</small></div>
+      <div class="date-info">
+        <div class="date-city">München</div>
+        <div class="date-venue">Fotos ansehen 📸</div>
+      </div>
+      <!-- Mini Preview Thumb -->
+      <img src="muenchen_1.jpg" alt="Preview" class="preview-thumb">
+      <div class="date-status past" style="margin-left: 8px;">Vorbei</div>
     </div>
-    <div class="date-status past">Vorbei</div>
+    <!-- Galerie (5 Bilder) -->
+    <div id="gallery-muenchen" class="gallery-accordion">
+      <div class="gallery-grid">
+        <img src="muenchen_1.jpg" alt="München Bild 1">
+        <img src="muenchen_2.jpg" alt="München Bild 2">
+        <img src="muenchen_3.jpg" alt="München Bild 3">
+        <img src="muenchen_4.jpg" alt="München Bild 4">
+        <img src="muenchen_5.jpg" alt="München Bild 5">
+      </div>
+    </div>
   </div>
 
   <!-- ESSEN -->
-  <div class="date-row" style="opacity: 0.6;">
-    <div class="date-day">27<small>Aug</small></div>
-    <div class="date-info">
-      <div class="date-city">Essen</div>
-      <div class="date-venue">Bolzplatz Tour</div>
+  <div class="date-group">
+    <div class="date-row" onclick="toggleGallery('gallery-essen')">
+      <div class="date-day">27<small>Aug</small></div>
+      <div class="date-info">
+        <div class="date-city">Essen</div>
+        <div class="date-venue">Fotos ansehen 📸</div>
+      </div>
+      <!-- Mini Preview Thumb -->
+      <img src="essen_1.jpg" alt="Preview" class="preview-thumb">
+      <div class="date-status past" style="margin-left: 8px;">Vorbei</div>
     </div>
-    <div class="date-status past">Vorbei</div>
+    <!-- Galerie (5 Bilder) -->
+    <div id="gallery-essen" class="gallery-accordion">
+      <div class="gallery-grid">
+        <img src="essen_1.jpg" alt="Essen Bild 1">
+        <img src="essen_2.jpg" alt="Essen Bild 2">
+        <img src="essen_3.jpg" alt="Essen Bild 3">
+        <img src="essen_4.jpg" alt="Essen Bild 4">
+        <img src="essen_5.jpg" alt="Essen Bild 5">
+      </div>
+    </div>
   </div>
 
   <!-- FRANKFURT (NÄCHSTER STOPP) -->
-  <a class="date-row" href="anmeldung.html">
-    <div class="date-day">19<small>Sep</small></div>
-    <div class="date-info">
-      <div class="date-city">Frankfurt</div>
-      <div class="date-venue">Nächster Stopp</div>
-    </div>
-    <div class="date-status">Anmelden</div>
-  </a>
+  <div class="date-group">
+    <a class="date-row" href="anmeldung.html">
+      <div class="date-day">19<small>Sep</small></div>
+      <div class="date-info">
+        <div class="date-city">Frankfurt</div>
+        <div class="date-venue">Nächster Stopp</div>
+      </div>
+      <div class="date-status">Anmelden</div>
+    </a>
+  </div>
 
   <!-- ??? (LOADING) -->
-  <div class="date-row" style="opacity: 0.7;">
-    <div class="date-day">--<small>TBA</small></div>
-    <div class="date-info">
-      <div class="date-city">???</div>
-      <div class="date-venue">Wird noch geplant</div>
+  <div class="date-group" style="opacity: 0.7;">
+    <div class="date-row">
+      <div class="date-day">--<small>TBA</small></div>
+      <div class="date-info">
+        <div class="date-city">???</div>
+        <div class="date-venue">Wird noch geplant</div>
+      </div>
+      <div class="date-status loading">Loading...</div>
     </div>
-    <div class="date-status loading">Loading...</div>
   </div>
 </section>
 
