@@ -35,7 +35,40 @@
         <span id="phaseDisplay" class="text-xl font-black text-white">-</span>
       </div>
       <div class="text-xs text-stone-400 max-w-xs">
-        💡 <strong class="text-pink-400">Hinweis:</strong> Klicke auf ein Match, um den Endstand einzutragen. Der Sieger wird automatisch weitergeleitet!
+        💡 <strong class="text-pink-400">Hinweis:</strong> Klicke auf ein Match im Baum oder nutze die Live-Anzeige oben, um Ergebnisse einzutragen!
+      </div>
+    </div>
+
+    <!-- LIVE MATCH DASHBOARD (NEU GANZ OBEN) -->
+    <div id="liveMatchCard" class="bg-gradient-to-r from-pink-900/40 via-stone-800 to-stone-800 border-2 border-pink-500 rounded-2xl p-6 mb-8 shadow-2xl">
+      <div class="flex justify-between items-center mb-3">
+        <span id="liveMatchRound" class="text-xs font-black uppercase text-pink-400 tracking-wider">LADE LIVE MATCH...</span>
+        <span class="bg-pink-500/20 text-pink-300 border border-pink-500/30 text-[10px] font-bold px-2.5 py-1 rounded-full animate-pulse">● LIVE ON COURT</span>
+      </div>
+
+      <div class="flex flex-col md:flex-row justify-between items-center gap-6 my-4">
+        <!-- TEAM A -->
+        <div class="flex-1 text-center md:text-right">
+          <div id="liveTeamA" class="text-2xl md:text-3xl font-black text-white">Team A</div>
+        </div>
+
+        <!-- SCORE INPUTS -->
+        <div class="flex items-center gap-3 bg-stone-900 px-6 py-3 rounded-2xl border border-stone-700 shadow-inner">
+          <input type="number" id="liveScoreA" placeholder="0" min="0" class="w-16 bg-stone-800 border border-stone-600 rounded-xl py-2 text-center text-2xl font-black text-white focus:outline-none focus:border-pink-500">
+          <span class="text-2xl font-black text-stone-500">:</span>
+          <input type="number" id="liveScoreB" placeholder="0" min="0" class="w-16 bg-stone-800 border border-stone-600 rounded-xl py-2 text-center text-2xl font-black text-white focus:outline-none focus:border-pink-500">
+        </div>
+
+        <!-- TEAM B -->
+        <div class="flex-1 text-center md:text-left">
+          <div id="liveTeamB" class="text-2xl md:text-3xl font-black text-white">Team B</div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3 pt-2">
+        <button onclick="saveLiveScore()" class="bg-pink-500 hover:bg-pink-600 text-white font-black px-6 py-3 rounded-xl text-xs uppercase tracking-wider transition-all shadow-lg flex items-center gap-2">
+          💾 Ergebnis Speichern & Nächstes Match ➔
+        </button>
       </div>
     </div>
 
@@ -79,6 +112,7 @@
     // In-Memory Speicher für Match-Ergebnisse im aktuellen Baum
     let tournamentTreeState = {};
     let currentEditingMatch = null;
+    let currentLiveMatchId = null;
 
     async function loadTournament() {
       const treeGrid = document.getElementById('treeGrid');
@@ -114,13 +148,6 @@
       else if (count > 2) treeSize = 4;
       else treeSize = 2;
 
-      let startName = "";
-      if (treeSize === 32) startName = "1/16-Finale";
-      else if (treeSize === 16) startName = "Achtelfinale";
-      else if (treeSize === 8) startName = "Viertelfinale";
-      else if (treeSize === 4) startName = "Halbfinale";
-      else startName = "FINALE";
-
       document.getElementById('phaseDisplay').innerText = `${treeSize}er Baum (${femaleTeams.length} Frauen- & ${maleTeams.length} Herren-Teams)`;
 
       treeGrid.innerHTML = '';
@@ -152,10 +179,11 @@
 
             // State im Speicher anlegen falls neu
             if (!tournamentTreeState[matchId]) {
-              tournamentTreeState[matchId] = { teamA, teamB, scoreA: null, scoreB: null, winner: null };
+              tournamentTreeState[matchId] = { teamA, teamB, scoreA: null, scoreB: null, winner: null, roundTitle };
             } else {
               tournamentTreeState[matchId].teamA = teamA;
               tournamentTreeState[matchId].teamB = teamB;
+              tournamentTreeState[matchId].roundTitle = roundTitle;
             }
           } else {
             // Folgerunden: Sieger aus vorherigen Matches holen
@@ -166,10 +194,11 @@
             teamB = prevMatchB && prevMatchB.winner ? prevMatchB.winner : `Sieger M${m * 2 + 2}`;
 
             if (!tournamentTreeState[matchId]) {
-              tournamentTreeState[matchId] = { teamA, teamB, scoreA: null, scoreB: null, winner: null };
+              tournamentTreeState[matchId] = { teamA, teamB, scoreA: null, scoreB: null, winner: null, roundTitle };
             } else {
               tournamentTreeState[matchId].teamA = teamA;
               tournamentTreeState[matchId].teamB = teamB;
+              tournamentTreeState[matchId].roundTitle = roundTitle;
             }
           }
 
@@ -180,6 +209,9 @@
         currentSize /= 2;
         roundIndex++;
       }
+
+      // Live Dashboard oben synchronisieren
+      updateLiveMatchDashboard();
     }
 
     function createColumn(title) {
@@ -263,6 +295,81 @@
 
       closeModal();
       loadTournament(); // Baum neu zeichnen & Sieger weiterleiten!
+    }
+
+    // --- LIVE MATCH DASHBOARD LOGIK ---
+    function updateLiveMatchDashboard() {
+      const matchIds = Object.keys(tournamentTreeState);
+      
+      // Findet das erste offene Match, bei dem beide Teams feststehen
+      const nextMatchId = matchIds.find(id => {
+        const m = tournamentTreeState[id];
+        return m.winner === null && 
+               !m.teamA.includes("Sieger") && !m.teamB.includes("Sieger") && 
+               m.teamA !== " Offen" && m.teamB !== " Offen";
+      });
+
+      const card = document.getElementById('liveMatchCard');
+
+      if (!nextMatchId) {
+        card.innerHTML = `<div class="text-center text-stone-400 font-bold py-4">🏆 Alle Spiele der aktuellen Phase beendet oder noch keine Teams bereit!</div>`;
+        currentLiveMatchId = null;
+        return;
+      }
+
+      currentLiveMatchId = nextMatchId;
+      const match = tournamentTreeState[nextMatchId];
+
+      card.innerHTML = `
+        <div class="flex justify-between items-center mb-3">
+          <span id="liveMatchRound" class="text-xs font-black uppercase text-pink-400 tracking-wider">NEXT MATCH: ${match.roundTitle || 'K.O. Spiel'}</span>
+          <span class="bg-pink-500/20 text-pink-300 border border-pink-500/30 text-[10px] font-bold px-2.5 py-1 rounded-full animate-pulse">● LIVE ON COURT</span>
+        </div>
+
+        <div class="flex flex-col md:flex-row justify-between items-center gap-6 my-4">
+          <div class="flex-1 text-center md:text-right">
+            <div id="liveTeamA" class="text-2xl md:text-3xl font-black text-white">${match.teamA}</div>
+          </div>
+
+          <div class="flex items-center gap-3 bg-stone-900 px-6 py-3 rounded-2xl border border-stone-700 shadow-inner">
+            <input type="number" id="liveScoreA" placeholder="0" min="0" value="${match.scoreA !== null ? match.scoreA : ''}" class="w-16 bg-stone-800 border border-stone-600 rounded-xl py-2 text-center text-2xl font-black text-white focus:outline-none focus:border-pink-500">
+            <span class="text-2xl font-black text-stone-500">:</span>
+            <input type="number" id="liveScoreB" placeholder="0" min="0" value="${match.scoreB !== null ? match.scoreB : ''}" class="w-16 bg-stone-800 border border-stone-600 rounded-xl py-2 text-center text-2xl font-black text-white focus:outline-none focus:border-pink-500">
+          </div>
+
+          <div class="flex-1 text-center md:text-left">
+            <div id="liveTeamB" class="text-2xl md:text-3xl font-black text-white">${match.teamB}</div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-2">
+          <button onclick="saveLiveScore()" class="bg-pink-500 hover:bg-pink-600 text-white font-black px-6 py-3 rounded-xl text-xs uppercase tracking-wider transition-all shadow-lg flex items-center gap-2">
+            💾 Ergebnis Speichern & Nächstes Match ➔
+          </button>
+        </div>
+      `;
+    }
+
+    function saveLiveScore() {
+      if (!currentLiveMatchId) return;
+
+      const inputA = document.getElementById('liveScoreA').value;
+      const inputB = document.getElementById('liveScoreB').value;
+
+      const scoreA = inputA === "" ? 0 : parseInt(inputA);
+      const scoreB = inputB === "" ? 0 : parseInt(inputB);
+
+      if (scoreA === scoreB) {
+        alert("Im K.o.-System muss es einen Sieger geben (kein Unentschieden)!");
+        return;
+      }
+
+      const match = tournamentTreeState[currentLiveMatchId];
+      match.scoreA = scoreA;
+      match.scoreB = scoreB;
+      match.winner = scoreA > scoreB ? match.teamA : match.teamB;
+
+      loadTournament(); // Aktualisiert den Baum & schaltet sofort zum nächsten Match weiter!
     }
 
     // Beim Aufruf laden
