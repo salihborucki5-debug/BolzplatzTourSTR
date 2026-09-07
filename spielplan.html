@@ -3,50 +3,70 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BolzplatzTour STR - Spielplan</title>
+  <title>BolzplatzTour STR - Live Spielplan & Ergebnis-Eingabe</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-stone-900 text-white min-h-screen p-4 md:p-8">
 
-  <div class="max-w-7xl mx-auto">
+  <div class="max-w-[1600px] mx-auto">
     <!-- HEADER -->
-    <header class="flex flex-col md:flex-row justify-between items-center mb-8 pb-4 border-b border-stone-800 gap-4">
+    <header class="flex flex-col md:flex-row justify-between items-center mb-6 pb-4 border-b border-stone-800 gap-4">
       <div>
         <h1 class="text-3xl font-black text-pink-500 uppercase tracking-wider">BOLZPLATZTOUR STR</h1>
-        <p class="text-stone-400 text-sm">Turnierbaum</p>
+        <p class="text-stone-400 text-sm">Gemeinsamer Turnierbaum • Frauen top-seeded</p>
       </div>
 
-      <!-- KATEGORIE SWITCHER (HERREN / FRAUEN) -->
-      <div class="flex gap-2 bg-stone-800 p-1.5 rounded-xl border border-stone-700">
-        <button onclick="switchCategory('M')" id="btnM" class="px-5 py-2 rounded-lg font-bold text-sm bg-pink-500 text-white transition-all">
-          🚹 Herren
-        </button>
-        <button onclick="switchCategory('F')" id="btnF" class="px-5 py-2 rounded-lg font-bold text-sm text-stone-400 hover:text-white transition-all">
-          🚺 Frauen
+      <div class="flex gap-3">
+        <button onclick="loadTournament()" class="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-xl text-xs font-black transition-all shadow-lg flex items-center gap-2">
+          🔄 Baum Aktualisieren
         </button>
       </div>
     </header>
 
     <!-- STATUS BAR -->
-    <div class="bg-stone-800/80 border border-stone-700 rounded-xl p-4 mb-8 flex justify-between items-center">
+    <div class="bg-stone-800/80 border border-stone-700 rounded-2xl p-4 mb-6 flex flex-wrap justify-between items-center gap-4 shadow-xl">
       <div>
-        <span class="text-stone-400 text-xs uppercase font-bold block">Angemeldete Teams</span>
-        <span id="teamCountDisplay" class="text-xl font-bold text-pink-400">Lädt...</span>
+        <span class="text-stone-400 text-xs uppercase font-bold block">Alle Teams im Turnier</span>
+        <span id="teamCountDisplay" class="text-xl font-black text-pink-400">Lädt...</span>
       </div>
       <div>
-        <span class="text-stone-400 text-xs uppercase font-bold block">Turnierbaum</span>
-        <span id="phaseDisplay" class="text-xl font-bold text-white">-</span>
+        <span class="text-stone-400 text-xs uppercase font-bold block">Turniergröße</span>
+        <span id="phaseDisplay" class="text-xl font-black text-white">-</span>
       </div>
-      <button onclick="loadTournament()" class="bg-stone-700 hover:bg-stone-600 px-3 py-1.5 rounded-lg text-xs font-bold transition-all">
-        🔄 Aktualisieren
-      </button>
+      <div class="text-xs text-stone-400 max-w-xs">
+        💡 <strong class="text-pink-400">Hinweis:</strong> Klicke auf ein Match, um den Endstand einzutragen. Der Sieger wird automatisch weitergeleitet!
+      </div>
     </div>
 
     <!-- KO-BAUM CONTAINER -->
-    <div class="overflow-x-auto pb-6">
-      <div id="treeGrid" class="flex gap-6 min-w-[800px] justify-start items-stretch">
+    <div class="overflow-x-auto pb-8">
+      <div id="treeGrid" class="flex gap-6 min-w-[900px] justify-start items-stretch">
         <!-- Wird dynamisch per JS befüllt -->
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ERGEBNIS EINTRAGEN -->
+  <div id="scoreModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-stone-800 border border-stone-700 p-6 rounded-2xl max-w-sm w-full space-y-4 shadow-2xl">
+      <h3 class="text-lg font-black text-pink-500 uppercase tracking-wider text-center" id="modalMatchTitle">Ergebnis eintragen</h3>
+      
+      <div class="space-y-3 pt-2">
+        <div>
+          <label class="block text-xs font-bold text-stone-300 mb-1" id="labelTeamA">Team 1 Score</label>
+          <input type="number" id="scoreA" min="0" value="0" class="w-full bg-stone-900 border border-stone-700 rounded-xl px-4 py-2 text-center text-xl font-black text-white focus:outline-none focus:border-pink-500">
+        </div>
+        <div class="text-center font-black text-stone-500">VS</div>
+        <div>
+          <label class="block text-xs font-bold text-stone-300 mb-1" id="labelTeamB">Team 2 Score</label>
+          <input type="number" id="scoreB" min="0" value="0" class="w-full bg-stone-900 border border-stone-700 rounded-xl px-4 py-2 text-center text-xl font-black text-white focus:outline-none focus:border-pink-500">
+        </div>
+      </div>
+
+      <div class="flex gap-2 pt-3">
+        <button onclick="closeModal()" class="flex-1 bg-stone-700 hover:bg-stone-600 text-stone-200 font-bold py-2.5 rounded-xl text-xs transition-all">Abbrechen</button>
+        <button onclick="saveScore()" class="flex-1 bg-pink-500 hover:bg-pink-600 text-white font-black py-2.5 rounded-xl text-xs transition-all shadow-md">Speichern & Weiter</button>
       </div>
     </div>
   </div>
@@ -56,32 +76,16 @@
     const SUPABASE_KEY = "sb_publishable_9c2p0DsLdUh4K4wq3xYIHw_ah2wyOQu";
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let currentCategory = 'M';
-
-    function switchCategory(cat) {
-      currentCategory = cat;
-      const btnM = document.getElementById('btnM');
-      const btnF = document.getElementById('btnF');
-
-      if (cat === 'M') {
-        btnM.className = "px-5 py-2 rounded-lg font-bold text-sm bg-pink-500 text-white transition-all";
-        btnF.className = "px-5 py-2 rounded-lg font-bold text-sm text-stone-400 hover:text-white transition-all";
-      } else {
-        btnF.className = "px-5 py-2 rounded-lg font-bold text-sm bg-pink-500 text-white transition-all";
-        btnM.className = "px-5 py-2 rounded-lg font-bold text-sm text-stone-400 hover:text-white transition-all";
-      }
-      loadTournament();
-    }
+    // In-Memory Speicher für Match-Ergebnisse im aktuellen Baum
+    let tournamentTreeState = {};
+    let currentEditingMatch = null;
 
     async function loadTournament() {
       const treeGrid = document.getElementById('treeGrid');
-      treeGrid.innerHTML = `<div class="text-stone-400 text-sm">Lade Teams...</div>`;
+      treeGrid.innerHTML = `<div class="text-stone-400 text-sm">Berechne gemischten Turnierbaum...</div>`;
 
-      // Teams aus Supabase holen
-      const { data: teams, error } = await db
-        .from('teams')
-        .select('*')
-        .like('team_name', `${currentCategory}%`);
+      // 1. Alle Teams (Männer & Frauen) holen
+      const { data: teams, error } = await db.from('teams').select('*');
 
       if (error || !teams) {
         treeGrid.innerHTML = `<div class="text-red-400 text-sm">Fehler beim Laden der Teams.</div>`;
@@ -89,7 +93,7 @@
       }
 
       const count = teams.length;
-      document.getElementById('teamCountDisplay').innerText = `${count} Teams`;
+      document.getElementById('teamCountDisplay').innerText = `${count} Teams gesamt`;
 
       if (count < 2) {
         treeGrid.innerHTML = `<div class="text-stone-500 italic text-sm">Mindestens 2 Teams erforderlich.</div>`;
@@ -97,21 +101,19 @@
         return;
       }
 
-      // EXAKTE LOGIK FÜR TURNIERGRÖSSE:
-      let treeSize = 2;
-      if (count > 16) {
-        treeSize = 32; // 17 - 32 Teams -> 32er Baum (Sechzehntelfinale)
-      } else if (count > 8) {
-        treeSize = 16; // 9 - 16 Teams -> 16er Baum (Achtelfinale)
-      } else if (count > 4) {
-        treeSize = 8;  // 5 - 8 Teams -> 8er Baum (Viertelfinale)
-      } else if (count > 2) {
-        treeSize = 4;  // 3 - 4 Teams -> 4er Baum (Halbfinale)
-      } else {
-        treeSize = 2;  // 2 Teams -> Direkt Finale
-      }
+      // Frauen zuerst sortieren (alle F... Teams nach oben, M... nach unten)
+      const femaleTeams = teams.filter(t => t.team_name.startsWith('F'));
+      const maleTeams = teams.filter(t => t.team_name.startsWith('M'));
+      const sortedTeams = [...femaleTeams, ...maleTeams];
 
-      // Runden-Startbezeichnung
+      // 2. Baumgröße festlegen
+      let treeSize = 2;
+      if (count > 16) treeSize = 32;
+      else if (count > 8) treeSize = 16;
+      else if (count > 4) treeSize = 8;
+      else if (count > 2) treeSize = 4;
+      else treeSize = 2;
+
       let startName = "";
       if (treeSize === 32) startName = "1/16-Finale";
       else if (treeSize === 16) startName = "Achtelfinale";
@@ -119,16 +121,13 @@
       else if (treeSize === 4) startName = "Halbfinale";
       else startName = "FINALE";
 
-      document.getElementById('phaseDisplay').innerText = `${treeSize}er Baum (Start: ${startName})`;
+      document.getElementById('phaseDisplay').innerText = `${treeSize}er Baum (${femaleTeams.length} Frauen- & ${maleTeams.length} Herren-Teams)`;
 
       treeGrid.innerHTML = '';
 
-      // Teams durchmischen für Auslosung
-      let shuffled = [...teams].sort(() => Math.random() - 0.5);
-
-      // KO-Baum generieren von der Startrunde bis zum Finale
+      // 3. Erstes Runden-Feld initialisieren
       let currentSize = treeSize;
-      let isFirstRound = true;
+      let roundIndex = 0;
 
       while (currentSize >= 2) {
         let roundTitle = "";
@@ -141,60 +140,132 @@
         const col = createColumn(roundTitle);
         const matchCount = currentSize / 2;
 
-        for (let i = 0; i < matchCount; i++) {
-          let teamA = `Sieger Spiel ${i * 2 + 1}`;
-          let teamB = `Sieger Spiel ${i * 2 + 2}`;
+        for (let m = 0; m < matchCount; m++) {
+          const matchId = `r${roundIndex}_m${m}`;
+          
+          let teamA = "Gewinner";
+          let teamB = "Gewinner";
 
-          // In der 1. Runde befüllen wir echte Teams / Platzhalter wenn Plätze frei sind
-          if (isFirstRound) {
-            teamA = shuffled.length > 0 ? shuffled.pop().team_name : " Offen";
-            teamB = shuffled.length > 0 ? shuffled.pop().team_name : " Offen";
+          if (roundIndex === 0) {
+            teamA = sortedTeams[m * 2] ? sortedTeams[m * 2].team_name : " Offen";
+            teamB = sortedTeams[m * 2 + 1] ? sortedTeams[m * 2 + 1].team_name : " Offen";
+
+            // State im Speicher anlegen falls neu
+            if (!tournamentTreeState[matchId]) {
+              tournamentTreeState[matchId] = { teamA, teamB, scoreA: null, scoreB: null, winner: null };
+            } else {
+              tournamentTreeState[matchId].teamA = teamA;
+              tournamentTreeState[matchId].teamB = teamB;
+            }
+          } else {
+            // Folgerunden: Sieger aus vorherigen Matches holen
+            const prevMatchA = tournamentTreeState[`r${roundIndex-1}_m${m*2}`];
+            const prevMatchB = tournamentTreeState[`r${roundIndex-1}_m${m*2+1}`];
+
+            teamA = prevMatchA && prevMatchA.winner ? prevMatchA.winner : `Sieger M${m * 2 + 1}`;
+            teamB = prevMatchB && prevMatchB.winner ? prevMatchB.winner : `Sieger M${m * 2 + 2}`;
+
+            if (!tournamentTreeState[matchId]) {
+              tournamentTreeState[matchId] = { teamA, teamB, scoreA: null, scoreB: null, winner: null };
+            } else {
+              tournamentTreeState[matchId].teamA = teamA;
+              tournamentTreeState[matchId].teamB = teamB;
+            }
           }
 
-          col.appendChild(createMatchCard(teamA, teamB, `Spiel ${i + 1}`));
+          col.appendChild(createMatchCard(matchId, roundIndex, m, roundTitle));
         }
 
         treeGrid.appendChild(col);
         currentSize /= 2;
-        isFirstRound = false;
+        roundIndex++;
       }
     }
 
     function createColumn(title) {
       const col = document.createElement('div');
-      col.className = "flex-1 min-w-[220px] flex flex-col justify-around bg-stone-800/40 p-3 rounded-2xl border border-stone-800";
+      col.className = "flex-1 min-w-[240px] flex flex-col justify-around bg-stone-800/40 p-3 rounded-2xl border border-stone-800";
       
       const header = document.createElement('h3');
-      header.className = "text-center text-xs font-black uppercase text-pink-500 mb-4 bg-stone-800 py-2 rounded-xl border border-stone-700 tracking-wider";
+      header.className = "text-center text-xs font-black uppercase text-pink-500 mb-4 bg-stone-800 py-2 rounded-xl border border-stone-700 tracking-wider shadow-inner";
       header.innerText = title;
       
       col.appendChild(header);
       return col;
     }
 
-    function createMatchCard(teamA, teamB, label) {
+    function createMatchCard(matchId, rIndex, mIndex, roundTitle) {
+      const match = tournamentTreeState[matchId];
       const card = document.createElement('div');
-      card.className = "bg-stone-800 border border-stone-700 rounded-xl p-3 my-2 shadow-md space-y-2";
+      card.className = "bg-stone-800 hover:border-pink-500/50 transition-all border border-stone-700 rounded-xl p-3 my-2 shadow-md space-y-2 cursor-pointer group";
+      card.onclick = () => openScoreModal(matchId, roundTitle);
 
-      const isAOpen = teamA === " Offen";
-      const isBOpen = teamB === " Offen";
+      const isFinished = match.winner !== null;
 
       card.innerHTML = `
-        <div class="text-[10px] font-bold text-stone-500 uppercase">${label}</div>
-        <div class="flex justify-between items-center text-sm font-bold ${isAOpen ? 'text-amber-400 italic font-normal' : 'text-white'}">
-          <span>${teamA}</span>
-          <span class="text-xs text-stone-500">-</span>
+        <div class="flex justify-between items-center text-[10px] font-bold text-stone-500 uppercase">
+          <span>Spiel ${mIndex + 1}</span>
+          ${isFinished ? '<span class="text-pink-400 font-black">BEENDET</span>' : '<span class="group-hover:text-pink-400">✎ Eintragen</span>'}
         </div>
+
+        <div class="flex justify-between items-center text-sm font-bold ${match.winner === match.teamA ? 'text-pink-400 font-extrabold' : 'text-white'}">
+          <span>${match.teamA}</span>
+          <span class="text-xs bg-stone-900 px-2 py-0.5 rounded border border-stone-700 font-mono">${match.scoreA !== null ? match.scoreA : '-'}</span>
+        </div>
+
         <div class="border-t border-stone-700/60 my-1"></div>
-        <div class="flex justify-between items-center text-sm font-bold ${isBOpen ? 'text-amber-400 italic font-normal' : 'text-white'}">
-          <span>${teamB}</span>
-          <span class="text-xs text-stone-500">-</span>
+
+        <div class="flex justify-between items-center text-sm font-bold ${match.winner === match.teamB ? 'text-pink-400 font-extrabold' : 'text-white'}">
+          <span>${match.teamB}</span>
+          <span class="text-xs bg-stone-900 px-2 py-0.5 rounded border border-stone-700 font-mono">${match.scoreB !== null ? match.scoreB : '-'}</span>
         </div>
       `;
 
       return card;
     }
 
+    function openScoreModal(matchId, roundTitle) {
+      const match = tournamentTreeState[matchId];
+      if (match.teamA.includes("Sieger") || match.teamB.includes("Sieger") || match.teamA === " Offen" || match.teamB === " Offen") {
+        alert("Dieses Match steht noch nicht fest!");
+        return;
+      }
+
+      currentEditingMatch = matchId;
+      document.getElementById('modalMatchTitle').innerText = `${roundTitle}`;
+      document.getElementById('labelTeamA').innerText = match.teamA;
+      document.getElementById('labelTeamB').innerText = match.teamB;
+      document.getElementById('scoreA').value = match.scoreA !== null ? match.scoreA : 0;
+      document.getElementById('scoreB').value = match.scoreB !== null ? match.scoreB : 0;
+
+      document.getElementById('scoreModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('scoreModal').classList.add('hidden');
+    }
+
+    function saveScore() {
+      if (!currentEditingMatch) return;
+
+      const scoreA = parseInt(document.getElementById('scoreA').value) || 0;
+      const scoreB = parseInt(document.getElementById('scoreB').value) || 0;
+
+      if (scoreA === scoreB) {
+        alert("Im K.o.-System muss es einen Sieger geben (kein Unentschieden)!");
+        return;
+      }
+
+      const match = tournamentTreeState[currentEditingMatch];
+      match.scoreA = scoreA;
+      match.scoreB = scoreB;
+      match.winner = scoreA > scoreB ? match.teamA : match.teamB;
+
+      closeModal();
+      loadTournament(); // Baum neu zeichnen & Sieger weiterleiten!
+    }
+
+    // Beim Aufruf laden
     loadTournament();
   </script>
 </body>
