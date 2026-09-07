@@ -109,7 +109,6 @@
     const SUPABASE_KEY = "sb_publishable_9c2p0DsLdUh4K4wq3xYIHw_ah2wyOQu";
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // In-Memory Speicher für Match-Ergebnisse im aktuellen Baum
     let tournamentTreeState = {};
     let currentEditingMatch = null;
     let currentLiveMatchId = null;
@@ -118,7 +117,7 @@
       const treeGrid = document.getElementById('treeGrid');
       treeGrid.innerHTML = `<div class="text-stone-400 text-sm">Berechne gemischten Turnierbaum & lade Ergebnisse...</div>`;
 
-      // 1. Teams UND bereits gespeicherte Matches aus Supabase holen
+      // 1. Teams UND bereits gespeicherte Matches dauerhaft aus Supabase laden
       const [teamsRes, matchesRes] = await Promise.all([
         db.from('teams').select('*'),
         db.from('matches').select('*')
@@ -127,7 +126,7 @@
       const teams = teamsRes.data || [];
       const dbMatches = matchesRes.data || [];
 
-      // Gespeicherte Supabase Matches in den In-Memory-Speicher schreiben
+      // Gespeicherte Supabase Matches in den Arbeits-Speicher laden
       dbMatches.forEach(m => {
         tournamentTreeState[m.id] = {
           teamA: m.team_a,
@@ -302,7 +301,7 @@
       match.winner = scoreA > scoreB ? match.teamA : match.teamB;
       match.loser = scoreA > scoreB ? match.teamB : match.teamA;
 
-      // In Supabase in die 'matches' Tabelle speichern
+      // Dauerhaft in Supabase speichern
       await db.from('matches').upsert({
         id: matchId,
         match_number: match.matchNumber,
@@ -330,14 +329,13 @@
       await saveMatchToSupabase(currentEditingMatch, scoreA, scoreB);
 
       closeModal();
-      loadTournament(); // Baum neu zeichnen & Sieger weiterleiten!
+      loadTournament();
     }
 
     // --- LIVE MATCH DASHBOARD LOGIK ---
     function updateLiveMatchDashboard() {
       const matchIds = Object.keys(tournamentTreeState);
       
-      // Findet das erste offene Match, bei dem beide Teams feststehen
       const nextMatchId = matchIds.find(id => {
         const m = tournamentTreeState[id];
         return m.winner === null && 
@@ -402,10 +400,10 @@
 
       await saveMatchToSupabase(currentLiveMatchId, scoreA, scoreB);
 
-      loadTournament(); // Aktualisiert den Baum & schaltet sofort zum nächsten Match weiter!
+      loadTournament();
     }
 
-    // Beim Aufruf laden
+    // Beim Laden der Seite ausführen
     loadTournament();
   </script>
 </body>
