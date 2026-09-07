@@ -13,12 +13,19 @@
   <div class="max-w-md w-full bg-white p-6 rounded-2xl shadow-xl border border-stone-200">
     <header class="text-center mb-6">
       <h1 class="text-2xl font-black text-pink-500 uppercase tracking-wider">BOLZPLATZTOUR STR</h1>
-      <p class="text-stone-500 text-xs mt-1">Offizielle Team-Anmeldung</p>
+      <p class="text-stone-500 text-xs mt-1">Team-Anmeldung</p>
     </header>
 
-    <!-- ANMELDEFORMULAR -->
     <form id="regForm" onsubmit="registerTeam(event)" class="space-y-4">
       
+      <div>
+        <label class="block text-xs font-bold uppercase text-stone-600 mb-1">Turnier-Kategorie *</label>
+        <select id="category" required class="w-full bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-500 font-bold text-gray-900">
+          <option value="M">Männer</option>
+          <option value="F">Frauen</option>
+        </select>
+      </div>
+
       <div>
         <label class="block text-xs font-bold uppercase text-stone-600 mb-1">Name des Kapitäns *</label>
         <input type="text" id="captainName" required placeholder="z. B. Max Mustermann"
@@ -40,7 +47,6 @@
         </select>
       </div>
 
-      <!-- MUTTIZETTEL HINWEIS & BESTÄTIGUNG (Nur sichtbar wenn U18 ausgewählt ist) -->
       <div id="muttizettelBox" class="hidden space-y-2 p-3 bg-amber-50 rounded-xl border border-amber-200 transition-all">
         <p class="text-xs text-amber-900 font-medium">
           📄 Für alle Spieler unter 18 Jahren muss eine Einverständniserklärung vorliegen: 
@@ -49,14 +55,13 @@
         <div class="flex items-start gap-2 pt-1">
           <input type="checkbox" id="muttizettelCheck" class="mt-1 accent-pink-500 rounded cursor-pointer">
           <label for="muttizettelCheck" class="text-xs text-amber-900 font-semibold">
-            Ich habe den Muttizettel gelesen und bestätige, dass alle minderjährigen Spieler diesen ihren Erziehungsberechtigten vorgezeigt und die bedingungen akzeptiert haben. *
+            Ich bestätige, dass die Erziehungsberechtigten aller unter 18-jährigen Teammitglieder den Muttizettel erhalten, gelesen und ausdrücklich akzeptiert haben. *
           </label>
         </div>
       </div>
 
       <div class="space-y-2 pt-2 border-t border-stone-200">
         
-        <!-- PFLICHT-CHECKBOX: 5+1 KADER -->
         <div class="flex items-start gap-2 bg-pink-50 p-3 rounded-xl border border-pink-200">
           <input type="checkbox" id="kaderCheck" required class="mt-1 accent-pink-500 h-4 w-4 rounded cursor-pointer">
           <label for="kaderCheck" class="text-xs text-stone-800 font-medium">
@@ -76,11 +81,10 @@
 
       <button type="submit" id="submitBtn"
         class="w-full bg-pink-500 hover:bg-pink-600 text-white font-extrabold py-3 rounded-xl transition-all shadow-md mt-4 cursor-pointer">
-        🚀 Team verbindlich anmelden
+        Team anmelden
       </button>
     </form>
 
-    <!-- ERFOLGS-ANZEIGE MIT QR-CODE -->
     <div id="successBox" class="hidden text-center space-y-4">
       <div class="p-4 bg-pink-50 border border-pink-200 rounded-2xl">
         <h2 class="text-xl font-bold text-pink-600 mb-1">🎉 Anmeldung Erfolgreich!</h2>
@@ -135,8 +139,13 @@
       submitBtn.disabled = true;
       submitBtn.innerText = "Prüfe Plätze...";
 
-      // 1. Prüfen, wie viele Teams bereits angemeldet sind
-      const { data: existingTeams, error: countError } = await db.from('teams').select('id');
+      const category = document.getElementById('category').value; // M oder F
+
+      // 1. Zählen, wie viele Teams in dieser Kategorie bereits angemeldet sind
+      const { data: existingTeams, error: countError } = await db
+        .from('teams')
+        .select('team_name')
+        .like('team_name', `${category}%`);
       
       if (countError) {
         alert("Fehler beim Abrufen der Anmeldungen: " + countError.message);
@@ -145,18 +154,20 @@
         return;
       }
 
-      if (existingTeams.length >= 30) {
-        alert("Leider sind bereits alle 30 Startplätze vergeben!");
+      const count = (existingTeams ? existingTeams.length : 0) + 1;
+      const limit = category === 'M' ? 24 : 8;
+
+      if (count > limit) {
+        alert(`Leider sind bereits alle ${limit} Plätze für ${category === 'M' ? 'Herren' : 'Frauen'} vergeben!`);
         submitBtn.disabled = false;
-        submitBtn.innerText = "❌ Turnier ausgebucht";
+        submitBtn.innerText = "❌ Platz ausgebucht";
         return;
       }
 
       submitBtn.innerText = "Speichere...";
 
-      // 2. Fortlaufende Zahl vergeben (1 bis 30)
-      const nextTeamNumber = existingTeams.length + 1;
-      const teamName = `Team ${nextTeamNumber}`;
+      // 2. Automatischer Name (z.B. F1 bis F8 oder M1 bis M24)
+      const teamName = `${category}${count}`;
 
       const captainName = document.getElementById('captainName').value.trim();
       const captainEmail = document.getElementById('captainEmail').value.trim();
