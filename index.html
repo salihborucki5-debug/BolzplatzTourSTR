@@ -145,6 +145,7 @@
       const { error } = await db.from('teams').insert([{
         team_name: generatedTeamName,
         captain_info: `${captain} (${email}) - ${age === 'under18' ? 'U18' : 'Ü18'}`,
+        player_count: 6, // 👈 Hier wird die Pflichtspalte bedient!
         checked_in: true
       }]);
 
