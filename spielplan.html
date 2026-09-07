@@ -117,7 +117,7 @@
       const treeGrid = document.getElementById('treeGrid');
       treeGrid.innerHTML = `<div class="text-stone-400 text-sm">Berechne gemischten Turnierbaum & lade Ergebnisse...</div>`;
 
-      // 1. Teams UND bereits gespeicherte Matches dauerhaft aus Supabase laden
+      // 1. Teams UND bereits gespeicherte Matches aus Supabase holen
       const [teamsRes, matchesRes] = await Promise.all([
         db.from('teams').select('*'),
         db.from('matches').select('*')
@@ -126,7 +126,9 @@
       const teams = teamsRes.data || [];
       const dbMatches = matchesRes.data || [];
 
-      // Gespeicherte Supabase Matches in den Arbeits-Speicher laden
+      tournamentTreeState = {};
+
+      // Supabase-Daten in State laden
       dbMatches.forEach(m => {
         tournamentTreeState[m.id] = {
           teamA: m.team_a,
@@ -149,12 +151,12 @@
         return;
       }
 
-      // Frauen zuerst sortieren (alle F... Teams nach oben, M... nach unten)
+      // Frauen zuerst sortieren
       const femaleTeams = teams.filter(t => t.team_name.startsWith('F'));
       const maleTeams = teams.filter(t => t.team_name.startsWith('M'));
       const sortedTeams = [...femaleTeams, ...maleTeams];
 
-      // 2. Baumgröße festlegen
+      // Baumgröße festlegen
       let treeSize = 2;
       if (count > 16) treeSize = 32;
       else if (count > 8) treeSize = 16;
@@ -166,7 +168,6 @@
 
       treeGrid.innerHTML = '';
 
-      // 3. Erstes Runden-Feld initialisieren
       let currentSize = treeSize;
       let roundIndex = 0;
       let globalMatchCounter = 1;
@@ -186,37 +187,38 @@
           const matchId = `r${roundIndex}_m${m}`;
           const currentMatchNum = globalMatchCounter++;
           
-          let teamA = "Gewinner";
-          let teamB = "Gewinner";
+          let defaultTeamA = "Gewinner";
+          let defaultTeamB = "Gewinner";
 
           if (roundIndex === 0) {
-            teamA = sortedTeams[m * 2] ? sortedTeams[m * 2].team_name : " Offen";
-            teamB = sortedTeams[m * 2 + 1] ? sortedTeams[m * 2 + 1].team_name : " Offen";
-
-            if (!tournamentTreeState[matchId]) {
-              tournamentTreeState[matchId] = { teamA, teamB, scoreA: null, scoreB: null, winner: null, loser: null, roundTitle, matchNumber: currentMatchNum };
-            } else {
-              tournamentTreeState[matchId].teamA = teamA;
-              tournamentTreeState[matchId].teamB = teamB;
-              tournamentTreeState[matchId].roundTitle = roundTitle;
-              tournamentTreeState[matchId].matchNumber = currentMatchNum;
-            }
+            defaultTeamA = sortedTeams[m * 2] ? sortedTeams[m * 2].team_name : " Offen";
+            defaultTeamB = sortedTeams[m * 2 + 1] ? sortedTeams[m * 2 + 1].team_name : " Offen";
           } else {
-            // Folgerunden: Sieger aus vorherigen Matches holen
             const prevMatchA = tournamentTreeState[`r${roundIndex-1}_m${m*2}`];
             const prevMatchB = tournamentTreeState[`r${roundIndex-1}_m${m*2+1}`];
 
-            teamA = prevMatchA && prevMatchA.winner ? prevMatchA.winner : `Sieger M${m * 2 + 1}`;
-            teamB = prevMatchB && prevMatchB.winner ? prevMatchB.winner : `Sieger M${m * 2 + 2}`;
+            defaultTeamA = prevMatchA && prevMatchA.winner ? prevMatchA.winner : `Sieger M${prevMatchA ? prevMatchA.matchNumber : m * 2 + 1}`;
+            defaultTeamB = prevMatchB && prevMatchB.winner ? prevMatchB.winner : `Sieger M${prevMatchB ? prevMatchB.matchNumber : m * 2 + 2}`;
+          }
 
-            if (!tournamentTreeState[matchId]) {
-              tournamentTreeState[matchId] = { teamA, teamB, scoreA: null, scoreB: null, winner: null, loser: null, roundTitle, matchNumber: currentMatchNum };
-            } else {
-              tournamentTreeState[matchId].teamA = teamA;
-              tournamentTreeState[matchId].teamB = teamB;
-              tournamentTreeState[matchId].roundTitle = roundTitle;
-              tournamentTreeState[matchId].matchNumber = currentMatchNum;
-            }
+          // Falls in Supabase vorhanden, behalten wir die gespeicherten Punkte & Gewinner
+          if (!tournamentTreeState[matchId]) {
+            tournamentTreeState[matchId] = {
+              teamA: defaultTeamA,
+              teamB: defaultTeamB,
+              scoreA: null,
+              scoreB: null,
+              winner: null,
+              loser: null,
+              roundTitle: roundTitle,
+              matchNumber: currentMatchNum
+            };
+          } else {
+            // Teamnamen aktualisieren, falls z. B. in Folgerunden erst jetzt die Sieger feststehen
+            tournamentTreeState[matchId].teamA = defaultTeamA !== "Gewinner" ? defaultTeamA : tournamentTreeState[matchId].teamA;
+            tournamentTreeState[matchId].teamB = defaultTeamB !== "Gewinner" ? defaultTeamB : tournamentTreeState[matchId].teamB;
+            tournamentTreeState[matchId].roundTitle = roundTitle;
+            tournamentTreeState[matchId].matchNumber = currentMatchNum;
           }
 
           col.appendChild(createMatchCard(matchId, roundIndex, m, roundTitle));
@@ -227,7 +229,6 @@
         roundIndex++;
       }
 
-      // Live Dashboard oben synchronisieren
       updateLiveMatchDashboard();
     }
 
@@ -301,8 +302,8 @@
       match.winner = scoreA > scoreB ? match.teamA : match.teamB;
       match.loser = scoreA > scoreB ? match.teamB : match.teamA;
 
-      // Dauerhaft in Supabase speichern
-      await db.from('matches').upsert({
+      // Dauerhaft in Supabase speichern/aktualisieren
+      const { error } = await db.from('matches').upsert({
         id: matchId,
         match_number: match.matchNumber,
         round_name: match.roundTitle,
@@ -313,6 +314,11 @@
         winner: match.winner,
         loser: match.loser
       });
+
+      if (error) {
+        console.error("Fehler beim Speichern in Supabase:", error);
+        alert("Fehler beim Speichern in Supabase: " + error.message);
+      }
     }
 
     async function saveScore() {
@@ -332,7 +338,6 @@
       loadTournament();
     }
 
-    // --- LIVE MATCH DASHBOARD LOGIK ---
     function updateLiveMatchDashboard() {
       const matchIds = Object.keys(tournamentTreeState);
       
@@ -403,7 +408,7 @@
       loadTournament();
     }
 
-    // Beim Laden der Seite ausführen
+    // Beim Aufruf der Seite ausführen
     loadTournament();
   </script>
 </body>
