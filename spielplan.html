@@ -6,6 +6,8 @@
   <title>BolzplatzTour STR - Live Spielplan & Ergebnis-Eingabe</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- FEUERWERK / KONFETTI LIBRARY -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body class="bg-stone-900 text-white min-h-screen p-4 md:p-8">
 
@@ -101,6 +103,27 @@
         <button onclick="closeModal()" class="flex-1 bg-stone-700 hover:bg-stone-600 text-stone-200 font-bold py-2.5 rounded-xl text-xs transition-all">Abbrechen</button>
         <button onclick="saveScore()" class="flex-1 bg-pink-500 hover:bg-pink-600 text-white font-black py-2.5 rounded-xl text-xs transition-all shadow-md">Speichern & Weiter</button>
       </div>
+    </div>
+  </div>
+
+  <!-- SIEGER-CELEBRATION OVERLAY (FEUERWERK & POPUP) -->
+  <div id="winnerOverlay" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden flex flex-col items-center justify-center p-6 z-50 transition-all duration-500">
+    <div class="relative bg-gradient-to-b from-amber-500/20 via-stone-900 to-stone-900 border-2 border-amber-400 p-8 md:p-12 rounded-3xl max-w-lg w-full text-center space-y-6 shadow-[0_0_80px_rgba(251,191,36,0.3)] animate-bounce-short">
+      
+      <div class="text-6xl md:text-8xl animate-pulse">🏆</div>
+      
+      <div class="space-y-2">
+        <span class="text-amber-400 text-xs md:text-sm font-black uppercase tracking-[0.3em] block">TURNIER-SIEGER 2026</span>
+        <h2 id="winnerTeamName" class="text-3xl md:text-5xl font-black text-white uppercase tracking-wider drop-shadow-[0_5px_15px_rgba(251,191,36,0.6)]">TEAM NAME</h2>
+      </div>
+
+      <p class="text-stone-300 text-sm font-semibold tracking-wide">
+        👑 Das BolzplatzTour STR Champions-Team steht fest!
+      </p>
+
+      <button onclick="closeWinnerOverlay()" class="mt-4 bg-amber-400 hover:bg-amber-500 text-stone-950 font-black px-8 py-3 rounded-xl text-xs uppercase tracking-widest transition-all shadow-lg hover:scale-105">
+        Schließen
+      </button>
     </div>
   </div>
 
@@ -201,7 +224,6 @@
             defaultTeamB = prevMatchB && prevMatchB.winner ? prevMatchB.winner : `Sieger M${prevMatchB ? prevMatchB.matchNumber : m * 2 + 2}`;
           }
 
-          // Falls in Supabase vorhanden, behalten wir die gespeicherten Punkte & Gewinner
           if (!tournamentTreeState[matchId]) {
             tournamentTreeState[matchId] = {
               teamA: defaultTeamA,
@@ -214,7 +236,6 @@
               matchNumber: currentMatchNum
             };
           } else {
-            // Teamnamen aktualisieren, falls z. B. in Folgerunden erst jetzt die Sieger feststehen
             tournamentTreeState[matchId].teamA = defaultTeamA !== "Gewinner" ? defaultTeamA : tournamentTreeState[matchId].teamA;
             tournamentTreeState[matchId].teamB = defaultTeamB !== "Gewinner" ? defaultTeamB : tournamentTreeState[matchId].teamB;
             tournamentTreeState[matchId].roundTitle = roundTitle;
@@ -302,7 +323,6 @@
       match.winner = scoreA > scoreB ? match.teamA : match.teamB;
       match.loser = scoreA > scoreB ? match.teamB : match.teamA;
 
-      // Dauerhaft in Supabase speichern/aktualisieren
       const { error } = await db.from('matches').upsert({
         id: matchId,
         match_number: match.matchNumber,
@@ -318,6 +338,12 @@
       if (error) {
         console.error("Fehler beim Speichern in Supabase:", error);
         alert("Fehler beim Speichern in Supabase: " + error.message);
+        return;
+      }
+
+      // WENN FINALE BEENDET IST -> FEUERWERK ANIMATION TRIGGERN
+      if (match.roundTitle && match.roundTitle.includes("FINALE") && match.winner) {
+        triggerWinnerCelebration(match.winner);
       }
     }
 
@@ -406,6 +432,52 @@
       await saveMatchToSupabase(currentLiveMatchId, scoreA, scoreB);
 
       loadTournament();
+    }
+
+    // --- SIEGER CELEBRATION & FEUERWERK LOGIK ---
+    function triggerWinnerCelebration(winnerTeam) {
+      document.getElementById('winnerTeamName').innerText = winnerTeam;
+      const overlay = document.getElementById('winnerOverlay');
+      overlay.classList.remove('hidden');
+
+      // Feuerwerk Explosionen abfeuern (dauerhaft für 5 Sekunden)
+      const duration = 5 * 1000;
+      const animationEnd = Date.now() + duration;
+
+      const interval = setInterval(function() {
+        const timeLeft = animationEnd - Date.now();
+
+        if (timeLeft <= 0) {
+          return clearInterval(interval);
+        }
+
+        const particleCount = 50 * (timeLeft / duration);
+
+        // Konfetti links & rechts zünden
+        confetti({
+          particleCount: particleCount,
+          startVelocity: 30,
+          spread: 360,
+          origin: { x: Math.random() * 0.4 + 0.1, y: Math.random() - 0.2 },
+          colors: ['#ec4899', '#f59e0b', '#ffffff', '#eab308']
+        });
+        confetti({
+          particleCount: particleCount,
+          startVelocity: 30,
+          spread: 360,
+          origin: { x: Math.random() * 0.4 + 0.5, y: Math.random() - 0.2 },
+          colors: ['#ec4899', '#f59e0b', '#ffffff', '#eab308']
+        });
+      }, 250);
+
+      // Nach exakt 5 Sekunden automatisch ausblenden
+      setTimeout(() => {
+        closeWinnerOverlay();
+      }, 5000);
+    }
+
+    function closeWinnerOverlay() {
+      document.getElementById('winnerOverlay').classList.add('hidden');
     }
 
     // Beim Aufruf der Seite ausführen
