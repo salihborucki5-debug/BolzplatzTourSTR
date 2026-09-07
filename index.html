@@ -34,9 +34,29 @@
     }
   }
 
+  // Funktionen für das Vollbild-Modal (Lightbox)
+  function openLightbox(imgSrc) {
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImg = document.getElementById("lightbox-img");
+    lightboxImg.src = imgSrc;
+    lightbox.classList.add("active");
+  }
+
+  function closeLightbox() {
+    const lightbox = document.getElementById("lightbox");
+    lightbox.classList.remove("active");
+  }
+
   document.addEventListener("DOMContentLoaded", function() {
     updateHeroImage();
     window.addEventListener("resize", updateHeroImage);
+
+    // ESC-Taste schließt das Vollbild
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "Escape") {
+        closeLightbox();
+      }
+    });
   });
 </script>
 
@@ -224,25 +244,18 @@
   .date-status.past{color:var(--slate);}
   .date-status.loading{color:var(--amber);}
 
-  /* Hover Preview Thumbnail (Leak) - Wird groß beim Hover */
+  /* Preview Thumbnail (Festes Bild) */
   .preview-thumb {
     width: 28px;
-    height: 48px; /* Hochformat 9:16 Proportional */
+    height: 48px;
     aspect-ratio: 9 / 16;
     border-radius: 4px;
     object-fit: cover;
-    opacity: 0.6;
-    transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.25s ease, box-shadow 0.25s ease;
+    opacity: 0.8;
     border: 1px solid rgba(255,255,255,0.3);
-    z-index: 5;
-  }
-  .date-row:hover .preview-thumb {
-    opacity: 1;
-    transform: scale(2.2); /* Vergrößert das Vorschaubild stark */
-    box-shadow: 0 6px 16px rgba(0,0,0,0.7);
   }
 
-  /* Ausklappbare Galerie im 1080:1920 (9:16) Hochformat */
+  /* Ausklappbare Galerie */
   .gallery-accordion {
     max-height: 0;
     overflow: hidden;
@@ -260,15 +273,79 @@
   }
   .gallery-grid img {
     width: 100%;
-    aspect-ratio: 9 / 16; /* 1080:1920 Hochkant-Format */
+    aspect-ratio: 9 / 16;
     object-fit: cover;
     border-radius: 8px;
     border: 1px solid rgba(245,241,232,0.15);
+    cursor: pointer;
     transition: transform 0.2s ease, filter 0.2s ease;
   }
   .gallery-grid img:hover {
     transform: scale(1.04);
     filter: brightness(1.1);
+  }
+
+  /* ---------- LIGHTBOX (VOLLBILD ANSICHT) ---------- */
+  .lightbox {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(11, 20, 32, 0.95);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .lightbox.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .lightbox-wrapper {
+    position: relative;
+    max-width: 90vw;
+    max-height: 85vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .lightbox-img {
+    max-width: 100%;
+    max-height: 85vh;
+    aspect-ratio: 9 / 16; /* 1080:1920 Format */
+    object-fit: contain;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  .lightbox-close {
+    position: absolute;
+    top: -18px;
+    right: -18px;
+    width: 40px;
+    height: 40px;
+    background: var(--pink);
+    color: var(--navy);
+    border: 2px solid #000;
+    border-radius: 50%;
+    font-size: 20px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    transition: transform 0.2s ease, background 0.2s ease;
+    z-index: 10000;
+  }
+  .lightbox-close:hover {
+    transform: scale(1.1);
+    background: #ff4794;
   }
 
   /* ---------- ABOUT ---------- */
@@ -362,19 +439,18 @@
         <div class="date-city">München</div>
         <div class="date-venue">Fotos ansehen 📸</div>
       </div>
-      <!-- Mini Preview Thumb (Wird groß beim Drüberfahren) -->
       <img src="muenchen_4.jpg" alt="Preview" class="preview-thumb">
       <div class="date-status past" style="margin-left: 8px;">Vorbei</div>
     </div>
-    <!-- Ausklappbare Galerie (6 Hochkant-Bilder) -->
+    <!-- Ausklappbare Galerie -->
     <div id="gallery-muenchen" class="gallery-accordion">
       <div class="gallery-grid">
-        <img src="muenchen_1.HEIC" alt="München Bild 1">
-        <img src="muenchen_2.PNG" alt="München Bild 2">
-        <img src="muenchen_3.PNG" alt="München Bild 3">
-        <img src="muenchen_4.jpg" alt="München Bild 4">
-        <img src="muenchen_5.HEIC" alt="München Bild 5">
-        <img src="muenchen_6.jpg" alt="München Bild 6">
+        <img src="muenchen_1.HEIC" alt="München Bild 1" onclick="openLightbox(this.src)">
+        <img src="muenchen_2.PNG" alt="München Bild 2" onclick="openLightbox(this.src)">
+        <img src="muenchen_3.PNG" alt="München Bild 3" onclick="openLightbox(this.src)">
+        <img src="muenchen_4.jpg" alt="München Bild 4" onclick="openLightbox(this.src)">
+        <img src="muenchen_5.HEIC" alt="München Bild 5" onclick="openLightbox(this.src)">
+        <img src="muenchen_6.jpg" alt="München Bild 6" onclick="openLightbox(this.src)">
       </div>
     </div>
   </div>
@@ -387,19 +463,18 @@
         <div class="date-city">Essen</div>
         <div class="date-venue">Fotos ansehen 📸</div>
       </div>
-      <!-- Mini Preview Thumb (Wird groß beim Drüberfahren) -->
       <img src="essen_1.jpg" alt="Preview" class="preview-thumb">
       <div class="date-status past" style="margin-left: 8px;">Vorbei</div>
     </div>
-    <!-- Ausklappbare Galerie (6 Hochkant-Bilder) -->
+    <!-- Ausklappbare Galerie -->
     <div id="gallery-essen" class="gallery-accordion">
       <div class="gallery-grid">
-        <img src="essen_1.jpg" alt="Essen Bild 1">
-        <img src="essen_2.jpg" alt="Essen Bild 2">
-        <img src="essen_3.jpg" alt="Essen Bild 3">
-        <img src="essen_4.jpg" alt="Essen Bild 4">
-        <img src="essen_5.jpg" alt="Essen Bild 5">
-        <img src="essen_6.jpg" alt="Essen Bild 6">
+        <img src="essen_1.jpg" alt="Essen Bild 1" onclick="openLightbox(this.src)">
+        <img src="essen_2.jpg" alt="Essen Bild 2" onclick="openLightbox(this.src)">
+        <img src="essen_3.jpg" alt="Essen Bild 3" onclick="openLightbox(this.src)">
+        <img src="essen_4.jpg" alt="Essen Bild 4" onclick="openLightbox(this.src)">
+        <img src="essen_5.jpg" alt="Essen Bild 5" onclick="openLightbox(this.src)">
+        <img src="essen_6.jpg" alt="Essen Bild 6" onclick="openLightbox(this.src)">
       </div>
     </div>
   </div>
@@ -462,6 +537,14 @@
     <span>Streetfootball</span>
   </div>
 </footer>
+
+<!-- VOLLBILD LIGHTBOX MODAL -->
+<div id="lightbox" class="lightbox" onclick="closeLightbox()">
+  <div class="lightbox-wrapper" onclick="event.stopPropagation()">
+    <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+    <img id="lightbox-img" class="lightbox-img" src="" alt="Vollbild Ansicht">
+  </div>
+</div>
 
 </body>
 </html>
