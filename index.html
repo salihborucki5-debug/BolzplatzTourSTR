@@ -6,157 +6,194 @@
   <title>BolzplatzTour STR - Team Anmeldung</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body class="bg-[#fcfbf7] text-gray-900 min-h-screen p-4 flex flex-col items-center justify-center">
 
-  <div class="max-w-md w-full bg-white p-6 rounded-2xl border border-stone-200 shadow-xl space-y-6">
-    <header class="text-center">
+  <div class="max-w-md w-full bg-white p-6 rounded-2xl shadow-xl border border-stone-200">
+    <header class="text-center mb-6">
       <h1 class="text-2xl font-black text-pink-500 uppercase tracking-wider">BOLZPLATZTOUR STR</h1>
-      <p class="text-stone-500 text-xs mt-1">ANMELDUNG</p>
+      <p class="text-stone-500 text-xs mt-1">Offizielle Team-Anmeldung</p>
     </header>
 
+    <!-- ANMELDEFORMULAR -->
     <form id="regForm" onsubmit="registerTeam(event)" class="space-y-4">
       
-      <!-- KATEGORIE SELEKTION -->
       <div>
-        <label class="block text-xs font-bold uppercase text-stone-600 mb-1">Turnier-Kategorie</label>
-        <select id="category" required class="w-full p-3 rounded-xl border border-stone-300 text-sm focus:outline-none focus:border-pink-500 font-bold bg-stone-50">
-          <option value="M">Männer</option>
-          <option value="F">Frauen</option>
+        <label class="block text-xs font-bold uppercase text-stone-600 mb-1">Name des Kapitäns *</label>
+        <input type="text" id="captainName" required placeholder="z. B. Max Mustermann"
+          class="w-full bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-500 text-gray-900 placeholder-stone-400">
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold uppercase text-stone-600 mb-1">E-Mail-Adresse *</label>
+        <input type="email" id="captainEmail" required placeholder="z. B. max@beispiel.de"
+          class="w-full bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-500 text-gray-900 placeholder-stone-400">
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold uppercase text-stone-600 mb-1">Sind Spieler unter 18 Jahren dabei? *</label>
+        <select id="hasUnderage" onchange="toggleMuttizettelOption()" required
+          class="w-full bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-500 text-gray-900">
+          <option value="false">Nein (Alle 18+)</option>
+          <option value="true">Ja (Unter 18 dabei)</option>
         </select>
       </div>
 
-      <!-- KAPITÄN NAME -->
-      <div>
-        <label class="block text-xs font-bold uppercase text-stone-600 mb-1">Name des Kapitäns</label>
-        <input type="text" id="captainName" required placeholder="Vor- und Nachname" class="w-full p-3 rounded-xl border border-stone-300 text-sm focus:outline-none focus:border-pink-500">
-      </div>
-
-      <!-- EMAIL -->
-      <div>
-        <label class="block text-xs font-bold uppercase text-stone-600 mb-1">E-Mail-Adresse</label>
-        <input type="email" id="email" required placeholder="deine@email.de" class="w-full p-3 rounded-xl border border-stone-300 text-sm focus:outline-none focus:border-pink-500">
-      </div>
-
-      <!-- ALTERSAUSWAHL -->
-      <div>
-        <label class="block text-xs font-bold uppercase text-stone-600 mb-1">Alter des Kapitäns / Teams</label>
-        <select id="ageCheck" onchange="toggleMuttizettel()" required class="w-full p-3 rounded-xl border border-stone-300 text-sm focus:outline-none focus:border-pink-500 font-bold">
-          <option value="over18">Über 18 Jahre</option>
-          <option value="under18">Unter 18 Jahre</option>
-        </select>
-      </div>
-
-      <!-- MUTTIZETTEL CONTAINER -->
-      <div id="muttizettelBox" class="hidden bg-amber-50 p-4 rounded-xl border border-amber-200 text-xs space-y-2">
-        <p class="font-bold text-amber-800">📄 Muttizettel / Einverständniserklärung erforderlich!</p>
-        <p class="text-amber-700">Da du/dein Team unter 18 Jahre alt seid, müsst ihr den Muttizettel euren Eltern vorlegen und diese müssen den Akzeptieren.</p>
-        <p>
-          👉 <a href="muttizettel.pdf" target="_blank" class="font-bold underline text-pink-600 hover:text-pink-700">Hier Muttizettel als PDF herunterladen</a>
+      <!-- MUTTIZETTEL HINWEIS & BESTÄTIGUNG (Nur sichtbar wenn U18 ausgewählt ist) -->
+      <div id="muttizettelBox" class="hidden space-y-2 p-3 bg-amber-50 rounded-xl border border-amber-200 transition-all">
+        <p class="text-xs text-amber-900 font-medium">
+          📄 Für alle Spieler unter 18 Jahren muss eine Einverständniserklärung vorliegen: 
+          <a href="muttizettel.pdf" target="_blank" download class="underline font-bold text-amber-950 hover:text-pink-600">Muttizettel herunterladen (PDF)</a>
         </p>
-        <label class="flex items-start gap-2 cursor-pointer font-bold text-amber-900 mt-2">
-          <input type="checkbox" id="muttizettelCheck" class="w-4 h-4 mt-0.5 accent-pink-500 rounded">
-          <span>Ich bestätige, dass die Erziehungsberechtigten aller unter 18-jährigen Teammitglieder den Muttizettel erhalten, gelesen und ausdrücklich akzeptiert haben.
-</span>
-        </label>
+        <div class="flex items-start gap-2 pt-1">
+          <input type="checkbox" id="muttizettelCheck" class="mt-1 accent-pink-500 rounded cursor-pointer">
+          <label for="muttizettelCheck" class="text-xs text-amber-900 font-semibold">
+            Ich habe den Muttizettel gelesen und bestätige, dass alle minderjährigen Spieler diesen ihren Erziehungsberechtigten vorgezeigt und die bedingungen akzeptiert haben. *
+          </label>
+        </div>
       </div>
 
-      <!-- 5+1 TEAM REGEL CHECKBOX -->
-      <div class="pt-2">
-        <label class="flex items-start gap-2 cursor-pointer text-xs font-bold text-stone-800 bg-stone-50 p-3 rounded-xl border border-stone-200">
-          <input type="checkbox" id="teamSizeCheck" required class="w-4 h-4 mt-0.5 accent-pink-500 rounded">
-          <span>
-            Ich bestätige, dass wir als <strong class="text-pink-600">5+1 Team (5 Feldspieler + 1 Torwart)</strong> antreten. Mir ist bewusst, dass eine Teilnahme ohne diese Mindestanzahl nicht möglich ist.
-          </span>
-        </label>
+      <div class="space-y-2 pt-2 border-t border-stone-200">
+        
+        <!-- PFLICHT-CHECKBOX: 5+1 KADER -->
+        <div class="flex items-start gap-2 bg-pink-50 p-3 rounded-xl border border-pink-200">
+          <input type="checkbox" id="kaderCheck" required class="mt-1 accent-pink-500 h-4 w-4 rounded cursor-pointer">
+          <label for="kaderCheck" class="text-xs text-stone-800 font-medium">
+            Wir treten mit mindestens <strong>5+1 Spielern</strong> an. Mir ist bewusst, dass wir ohne vollzähliges Team nicht mitspielen können. *
+          </label>
+        </div>
+
+        <div class="flex items-start gap-2 pt-1">
+          <input type="checkbox" id="agbCheck" required class="mt-1 accent-pink-500 rounded cursor-pointer">
+          <label for="agbCheck" class="text-xs text-stone-600">
+            Ich akzeptiere die 
+            <a href="agb.pdf" target="_blank" class="text-pink-600 underline font-bold hover:text-pink-700">Turnierregeln & AGBs (PDF)</a> 
+            und bestätige die Richtigkeit der Angaben. *
+          </label>
+        </div>
       </div>
 
-      <!-- AGB CHECKBOX -->
-      <div>
-        <label class="flex items-start gap-2 cursor-pointer text-xs font-medium text-stone-600 px-1">
-          <input type="checkbox" id="agbCheck" required class="w-4 h-4 mt-0.5 accent-pink-500 rounded">
-          <span>
-            Ich habe die <a href="agb.pdf" target="_blank" class="font-bold underline text-pink-500 hover:text-pink-600">AGB & Teilnahmebedingungen (PDF)</a> gelesen und akzeptiere diese sowie die Regeln der BolzplatzTour STR.
-          </span>
-        </label>
-      </div>
-
-      <button type="submit" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-extrabold py-3 rounded-xl text-sm transition-all shadow-md cursor-pointer">
-        🚀 Verbindlich Anmelden
+      <button type="submit" id="submitBtn"
+        class="w-full bg-pink-500 hover:bg-pink-600 text-white font-extrabold py-3 rounded-xl transition-all shadow-md mt-4 cursor-pointer">
+        🚀 Team verbindlich anmelden
       </button>
     </form>
 
-    <div id="statusMsg" class="text-center text-xs font-bold hidden"></div>
+    <!-- ERFOLGS-ANZEIGE MIT QR-CODE -->
+    <div id="successBox" class="hidden text-center space-y-4">
+      <div class="p-4 bg-pink-50 border border-pink-200 rounded-2xl">
+        <h2 class="text-xl font-bold text-pink-600 mb-1">🎉 Anmeldung Erfolgreich!</h2>
+        <p class="text-sm font-bold text-gray-800" id="assignedTeamName"></p>
+        <p class="text-xs text-stone-600 mt-1">Mach jetzt einen <strong>Screenshot</strong> von diesem Ticket. Du brauchst den QR-Code zum Check-in am Turniertag!</p>
+      </div>
+
+      <div class="bg-white p-4 rounded-xl inline-block shadow-md border border-stone-200">
+        <div id="qrcode"></div>
+      </div>
+
+      <div>
+        <p class="text-xs text-stone-500">Dein Team-Code:</p>
+        <p id="teamCodeDisplay" class="text-xl font-mono font-bold text-pink-600"></p>
+      </div>
+    </div>
   </div>
 
   <script>
     const SUPABASE_URL = "https://rsujqzvudncqrpdwikyr.supabase.co";
     const SUPABASE_KEY = "sb_publishable_9c2p0DsLdUh4K4wq3xYIHw_ah2wyOQu";
+
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    function toggleMuttizettel() {
-      const age = document.getElementById('ageCheck').value;
-      const box = document.getElementById('muttizettelBox');
-      const check = document.getElementById('muttizettelCheck');
+    function toggleMuttizettelOption() {
+      const isUnderage = document.getElementById('hasUnderage').value === "true";
+      const muttizettelBox = document.getElementById('muttizettelBox');
+      const muttizettelCheck = document.getElementById('muttizettelCheck');
 
-      if (age === 'under18') {
-        box.classList.remove('hidden');
-        check.required = true;
+      if (isUnderage) {
+        muttizettelBox.classList.remove('hidden');
+        muttizettelCheck.required = true;
       } else {
-        box.classList.add('hidden');
-        check.required = false;
-        check.checked = false;
+        muttizettelBox.classList.add('hidden');
+        muttizettelCheck.required = false;
+        muttizettelCheck.checked = false;
       }
     }
 
     async function registerTeam(e) {
       e.preventDefault();
-      const msg = document.getElementById('statusMsg');
-      msg.className = "text-center text-xs font-bold text-stone-500 block";
-      msg.innerText = "Team wird registriert...";
 
-      const category = document.getElementById('category').value;
-      const captain = document.getElementById('captainName').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const age = document.getElementById('ageCheck').value;
+      const hasUnderage = document.getElementById('hasUnderage').value === "true";
+      const muttizettelCheck = document.getElementById('muttizettelCheck');
 
-      const { data: existingTeams, error: countErr } = await db
-        .from('teams')
-        .select('team_name')
-        .like('team_name', `${category}%`);
-
-      if (countErr) {
-        msg.className = "text-center text-xs font-bold text-rose-600 block";
-        msg.innerText = "Fehler bei der Abfrage: " + countErr.message;
+      if (hasUnderage && !muttizettelCheck.checked) {
+        alert("Bitte bestätige, dass du den Muttizettel gelesen hast und alle unter 18-jährigen Spielern diesen mitbringen.");
         return;
       }
 
-      const count = (existingTeams ? existingTeams.length : 0) + 1;
-      const limit = category === 'M' ? 24 : 8;
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerText = "Prüfe Plätze...";
 
-      if (count > limit) {
-        msg.className = "text-center text-xs font-bold text-rose-600 block";
-        msg.innerText = `❌ Leider sind bereits alle ${limit} Plätze für ${category === 'M' ? 'Herren' : 'Frauen'} belegt!`;
+      // 1. Prüfen, wie viele Teams bereits angemeldet sind
+      const { data: existingTeams, error: countError } = await db.from('teams').select('id');
+      
+      if (countError) {
+        alert("Fehler beim Abrufen der Anmeldungen: " + countError.message);
+        submitBtn.disabled = false;
+        submitBtn.innerText = "🚀 Team verbindlich anmelden";
         return;
       }
 
-      const generatedTeamName = `${category}${count}`;
+      if (existingTeams.length >= 30) {
+        alert("Leider sind bereits alle 30 Startplätze vergeben!");
+        submitBtn.disabled = false;
+        submitBtn.innerText = "❌ Turnier ausgebucht";
+        return;
+      }
 
-      const { error } = await db.from('teams').insert([{
-        team_name: generatedTeamName,
-        captain_info: `${captain} (${email}) - ${age === 'under18' ? 'U18' : 'Ü18'}`,
-        player_count: 6, // 👈 Hier wird die Pflichtspalte bedient!
-        checked_in: true
-      }]);
+      submitBtn.innerText = "Speichere...";
+
+      // 2. Fortlaufende Zahl vergeben (1 bis 30)
+      const nextTeamNumber = existingTeams.length + 1;
+      const teamName = `Team ${nextTeamNumber}`;
+
+      const captainName = document.getElementById('captainName').value.trim();
+      const captainEmail = document.getElementById('captainEmail').value.trim();
+
+      const teamCode = "STR-" + Math.random().toString(36).substring(2, 6).toUpperCase();
+
+      // 3. In Datenbank speichern
+      const { data, error } = await db.from('teams').insert([
+        { 
+          team_name: teamName,
+          captain_info: `${captainName} (${captainEmail})`,
+          player_count: 6,
+          has_underage: hasUnderage,
+          team_code: teamCode,
+          checked_in: false
+        }
+      ]).select();
 
       if (error) {
-        msg.className = "text-center text-xs font-bold text-rose-600 block";
-        msg.innerText = "Fehler bei der Anmeldung: " + error.message;
+        alert("Fehler bei der Anmeldung: " + error.message);
+        submitBtn.disabled = false;
+        submitBtn.innerText = "🚀 Team verbindlich anmelden";
       } else {
-        msg.className = "text-center text-xs font-bold text-emerald-600 block bg-emerald-50 p-3 rounded-xl border border-emerald-200";
-        msg.innerText = `🎉 Anmelden erfolgreich! Euer automatischer Teamname lautet: ${generatedTeamName}`;
-        document.getElementById('regForm').reset();
-        toggleMuttizettel();
+        document.getElementById('regForm').classList.add('hidden');
+        document.getElementById('successBox').classList.remove('hidden');
+        document.getElementById('assignedTeamName').innerText = `Du startest als: ${teamName}`;
+        document.getElementById('teamCodeDisplay').innerText = teamCode;
+
+        document.getElementById("qrcode").innerHTML = "";
+        new QRCode(document.getElementById("qrcode"), {
+          text: teamCode,
+          width: 180,
+          height: 180,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        });
       }
     }
   </script>
