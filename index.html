@@ -67,7 +67,7 @@
     margin-top: -10px;
   }
 
-  /* BUTTON & UNTERTEXT BLOCK */
+  /* BUTTON & UNTERTEXT */
   .cta-block {
     display: flex;
     flex-direction: column;
@@ -153,17 +153,127 @@
   .kicker{ font-family:'Barlow Condensed', sans-serif; font-weight:600; font-size:14px; color:var(--amber); margin-bottom:8px; }
   h2{ font-family:'Anton', sans-serif; font-size:34px; line-height:1.05; margin-bottom:22px; }
 
-  /* DATES */
-  .date-row{ display:flex; align-items:center; gap:16px; padding:18px 0; border-bottom:1px solid rgba(245,241,232,0.12); text-decoration:none; color:inherit; }
-  .date-day{ font-family:'Anton', sans-serif; font-size:26px; width:52px; flex-shrink:0; }
-  .date-info{ flex:1; }
-  .date-city{ font-family:'Barlow Condensed', sans-serif; font-weight:700; font-size:19px; }
-  .date-status{ font-family:'Barlow Condensed', sans-serif; font-weight:600; font-size:13px; color:var(--pink); }
+  /* ---------- DATES ---------- */
+  .dates{padding-top:48px;}
+  .date-row{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    padding:18px 0;
+    border-bottom:1px solid rgba(245,241,232,0.12);
+    text-decoration:none;
+    color:inherit;
+  }
+  .date-row:first-of-type{border-top:1px solid rgba(245,241,232,0.12);}
+  .date-day{
+    font-family:'Anton', sans-serif;
+    font-size:26px;
+    line-height:1;
+    color:var(--cream);
+    width:52px;
+    flex-shrink:0;
+  }
+  .date-day small{
+    display:block;
+    font-family:'Barlow Condensed', sans-serif;
+    font-weight:600;
+    font-size:12px;
+    color:var(--slate);
+    margin-top:2px;
+  }
+  .date-info{flex:1; min-width:0;}
+  .date-city{
+    font-family:'Barlow Condensed', sans-serif;
+    font-weight:700;
+    font-size:19px;
+    color:var(--cream);
+  }
+  .date-venue{
+    font-size:13px;
+    color:var(--slate);
+    margin-top:2px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .date-status{
+    font-family:'Barlow Condensed', sans-serif;
+    font-weight:600;
+    font-size:13px;
+    color:var(--pink);
+    flex-shrink:0;
+  }
+  .date-status.past{color:var(--slate);}
+  .date-status.loading{color:var(--amber);}
 
-  /* FOOTER */
-  .footer{ background:var(--navy-2); padding:64px 24px 40px; }
-  .footer h2{ font-size:15vw; line-height:0.92; }
-  .footer h2 .accent{ color:var(--pink); }
+  /* ---------- ABOUT ---------- */
+  .about p{
+    font-size:17px;
+    color:rgba(245,241,232,0.82);
+    max-width:34ch;
+  }
+  .about p + p{margin-top:14px;}
+
+  /* ---------- FOOTER ---------- */
+  .footer{
+    background:var(--navy-2);
+    padding:64px 24px 40px;
+  }
+  .footer h2{
+    font-size:15vw;
+    line-height:0.92;
+    max-width:none;
+    margin-bottom:28px;
+  }
+  .footer h2 .accent{color:var(--pink);}
+  .signup{
+    display:flex;
+    border-bottom:2px solid var(--cream);
+    padding-bottom:10px;
+    margin-bottom:28px;
+  }
+  .signup input{
+    flex:1;
+    background:none;
+    border:none;
+    color:var(--cream);
+    font-family:'Barlow', sans-serif;
+    font-size:16px;
+    outline:none;
+  }
+  .signup input::placeholder{color:var(--slate);}
+  .signup button{
+    background:none;
+    border:none;
+    color:var(--pink);
+    font-family:'Barlow Condensed', sans-serif;
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:0.02em;
+  }
+  .socials{
+    display:flex;
+    gap:20px;
+    margin-bottom:40px;
+  }
+  .socials a{
+    font-family:'Barlow Condensed', sans-serif;
+    font-weight:600;
+    font-size:14px;
+    color:var(--slate);
+    text-decoration:none;
+  }
+  .foot-meta{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    padding-top:24px;
+    border-top:1px solid rgba(245,241,232,0.1);
+  }
+  .foot-meta span{
+    font-size:12px;
+    color:var(--slate);
+  }
 </style>
 </head>
 <body>
@@ -174,10 +284,9 @@
     <span class="sub-text">STR.</span>
   </h1>
 
-  <!-- BUTTON MIT UNTERTEXT DIREKT DARUNTER -->
   <div class="cta-block">
     <a href="anmeldung.html" class="btn-anmelden">Jetzt Anmelden</a>
-    <p class="sub-info">Melde dich jetzt an für die nächste Station in Frankfurt<span class="city">Münster</span></p>
+    <p class="sub-info">Melde dich jetzt an für die nächste Tour in <span class="city">Frankfurt</span></p>
   </div>
 
   <a href="#termine" class="hero-scroll"><span class="line"></span>Termine ansehen</a>
@@ -188,18 +297,77 @@
   <span>STRASSE STATT STADION &nbsp;&bull;&nbsp; MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp; STRASSE STATT STADION &nbsp;&bull;&nbsp; MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp;</span>
 </div>
 
-<section id="termine">
+<section id="termine" class="dates">
   <p class="kicker">2026 Tour</p>
-  <h2>Jeder Bolzplatz zählt</h2>
+  <h2>Jeder Bolzplatz&nbsp;zählt</h2>
+
+  <!-- MÜNCHEN -->
+  <div class="date-row" style="opacity: 0.6;">
+    <div class="date-day">22<small>Aug</small></div>
+    <div class="date-info">
+      <div class="date-city">München</div>
+      <div class="date-venue">Bolzplatz Tour</div>
+    </div>
+    <div class="date-status past">Vorbei</div>
+  </div>
+
+  <!-- ESSEN -->
+  <div class="date-row" style="opacity: 0.6;">
+    <div class="date-day">27<small>Aug</small></div>
+    <div class="date-info">
+      <div class="date-city">Essen</div>
+      <div class="date-venue">Bolzplatz Tour</div>
+    </div>
+    <div class="date-status past">Vorbei</div>
+  </div>
+
+  <!-- FRANKFURT (NÄCHSTER STOPP) -->
   <a class="date-row" href="anmeldung.html">
-    <div class="date-day">14<small>Mär</small></div>
-    <div class="date-info"><div class="date-city">Münster</div></div>
+    <div class="date-day">12<small>Sep</small></div>
+    <div class="date-info">
+      <div class="date-city">Frankfurt</div>
+      <div class="date-venue">Nächster Stopp</div>
+    </div>
     <div class="date-status">Anmelden</div>
   </a>
+
+  <!-- HAMM (LOADING) -->
+  <div class="date-row" style="opacity: 0.7;">
+    <div class="date-day">--<small>TBA</small></div>
+    <div class="date-info">
+      <div class="date-city">Hamm</div>
+      <div class="date-venue">Wird noch geplant</div>
+    </div>
+    <div class="date-status loading">Loading...</div>
+  </div>
+</section>
+
+<section class="about">
+  <p class="kicker">Über die Tour</p>
+  <h2>Zurück&nbsp;dahin, wo alles&nbsp;anfing</h2>
+  <p>Kein Stadion, kein Rasen unterm Flutlicht – nur Asphalt, ein Ball und die Leute aus der Nachbarschaft. Die Bolzplatz Tour bringt Freestyle-Football zurück an die Orte, an denen der Sport groß geworden ist.</p>
+  <p>Jede Station: eine andere Stadt, ein anderer Platz, dieselbe Energie.</p>
 </section>
 
 <footer class="footer">
+  <p class="kicker">Bleib dran</p>
   <h2>Make the<br><span class="accent">STRRR</span><br>great again</h2>
+
+  <form class="signup" onsubmit="return false;">
+    <input type="email" placeholder="Deine E-Mail-Adresse" required>
+    <button type="submit">Anmelden</button>
+  </form>
+
+  <div class="socials">
+    <a href="#">Instagram</a>
+    <a href="#">TikTok</a>
+    <a href="#">YouTube</a>
+  </div>
+
+  <div class="foot-meta">
+    <span>Bolzplatz Tour &copy; 2026</span>
+    <span>Streetfootball</span>
+  </div>
 </footer>
 
 </body>
