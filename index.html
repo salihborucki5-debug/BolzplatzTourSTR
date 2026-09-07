@@ -26,7 +26,7 @@
   }
   a{color:inherit;}
 
-  /* ---------- HERO ---------- */
+  /* ---------- HERO MIT DEINEM BILD ALS HINTERGRUND ---------- */
   .hero{
     position:relative;
     height:85svh;
@@ -34,28 +34,21 @@
     max-height:800px;
     display:flex;
     flex-direction:column;
-    justify-content:center;
+    justify-content:flex-end; /* Inhalte leicht nach unten ausrichten */
     align-items:center;
-    padding:24px;
+    padding:32px 24px 60px;
     text-align:center;
-    background: radial-gradient(circle at center, #133352 0%, var(--navy) 75%);
+    
+    /* BILD ALS HINTERGRUND + ABLAUF NACH UNTEN FÜR BESSERE LESBARKEIT */
+    background-image: 
+      linear-gradient(to bottom, rgba(11, 20, 32, 0.2) 0%, rgba(11, 20, 32, 0.85) 90%),
+      url("bolzplatz_tour_1920x1080.png"); 
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
   }
 
-  /* EXAKTES GRAFFITI LOGO WIE AUF DEM BILD */
-  .hero-logo-wrapper {
-    width: 100%;
-    max-width: 650px;
-    margin-bottom: 24px;
-    filter: drop-shadow(0px 8px 12px rgba(0,0,0,0.8));
-  }
-
-  .hero-logo-wrapper svg {
-    width: 100%;
-    height: auto;
-    display: block;
-  }
-
-  /* BUTTON & UNTERTEXT */
+  /* BUTTON & UNTERTEXT DIREKT AUF DEM BILD */
   .cta-block {
     display: flex;
     flex-direction: column;
@@ -75,14 +68,14 @@
     padding: 16px 48px;
     border-radius: 12px;
     text-decoration: none;
-    box-shadow: 0 0 20px rgba(255, 38, 128, 0.5), 0 4px 0 #000;
+    box-shadow: 0 0 25px rgba(255, 38, 128, 0.7), 0 4px 0 #000;
     transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
     border: 2px solid #000;
   }
 
   .btn-anmelden:hover {
     transform: translateY(-3px) scale(1.03);
-    box-shadow: 0 0 35px rgba(255, 38, 128, 0.8), 0 6px 0 #000;
+    box-shadow: 0 0 35px rgba(255, 38, 128, 0.9), 0 6px 0 #000;
     background: #ff4794;
   }
 
@@ -93,7 +86,7 @@
     letter-spacing: 0.04em;
     color: var(--cream);
     text-transform: uppercase;
-    opacity: 0.9;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.9);
   }
 
   .sub-info .city {
@@ -115,6 +108,7 @@
     font-size:13px;
     color:var(--cream);
     text-decoration:none;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
   }
   .hero-scroll .line{ width:26px; height:1px; background:var(--pink); }
 
@@ -267,28 +261,7 @@
 <body>
 
 <div class="hero">
-  <!-- EXAKTES LOGO AUS DEM BILD (SVG GRAFIK) -->
-  <div class="hero-logo-wrapper">
-    <svg viewBox="0 0 950 360" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <!-- BOLZPLATZ (WEISS MIT DUNKLEM GRAFFITI-SCHATTEN UND SCHRÄGSTELLUNG) -->
-      <g transform="rotate(-2, 475, 120)">
-        <!-- SCHATTEN -->
-        <text x="470" y="160" text-anchor="middle" font-family="'Anton', sans-serif" font-weight="900" font-size="130" fill="#000000" letter-spacing="4">BOLZPLATZ</text>
-        <text x="468" y="158" text-anchor="middle" font-family="'Anton', sans-serif" font-weight="900" font-size="130" fill="#000000" letter-spacing="4">BOLZPLATZ</text>
-        <!-- HAUPTTEXT WEISS -->
-        <text x="462" y="150" text-anchor="middle" font-family="'Anton', sans-serif" font-weight="900" font-size="130" fill="#FFFFFF" letter-spacing="4">BOLZPLATZ</text>
-      </g>
-      <!-- TOUR (PINK, RECHTSBÜNDIG DARUNTER GESETZT) -->
-      <g transform="rotate(1, 680, 260)">
-        <!-- SCHATTEN -->
-        <text x="708" y="280" text-anchor="end" font-family="'Anton', sans-serif" font-weight="900" font-size="110" fill="#000000" letter-spacing="6">TOUR</text>
-        <text x="706" y="278" text-anchor="end" font-family="'Anton', sans-serif" font-weight="900" font-size="110" fill="#000000" letter-spacing="6">TOUR</text>
-        <!-- HAUPTTEXT PINK -->
-        <text x="700" y="270" text-anchor="end" font-family="'Anton', sans-serif" font-weight="900" font-size="110" fill="#FF2680" letter-spacing="6">TOUR</text>
-      </g>
-    </svg>
-  </div>
-
+  <!-- DIE ELEMENTE LIEGEN JETZT DIREKT AUF DEM HINTERGRUNDBILD -->
   <div class="cta-block">
     <a href="anmeldung.html" class="btn-anmelden">Jetzt Anmelden</a>
     <p class="sub-info">Melde dich jetzt an für die nächste Tour in <span class="city">Frankfurt</span></p>
@@ -300,9 +273,6 @@
 <div class="marquee" aria-hidden="true">
   <span>STRASSE STATT STADION &nbsp;&bull;&nbsp; MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp; STRASSE STATT STADION &nbsp;&bull;&nbsp; MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp;</span>
   <span>STRASSE STATT STADION &nbsp;&bull;&nbsp; MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp; STRASSE STATT STADION &nbsp;&bull;&nbsp; MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp;</span>
-  <span>STRASSE STATT STADION &nbsp;&bull;&nbsp; MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp; STRASSE STATT STADION &nbsp;&bull;&nbsp; MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp;</span>
-  <span>STRASSE STATT STADION &nbsp;&bull;&nbsp; MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp; STRASSE STATT STADION &nbsp;&bull;&nbsp; MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp;</span>
-</div>
 </div>
 
 <section id="termine" class="dates">
