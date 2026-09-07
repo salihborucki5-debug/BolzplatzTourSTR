@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BolzplatzTour STR - Live Spielplan & Ergebnis-Eingabe</title>
+  <title>BolzplatzTour STR - Live Spielplan & Supabase Sync</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -14,7 +14,7 @@
     <header class="flex flex-col md:flex-row justify-between items-center mb-6 pb-4 border-b border-stone-800 gap-4">
       <div>
         <h1 class="text-3xl font-black text-pink-500 uppercase tracking-wider">BOLZPLATZTOUR STR</h1>
-        <p class="text-stone-400 text-sm">Gemeinsamer Turnierbaum • Frauen top-seeded</p>
+        <p class="text-stone-400 text-sm">Gemeinsamer Turnierbaum • Live Supabase Sync</p>
       </div>
 
       <div class="flex gap-3">
@@ -35,7 +35,7 @@
         <span id="phaseDisplay" class="text-xl font-black text-white">-</span>
       </div>
       <div class="text-xs text-stone-400 max-w-xs">
-        💡 <strong class="text-pink-400">Hinweis:</strong> Klicke auf ein Match, um den Endstand einzutragen. Der Sieger wird automatisch weitergeleitet!
+        💡 <strong class="text-pink-400">Hinweis:</strong> Klicke auf ein Match, um den Endstand einzutragen. Die Spiele werden direkt in Supabase gespeichert!
       </div>
     </div>
 
@@ -55,18 +55,18 @@
       <div class="space-y-3 pt-2">
         <div>
           <label class="block text-xs font-bold text-stone-300 mb-1" id="labelTeamA">Team 1 Score</label>
-          <input type="number" id="scoreA" min="0" value="0" class="w-full bg-stone-900 border border-stone-700 rounded-xl px-4 py-2 text-center text-xl font-black text-white focus:outline-none focus:border-pink-500">
+          <input type="number" id="scoreA" min="0" placeholder="0" class="w-full bg-stone-900 border border-stone-700 rounded-xl px-4 py-2 text-center text-xl font-black text-white focus:outline-none focus:border-pink-500">
         </div>
         <div class="text-center font-black text-stone-500">VS</div>
         <div>
           <label class="block text-xs font-bold text-stone-300 mb-1" id="labelTeamB">Team 2 Score</label>
-          <input type="number" id="scoreB" min="0" value="0" class="w-full bg-stone-900 border border-stone-700 rounded-xl px-4 py-2 text-center text-xl font-black text-white focus:outline-none focus:border-pink-500">
+          <input type="number" id="scoreB" min="0" placeholder="0" class="w-full bg-stone-900 border border-stone-700 rounded-xl px-4 py-2 text-center text-xl font-black text-white focus:outline-none focus:border-pink-500">
         </div>
       </div>
 
       <div class="flex gap-2 pt-3">
         <button onclick="closeModal()" class="flex-1 bg-stone-700 hover:bg-stone-600 text-stone-200 font-bold py-2.5 rounded-xl text-xs transition-all">Abbrechen</button>
-        <button onclick="saveScore()" class="flex-1 bg-pink-500 hover:bg-pink-600 text-white font-black py-2.5 rounded-xl text-xs transition-all shadow-md">Speichern & Weiter</button>
+        <button onclick="saveScore()" class="flex-1 bg-pink-500 hover:bg-pink-600 text-white font-black py-2.5 rounded-xl text-xs transition-all shadow-md">Speichern & Sync</button>
       </div>
     </div>
   </div>
@@ -76,21 +76,37 @@
     const SUPABASE_KEY = "sb_publishable_9c2p0DsLdUh4K4wq3xYIHw_ah2wyOQu";
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // In-Memory Speicher für Match-Ergebnisse im aktuellen Baum
     let tournamentTreeState = {};
     let currentEditingMatch = null;
 
     async function loadTournament() {
       const treeGrid = document.getElementById('treeGrid');
-      treeGrid.innerHTML = `<div class="text-stone-400 text-sm">Berechne gemischten Turnierbaum...</div>`;
+      treeGrid.innerHTML = `<div class="text-stone-400 text-sm">Lade Teams und Matches aus Supabase...</div>`;
 
-      // 1. Alle Teams (Männer & Frauen) holen
-      const { data: teams, error } = await db.from('teams').select('*');
+      // 1. Teams & Gespeicherte Matches aus Supabase laden
+      const [teamsRes, matchesRes] = await Promise.all([
+        db.from('teams').select('*'),
+        db.from('matches').select('*')
+      ]);
 
-      if (error || !teams) {
+      if (teamsRes.error) {
         treeGrid.innerHTML = `<div class="text-red-400 text-sm">Fehler beim Laden der Teams.</div>`;
         return;
       }
+
+      const teams = teamsRes.data || [];
+      const savedMatches = matchesRes.data || [];
+
+      // Gespeicherte Matches in State überführen
+      savedMatches.forEach(m => {
+        tournamentTreeState[m.id] = {
+          teamA: m.team_a,
+          teamB: m.team_b,
+          scoreA: m.score_a,
+          scoreB: m.score_b,
+          winner: m.winner
+        };
+      });
 
       const count = teams.length;
       document.getElementById('teamCountDisplay').innerText = `${count} Teams gesamt`;
@@ -101,7 +117,7 @@
         return;
       }
 
-      // Frauen zuerst sortieren (alle F... Teams nach oben, M... nach unten)
+      // Frauen-Teams zuerst einsortieren
       const femaleTeams = teams.filter(t => t.team_name.startsWith('F'));
       const maleTeams = teams.filter(t => t.team_name.startsWith('M'));
       const sortedTeams = [...femaleTeams, ...maleTeams];
@@ -114,18 +130,11 @@
       else if (count > 2) treeSize = 4;
       else treeSize = 2;
 
-      let startName = "";
-      if (treeSize === 32) startName = "1/16-Finale";
-      else if (treeSize === 16) startName = "Achtelfinale";
-      else if (treeSize === 8) startName = "Viertelfinale";
-      else if (treeSize === 4) startName = "Halbfinale";
-      else startName = "FINALE";
-
       document.getElementById('phaseDisplay').innerText = `${treeSize}er Baum (${femaleTeams.length} Frauen- & ${maleTeams.length} Herren-Teams)`;
 
       treeGrid.innerHTML = '';
 
-      // 3. Erstes Runden-Feld initialisieren
+      // 3. Runden aufbauen
       let currentSize = treeSize;
       let roundIndex = 0;
 
@@ -149,28 +158,19 @@
           if (roundIndex === 0) {
             teamA = sortedTeams[m * 2] ? sortedTeams[m * 2].team_name : " Offen";
             teamB = sortedTeams[m * 2 + 1] ? sortedTeams[m * 2 + 1].team_name : " Offen";
-
-            // State im Speicher anlegen falls neu
-            if (!tournamentTreeState[matchId]) {
-              tournamentTreeState[matchId] = { teamA, teamB, scoreA: null, scoreB: null, winner: null };
-            } else {
-              tournamentTreeState[matchId].teamA = teamA;
-              tournamentTreeState[matchId].teamB = teamB;
-            }
           } else {
-            // Folgerunden: Sieger aus vorherigen Matches holen
             const prevMatchA = tournamentTreeState[`r${roundIndex-1}_m${m*2}`];
             const prevMatchB = tournamentTreeState[`r${roundIndex-1}_m${m*2+1}`];
 
             teamA = prevMatchA && prevMatchA.winner ? prevMatchA.winner : `Sieger M${m * 2 + 1}`;
             teamB = prevMatchB && prevMatchB.winner ? prevMatchB.winner : `Sieger M${m * 2 + 2}`;
+          }
 
-            if (!tournamentTreeState[matchId]) {
-              tournamentTreeState[matchId] = { teamA, teamB, scoreA: null, scoreB: null, winner: null };
-            } else {
-              tournamentTreeState[matchId].teamA = teamA;
-              tournamentTreeState[matchId].teamB = teamB;
-            }
+          if (!tournamentTreeState[matchId]) {
+            tournamentTreeState[matchId] = { teamA, teamB, scoreA: null, scoreB: null, winner: null };
+          } else {
+            tournamentTreeState[matchId].teamA = teamA;
+            tournamentTreeState[matchId].teamB = teamB;
           }
 
           col.appendChild(createMatchCard(matchId, roundIndex, m, roundTitle));
@@ -235,8 +235,8 @@
       document.getElementById('modalMatchTitle').innerText = `${roundTitle}`;
       document.getElementById('labelTeamA').innerText = match.teamA;
       document.getElementById('labelTeamB').innerText = match.teamB;
-      document.getElementById('scoreA').value = match.scoreA !== null ? match.scoreA : 0;
-      document.getElementById('scoreB').value = match.scoreB !== null ? match.scoreB : 0;
+      document.getElementById('scoreA').value = match.scoreA !== null ? match.scoreA : "";
+      document.getElementById('scoreB').value = match.scoreB !== null ? match.scoreB : "";
 
       document.getElementById('scoreModal').classList.remove('hidden');
     }
@@ -245,11 +245,14 @@
       document.getElementById('scoreModal').classList.add('hidden');
     }
 
-    function saveScore() {
+    async function saveScore() {
       if (!currentEditingMatch) return;
 
-      const scoreA = parseInt(document.getElementById('scoreA').value) || 0;
-      const scoreB = parseInt(document.getElementById('scoreB').value) || 0;
+      const inputA = document.getElementById('scoreA').value;
+      const inputB = document.getElementById('scoreB').value;
+
+      const scoreA = inputA === "" ? 0 : parseInt(inputA);
+      const scoreB = inputB === "" ? 0 : parseInt(inputB);
 
       if (scoreA === scoreB) {
         alert("Im K.o.-System muss es einen Sieger geben (kein Unentschieden)!");
@@ -261,11 +264,27 @@
       match.scoreB = scoreB;
       match.winner = scoreA > scoreB ? match.teamA : match.teamB;
 
+      // direkt in Supabase "matches" speichern
+      const { error } = await db.from('matches').upsert({
+        id: currentEditingMatch,
+        team_a: match.teamA,
+        team_b: match.teamB,
+        score_a: scoreA,
+        score_b: scoreB,
+        winner: match.winner
+      });
+
+      if (error) {
+        console.error("Fehler beim Speichern in Supabase:", error);
+        alert("Fehler beim Speichern in Supabase!");
+        return;
+      }
+
       closeModal();
-      loadTournament(); // Baum neu zeichnen & Sieger weiterleiten!
+      loadTournament(); // Neu laden & Sieger weiterleiten!
     }
 
-    // Beim Aufruf laden
+    // Beim Laden der Seite ausführen
     loadTournament();
   </script>
 </body>
