@@ -6,194 +6,85 @@
   <title>BolzplatzTour STR - Team Anmeldung</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body class="bg-[#fcfbf7] text-gray-900 min-h-screen p-4 flex flex-col items-center justify-center">
 
-  <div class="max-w-md w-full bg-white p-6 rounded-2xl shadow-xl border border-stone-200">
-    <header class="text-center mb-6">
-      <h1 class="text-2xl font-black text-pink-500 uppercase tracking-wider">BOLZPLATZTOUR STR</h1>
-      <p class="text-stone-500 text-xs mt-1">Offizielle Team-Anmeldung</p>
+  <div class="max-w-md w-full bg-white p-6 rounded-2xl border border-stone-200 shadow-xl space-y-6">
+    <header class="text-center">
+      <h1 class="text-2xl font-black text-pink-500 uppercase tracking-wider">⚽ Team Anmeldung</h1>
+      <p class="text-stone-500 text-xs mt-1">32 Teams Gesamt (24 Herren, 8 Damen)</p>
     </header>
 
-    <!-- ANMELDEFORMULAR -->
     <form id="regForm" onsubmit="registerTeam(event)" class="space-y-4">
-      
       <div>
-        <label class="block text-xs font-bold uppercase text-stone-600 mb-1">Name des Kapitäns *</label>
-        <input type="text" id="captainName" required placeholder="z. B. Max Mustermann"
-          class="w-full bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-500 text-gray-900 placeholder-stone-400">
-      </div>
-
-      <div>
-        <label class="block text-xs font-bold uppercase text-stone-600 mb-1">E-Mail-Adresse *</label>
-        <input type="email" id="captainEmail" required placeholder="z. B. max@beispiel.de"
-          class="w-full bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-500 text-gray-900 placeholder-stone-400">
-      </div>
-
-      <div>
-        <label class="block text-xs font-bold uppercase text-stone-600 mb-1">Sind Spieler unter 18 Jahren dabei? *</label>
-        <select id="hasUnderage" onchange="toggleMuttizettelOption()" required
-          class="w-full bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-500 text-gray-900">
-          <option value="false">Nein (Alle 18+)</option>
-          <option value="true">Ja (Unter 18 dabei)</option>
+        <label class="block text-xs font-bold uppercase text-stone-600 mb-1">Kategorie</label>
+        <select id="category" required class="w-full p-3 rounded-xl border border-stone-300 text-sm focus:outline-none focus:border-pink-500 font-bold">
+          <option value="M">🚹 Herren (M1 - M24)</option>
+          <option value="F">🚺 Damen (F1 - F8)</option>
         </select>
       </div>
 
-      <!-- MUTTIZETTEL HINWEIS & BESTÄTIGUNG (Nur sichtbar wenn U18 ausgewählt ist) -->
-      <div id="muttizettelBox" class="hidden space-y-2 p-3 bg-amber-50 rounded-xl border border-amber-200 transition-all">
-        <p class="text-xs text-amber-900 font-medium">
-          📄 Für alle Spieler unter 18 Jahren muss eine Einverständniserklärung vorliegen: 
-          <a href="muttizettel.pdf" target="_blank" download class="underline font-bold text-amber-950 hover:text-pink-600">Muttizettel herunterladen (PDF)</a>
-        </p>
-        <div class="flex items-start gap-2 pt-1">
-          <input type="checkbox" id="muttizettelCheck" class="mt-1 accent-pink-500 rounded cursor-pointer">
-          <label for="muttizettelCheck" class="text-xs text-amber-900 font-semibold">
-            Ich habe den Muttizettel gelesen und bestätige, dass alle minderjährigen Spieler diesen ihren Erziehungsberechtigten vorgezeigt und die bedingungen akzeptiert haben. *
-          </label>
-        </div>
-      </div>
-
-      <div class="space-y-2 pt-2 border-t border-stone-200">
-        
-        <!-- PFLICHT-CHECKBOX: 5+1 KADER -->
-        <div class="flex items-start gap-2 bg-pink-50 p-3 rounded-xl border border-pink-200">
-          <input type="checkbox" id="kaderCheck" required class="mt-1 accent-pink-500 h-4 w-4 rounded cursor-pointer">
-          <label for="kaderCheck" class="text-xs text-stone-800 font-medium">
-            Wir treten mit mindestens <strong>5+1 Spielern</strong> an. Mir ist bewusst, dass wir ohne vollzähliges Team nicht mitspielen können. *
-          </label>
-        </div>
-
-        <div class="flex items-start gap-2 pt-1">
-          <input type="checkbox" id="agbCheck" required class="mt-1 accent-pink-500 rounded cursor-pointer">
-          <label for="agbCheck" class="text-xs text-stone-600">
-            Ich akzeptiere die 
-            <a href="agb.pdf" target="_blank" class="text-pink-600 underline font-bold hover:text-pink-700">Turnierregeln & AGBs (PDF)</a> 
-            und bestätige die Richtigkeit der Angaben. *
-          </label>
-        </div>
-      </div>
-
-      <button type="submit" id="submitBtn"
-        class="w-full bg-pink-500 hover:bg-pink-600 text-white font-extrabold py-3 rounded-xl transition-all shadow-md mt-4 cursor-pointer">
-        🚀 Team verbindlich anmelden
-      </button>
-    </form>
-
-    <!-- ERFOLGS-ANZEIGE MIT QR-CODE -->
-    <div id="successBox" class="hidden text-center space-y-4">
-      <div class="p-4 bg-pink-50 border border-pink-200 rounded-2xl">
-        <h2 class="text-xl font-bold text-pink-600 mb-1">🎉 Anmeldung Erfolgreich!</h2>
-        <p class="text-sm font-bold text-gray-800" id="assignedTeamName"></p>
-        <p class="text-xs text-stone-600 mt-1">Mach jetzt einen <strong>Screenshot</strong> von diesem Ticket. Du brauchst den QR-Code zum Check-in am Turniertag!</p>
-      </div>
-
-      <div class="bg-white p-4 rounded-xl inline-block shadow-md border border-stone-200">
-        <div id="qrcode"></div>
+      <div>
+        <label class="block text-xs font-bold uppercase text-stone-600 mb-1">Teamname / Wunschname</label>
+        <input type="text" id="teamName" required placeholder="z.B. Bolzplatz Kings" class="w-full p-3 rounded-xl border border-stone-300 text-sm focus:outline-none focus:border-pink-500">
       </div>
 
       <div>
-        <p class="text-xs text-stone-500">Dein Team-Code:</p>
-        <p id="teamCodeDisplay" class="text-xl font-mono font-bold text-pink-600"></p>
+        <label class="block text-xs font-bold uppercase text-stone-600 mb-1">Kapitän / Kontakt</label>
+        <input type="text" id="captainInfo" required placeholder="Name & Handynummer" class="w-full p-3 rounded-xl border border-stone-300 text-sm focus:outline-none focus:border-pink-500">
       </div>
-    </div>
+
+      <button type="submit" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-extrabold py-3 rounded-xl text-sm transition-all shadow-md cursor-pointer">
+        🚀 Jetzt Anmelden
+      </button>
+    </form>
+
+    <div id="statusMsg" class="text-center text-xs font-bold hidden"></div>
   </div>
 
   <script>
     const SUPABASE_URL = "https://rsujqzvudncqrpdwikyr.supabase.co";
     const SUPABASE_KEY = "sb_publishable_9c2p0DsLdUh4K4wq3xYIHw_ah2wyOQu";
-
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    function toggleMuttizettelOption() {
-      const isUnderage = document.getElementById('hasUnderage').value === "true";
-      const muttizettelBox = document.getElementById('muttizettelBox');
-      const muttizettelCheck = document.getElementById('muttizettelCheck');
-
-      if (isUnderage) {
-        muttizettelBox.classList.remove('hidden');
-        muttizettelCheck.required = true;
-      } else {
-        muttizettelBox.classList.add('hidden');
-        muttizettelCheck.required = false;
-        muttizettelCheck.checked = false;
-      }
-    }
 
     async function registerTeam(e) {
       e.preventDefault();
+      const msg = document.getElementById('statusMsg');
+      msg.className = "text-center text-xs font-bold text-stone-500 block";
+      msg.innerText = "Speichere Team...";
 
-      const hasUnderage = document.getElementById('hasUnderage').value === "true";
-      const muttizettelCheck = document.getElementById('muttizettelCheck');
+      const category = document.getElementById('category').value;
+      const rawName = document.getElementById('teamName').value.trim();
+      const captain = document.getElementById('captainInfo').value.trim();
 
-      if (hasUnderage && !muttizettelCheck.checked) {
-        alert("Bitte bestätige, dass du den Muttizettel gelesen hast und alle unter 18-jährigen Spielern diesen mitbringen.");
-        return;
-      }
-
-      const submitBtn = document.getElementById('submitBtn');
-      submitBtn.disabled = true;
-      submitBtn.innerText = "Prüfe Plätze...";
-
-      // 1. Prüfen, wie viele Teams bereits angemeldet sind
-      const { data: existingTeams, error: countError } = await db.from('teams').select('id');
+      // Anzahl der bisherigen Teams der Kategorie zählen
+      const { data: existingTeams } = await db.from('teams').select('team_name').like('team_name', `${category}%`);
       
-      if (countError) {
-        alert("Fehler beim Abrufen der Anmeldungen: " + countError.message);
-        submitBtn.disabled = false;
-        submitBtn.innerText = "🚀 Team verbindlich anmelden";
+      const count = (existingTeams ? existingTeams.length : 0) + 1;
+      const limit = category === 'M' ? 24 : 8;
+
+      if (count > limit) {
+        msg.className = "text-center text-xs font-bold text-rose-600 block";
+        msg.innerText = `❌ Leider sind alle ${limit} Plätze für ${category === 'M' ? 'Herren' : 'Damen'} bereits belegt!`;
         return;
       }
 
-      if (existingTeams.length >= 30) {
-        alert("Leider sind bereits alle 30 Startplätze vergeben!");
-        submitBtn.disabled = false;
-        submitBtn.innerText = "❌ Turnier ausgebucht";
-        return;
-      }
+      // Format: M1 - Teamname
+      const formattedName = `${category}${count} - ${rawName}`;
 
-      submitBtn.innerText = "Speichere...";
-
-      // 2. Fortlaufende Zahl vergeben (1 bis 30)
-      const nextTeamNumber = existingTeams.length + 1;
-      const teamName = `Team ${nextTeamNumber}`;
-
-      const captainName = document.getElementById('captainName').value.trim();
-      const captainEmail = document.getElementById('captainEmail').value.trim();
-
-      const teamCode = "STR-" + Math.random().toString(36).substring(2, 6).toUpperCase();
-
-      // 3. In Datenbank speichern
-      const { data, error } = await db.from('teams').insert([
-        { 
-          team_name: teamName,
-          captain_info: `${captainName} (${captainEmail})`,
-          player_count: 6,
-          has_underage: hasUnderage,
-          team_code: teamCode,
-          checked_in: false
-        }
-      ]).select();
+      const { error } = await db.from('teams').insert([{
+        team_name: formattedName,
+        captain_info: captain,
+        checked_in: true
+      }]);
 
       if (error) {
-        alert("Fehler bei der Anmeldung: " + error.message);
-        submitBtn.disabled = false;
-        submitBtn.innerText = "🚀 Team verbindlich anmelden";
+        msg.className = "text-center text-xs font-bold text-rose-600 block";
+        msg.innerText = "Fehler bei der Anmeldung: " + error.message;
       } else {
-        document.getElementById('regForm').classList.add('hidden');
-        document.getElementById('successBox').classList.remove('hidden');
-        document.getElementById('assignedTeamName').innerText = `Du startest als: ${teamName}`;
-        document.getElementById('teamCodeDisplay').innerText = teamCode;
-
-        document.getElementById("qrcode").innerHTML = "";
-        new QRCode(document.getElementById("qrcode"), {
-          text: teamCode,
-          width: 180,
-          height: 180,
-          colorDark: "#000000",
-          colorLight: "#ffffff",
-          correctLevel: QRCode.CorrectLevel.H
-        });
+        msg.className = "text-center text-xs font-bold text-emerald-600 block";
+        msg.innerText = `✅ Erfolgreich als ${category}${count} angemeldet!`;
+        document.getElementById('regForm').reset();
       }
     }
   </script>
