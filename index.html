@@ -6,7 +6,8 @@
 <title>Bolzplatz Tour</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&family=Barlow+Condensed:wght@500;600;700&family=Permanent+Marker&display=swap" rel="stylesheet">
+<!-- Google Fonts: Sedgwick Ave Display (für das Graffiti), Anton & Barlow -->
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&family=Barlow+Condensed:wght@500;600;700&family=Sedgwick+Ave+Display&display=swap" rel="stylesheet">
 <style>
   :root{
     --navy:#0B1420;
@@ -38,33 +39,43 @@
     align-items:center;
     padding:24px;
     text-align:center;
-    background: radial-gradient(circle at center, #1a2a40 0%, var(--navy) 70%);
+    background: radial-gradient(circle at center, #133352 0%, var(--navy) 75%);
   }
 
+  /* GRAFFITI TYPO LOGO WIE AUF DEM BILD */
   .hero-title{
-    font-family: 'Permanent Marker', cursive;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
     text-transform: uppercase;
-    line-height: 1.05;
-    letter-spacing: 2px;
     user-select: none;
-    margin-bottom: 28px;
+    margin-bottom: 32px;
+    width: 100%;
+    max-width: 700px;
   }
 
   .hero-title .main-text{
     display: block;
-    font-size: clamp(2.8rem, 8vw, 6rem);
-    color: var(--cream);
-    text-shadow: 3px 4px 0px rgba(0,0,0,0.8), 0 0 15px rgba(245, 241, 232, 0.2);
-    transform: rotate(-2deg);
+    width: 100%;
+    font-family: 'Sedgwick Ave Display', cursive;
+    font-size: clamp(2.8rem, 9.5vw, 6.8rem);
+    color: #FFFFFF;
+    line-height: 0.9;
+    letter-spacing: 2px;
+    text-shadow: 4px 6px 0px #000000, 0px 0px 15px rgba(0,0,0,0.8);
+    transform: rotate(-1.5deg);
   }
 
   .hero-title .sub-text{
     display: block;
-    font-size: clamp(3.5rem, 11vw, 8.5rem);
+    font-family: 'Anton', sans-serif;
+    font-size: clamp(2.5rem, 8vw, 5.5rem);
     color: var(--pink);
-    text-shadow: 4px 5px 0px #000, 0 0 25px rgba(255, 38, 128, 0.6);
-    transform: rotate(2deg);
+    line-height: 0.9;
+    letter-spacing: 3px;
+    text-shadow: 4px 5px 0px #000000;
     margin-top: -10px;
+    padding-right: 5%;
   }
 
   /* BUTTON & UNTERTEXT */
@@ -279,24 +290,25 @@
 <body>
 
 <div class="hero">
+  <!-- NEUER SCHRIFTZUG WIE AUF DEM BILD -->
   <h1 class="hero-title">
-    <span class="main-text">BolzplatzTour</span>
-    <span class="sub-text">STR.</span>
+    <span class="main-text">BOLZPLATZ</span>
+    <span class="sub-text">TOUR</span>
   </h1>
 
   <div class="cta-block">
     <a href="anmeldung.html" class="btn-anmelden">Jetzt Anmelden</a>
-    <p class="sub-info">Melde dich jetzt an für den nächsten Stop in <span class="city">Frankfurt</span></p>
+    <p class="sub-info">Melde dich jetzt an für die nächste Tour in <span class="city">Frankfurt</span></p>
   </div>
 
   <a href="#termine" class="hero-scroll"><span class="line"></span>Termine ansehen</a>
 </div>
 
 <div class="marquee" aria-hidden="true">
-  <span>STRASSE STATT STADION &nbsp;&bull;&nbsp; MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp; STRASSE STATT STADION &nbsp;&bull;&nbsp; MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp;</span>
-  <span>STRASSE STATT STADION &nbsp;&bull;&nbsp; MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp; STRASSE STATT STADION &nbsp;&bull;&nbsp; MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp;</span>
-  <span>STRASSE STATT STADION &nbsp;&bull;&nbsp; MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp; STRASSE STATT STADION &nbsp;&bull;&nbsp; MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp;</span>
-  <span>STRASSE STATT STADION &nbsp;&bull;&nbsp; MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp; STRASSE STATT STADION &nbsp;&bull;&nbsp; MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp;</span>
+  <span>STRASSE STATT STADION &nbsp;&bull;&nbsp;MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp;STRASSE STATT STADION &nbsp;&bull;&nbsp;MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp;</span>
+  <span>STRASSE STATT STADION &nbsp;&bull;&nbsp;MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp;STRASSE STATT STADION &nbsp;&bull;&nbsp;MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp;</span>
+  <span>STRASSE STATT STADION &nbsp;&bull;&nbsp;MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp;STRASSE STATT STADION &nbsp;&bull;&nbsp;MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp;</span>
+  <span>STRASSE STATT STADION &nbsp;&bull;&nbsp;MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp;STRASSE STATT STADION &nbsp;&bull;&nbsp;MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp;</span>
 </div>
 
 <section id="termine" class="dates">
