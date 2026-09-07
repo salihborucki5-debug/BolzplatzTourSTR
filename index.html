@@ -174,6 +174,7 @@
   }
 
   .date-row{
+    position: relative;
     display:flex;
     align-items:center;
     gap:16px;
@@ -223,30 +224,33 @@
   .date-status.past{color:var(--slate);}
   .date-status.loading{color:var(--amber);}
 
-  /* Hover Preview Thumbnail */
+  /* Hover Preview Thumbnail (Leak) - Wird groß beim Hover */
   .preview-thumb {
-    width: 44px;
-    height: 32px;
+    width: 28px;
+    height: 48px; /* Hochformat 9:16 Proportional */
+    aspect-ratio: 9 / 16;
     border-radius: 4px;
     object-fit: cover;
-    opacity: 0.5;
-    transition: opacity 0.2s ease, transform 0.2s ease;
-    border: 1px solid rgba(255,255,255,0.2);
+    opacity: 0.6;
+    transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.25s ease, box-shadow 0.25s ease;
+    border: 1px solid rgba(255,255,255,0.3);
+    z-index: 5;
   }
   .date-row:hover .preview-thumb {
     opacity: 1;
-    transform: scale(1.1);
+    transform: scale(2.2); /* Vergrößert das Vorschaubild stark */
+    box-shadow: 0 6px 16px rgba(0,0,0,0.7);
   }
 
-  /* Ausklappbare Galerie */
+  /* Ausklappbare Galerie im 1080:1920 (9:16) Hochformat */
   .gallery-accordion {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.4s ease-in-out, padding 0.3s ease;
+    transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s ease;
     padding: 0;
   }
   .gallery-accordion.open {
-    max-height: 600px;
+    max-height: 800px;
     padding-bottom: 24px;
   }
   .gallery-grid {
@@ -256,9 +260,9 @@
   }
   .gallery-grid img {
     width: 100%;
-    height: 85px;
+    aspect-ratio: 9 / 16; /* 1080:1920 Hochkant-Format */
     object-fit: cover;
-    border-radius: 6px;
+    border-radius: 8px;
     border: 1px solid rgba(245,241,232,0.15);
     transition: transform 0.2s ease, filter 0.2s ease;
   }
@@ -358,11 +362,11 @@
         <div class="date-city">München</div>
         <div class="date-venue">Fotos ansehen 📸</div>
       </div>
-      <!-- Mini Preview Thumb -->
+      <!-- Mini Preview Thumb (Wird groß beim Drüberfahren) -->
       <img src="muenchen_1.jpg" alt="Preview" class="preview-thumb">
       <div class="date-status past" style="margin-left: 8px;">Vorbei</div>
     </div>
-    <!-- Galerie (5 Bilder) -->
+    <!-- Ausklappbare Galerie (6 Hochkant-Bilder) -->
     <div id="gallery-muenchen" class="gallery-accordion">
       <div class="gallery-grid">
         <img src="muenchen_1.jpg" alt="München Bild 1">
@@ -370,6 +374,7 @@
         <img src="muenchen_3.jpg" alt="München Bild 3">
         <img src="muenchen_4.jpg" alt="München Bild 4">
         <img src="muenchen_5.jpg" alt="München Bild 5">
+        <img src="muenchen_6.jpg" alt="München Bild 6">
       </div>
     </div>
   </div>
@@ -382,11 +387,11 @@
         <div class="date-city">Essen</div>
         <div class="date-venue">Fotos ansehen 📸</div>
       </div>
-      <!-- Mini Preview Thumb -->
+      <!-- Mini Preview Thumb (Wird groß beim Drüberfahren) -->
       <img src="essen_1.jpg" alt="Preview" class="preview-thumb">
       <div class="date-status past" style="margin-left: 8px;">Vorbei</div>
     </div>
-    <!-- Galerie (5 Bilder) -->
+    <!-- Ausklappbare Galerie (6 Hochkant-Bilder) -->
     <div id="gallery-essen" class="gallery-accordion">
       <div class="gallery-grid">
         <img src="essen_1.jpg" alt="Essen Bild 1">
@@ -394,6 +399,7 @@
         <img src="essen_3.jpg" alt="Essen Bild 3">
         <img src="essen_4.jpg" alt="Essen Bild 4">
         <img src="essen_5.jpg" alt="Essen Bild 5">
+        <img src="essen_6.jpg" alt="Essen Bild 6">
       </div>
     </div>
   </div>
