@@ -6,7 +6,6 @@
 <title>Bolzplatz Tour</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- Google Fonts: Permanent Marker (Graffiti/Street Style) & Anton / Barlow -->
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&family=Barlow+Condensed:wght@500;600;700&family=Permanent+Marker&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -18,7 +17,6 @@
     --slate:#93A0B2;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
-  html{-webkit-text-size-adjust:100%;}
   body{
     background:var(--navy);
     color:var(--cream);
@@ -28,12 +26,12 @@
   }
   a{color:inherit;}
 
-  /* ---------- HERO (GRAFFITI TYPO INSTEAD OF IMAGE) ---------- */
+  /* ---------- HERO ---------- */
   .hero{
     position:relative;
-    height:80svh;
-    min-height:480px;
-    max-height:750px;
+    height:85svh;
+    min-height:520px;
+    max-height:800px;
     display:flex;
     flex-direction:column;
     justify-content:center;
@@ -49,6 +47,7 @@
     line-height: 1.05;
     letter-spacing: 2px;
     user-select: none;
+    margin-bottom: 28px;
   }
 
   .hero-title .main-text{
@@ -68,6 +67,53 @@
     margin-top: -10px;
   }
 
+  /* BUTTON & UNTERTEXT BLOCK */
+  .cta-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    z-index: 2;
+  }
+
+  .btn-anmelden {
+    display: inline-block;
+    background: var(--pink);
+    color: var(--navy);
+    font-family: 'Anton', sans-serif;
+    font-size: clamp(1.2rem, 4vw, 1.6rem);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 16px 48px;
+    border-radius: 12px;
+    text-decoration: none;
+    box-shadow: 0 0 20px rgba(255, 38, 128, 0.5), 0 4px 0 #000;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    border: 2px solid #000;
+  }
+
+  .btn-anmelden:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 0 35px rgba(255, 38, 128, 0.8), 0 6px 0 #000;
+    background: #ff4794;
+  }
+
+  .sub-info {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    font-size: clamp(0.95rem, 3vw, 1.2rem);
+    letter-spacing: 0.04em;
+    color: var(--cream);
+    text-transform: uppercase;
+    opacity: 0.9;
+  }
+
+  .sub-info .city {
+    color: var(--amber);
+    font-weight: 700;
+    border-bottom: 2px solid var(--amber);
+  }
+
   .hero-scroll{
     position:absolute;
     left:24px;
@@ -79,13 +125,10 @@
     font-family:'Barlow Condensed', sans-serif;
     font-weight:600;
     font-size:13px;
-    letter-spacing:0.03em;
     color:var(--cream);
     text-decoration:none;
   }
-  .hero-scroll .line{
-    width:26px; height:1px; background:var(--pink);
-  }
+  .hero-scroll .line{ width:26px; height:1px; background:var(--pink); }
 
   /* ---------- MARQUEE ---------- */
   .marquee{
@@ -100,158 +143,27 @@
     font-family:'Barlow Condensed', sans-serif;
     font-weight:700;
     font-size:15px;
-    letter-spacing:0.02em;
     padding-right:28px;
     animation:scroll 18s linear infinite;
   }
-  @keyframes scroll{
-    from{transform:translateX(0);}
-    to{transform:translateX(-50%);}
-  }
+  @keyframes scroll{ from{transform:translateX(0);} to{transform:translateX(-50%);} }
 
   /* ---------- SECTIONS ---------- */
-  section{
-    padding:56px 24px;
-    max-width:520px;
-    margin:0 auto;
-  }
-  .kicker{
-    font-family:'Barlow Condensed', sans-serif;
-    font-weight:600;
-    font-size:14px;
-    color:var(--amber);
-    margin-bottom:8px;
-  }
-  h2{
-    font-family:'Anton', sans-serif;
-    font-weight:400;
-    font-size:34px;
-    line-height:1.05;
-    letter-spacing:0.01em;
-    margin-bottom:22px;
-    max-width:15ch;
-  }
+  section{ padding:56px 24px; max-width:520px; margin:0 auto; }
+  .kicker{ font-family:'Barlow Condensed', sans-serif; font-weight:600; font-size:14px; color:var(--amber); margin-bottom:8px; }
+  h2{ font-family:'Anton', sans-serif; font-size:34px; line-height:1.05; margin-bottom:22px; }
 
-  /* ---------- DATES ---------- */
-  .dates{padding-top:48px;}
-  .date-row{
-    display:flex;
-    align-items:center;
-    gap:16px;
-    padding:18px 0;
-    border-bottom:1px solid rgba(245,241,232,0.12);
-    text-decoration:none;
-    color:inherit;
-  }
-  .date-row:first-of-type{border-top:1px solid rgba(245,241,232,0.12);}
-  .date-day{
-    font-family:'Anton', sans-serif;
-    font-size:26px;
-    line-height:1;
-    color:var(--cream);
-    width:52px;
-    flex-shrink:0;
-  }
-  .date-day small{
-    display:block;
-    font-family:'Barlow Condensed', sans-serif;
-    font-weight:600;
-    font-size:12px;
-    color:var(--slate);
-    margin-top:2px;
-  }
-  .date-info{flex:1; min-width:0;}
-  .date-city{
-    font-family:'Barlow Condensed', sans-serif;
-    font-weight:700;
-    font-size:19px;
-    color:var(--cream);
-  }
-  .date-venue{
-    font-size:13px;
-    color:var(--slate);
-    margin-top:2px;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-  }
-  .date-status{
-    font-family:'Barlow Condensed', sans-serif;
-    font-weight:600;
-    font-size:13px;
-    color:var(--pink);
-    flex-shrink:0;
-  }
-  .date-status.sold{color:var(--slate);}
+  /* DATES */
+  .date-row{ display:flex; align-items:center; gap:16px; padding:18px 0; border-bottom:1px solid rgba(245,241,232,0.12); text-decoration:none; color:inherit; }
+  .date-day{ font-family:'Anton', sans-serif; font-size:26px; width:52px; flex-shrink:0; }
+  .date-info{ flex:1; }
+  .date-city{ font-family:'Barlow Condensed', sans-serif; font-weight:700; font-size:19px; }
+  .date-status{ font-family:'Barlow Condensed', sans-serif; font-weight:600; font-size:13px; color:var(--pink); }
 
-  /* ---------- ABOUT ---------- */
-  .about p{
-    font-size:17px;
-    color:rgba(245,241,232,0.82);
-    max-width:34ch;
-  }
-  .about p + p{margin-top:14px;}
-
-  /* ---------- CTA / FOOTER ---------- */
-  .footer{
-    background:var(--navy-2);
-    padding:64px 24px 40px;
-  }
-  .footer h2{
-    font-size:15vw;
-    line-height:0.92;
-    max-width:none;
-    margin-bottom:28px;
-  }
-  .footer h2 .accent{color:var(--pink);}
-  .signup{
-    display:flex;
-    border-bottom:2px solid var(--cream);
-    padding-bottom:10px;
-    margin-bottom:28px;
-  }
-  .signup input{
-    flex:1;
-    background:none;
-    border:none;
-    color:var(--cream);
-    font-family:'Barlow', sans-serif;
-    font-size:16px;
-    outline:none;
-  }
-  .signup input::placeholder{color:var(--slate);}
-  .signup button{
-    background:none;
-    border:none;
-    color:var(--pink);
-    font-family:'Barlow Condensed', sans-serif;
-    font-weight:700;
-    font-size:15px;
-    letter-spacing:0.02em;
-  }
-  .socials{
-    display:flex;
-    gap:20px;
-    margin-bottom:40px;
-  }
-  .socials a{
-    font-family:'Barlow Condensed', sans-serif;
-    font-weight:600;
-    font-size:14px;
-    color:var(--slate);
-    text-decoration:none;
-  }
-  .foot-meta{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-end;
-    padding-top:24px;
-    border-top:1px solid rgba(245,241,232,0.1);
-  }
-  .foot-meta span{
-    font-size:12px;
-    color:var(--slate);
-  }
+  /* FOOTER */
+  .footer{ background:var(--navy-2); padding:64px 24px 40px; }
+  .footer h2{ font-size:15vw; line-height:0.92; }
+  .footer h2 .accent{ color:var(--pink); }
 </style>
 </head>
 <body>
@@ -261,78 +173,33 @@
     <span class="main-text">BolzplatzTour</span>
     <span class="sub-text">STR.</span>
   </h1>
+
+  <!-- BUTTON MIT UNTERTEXT DIREKT DARUNTER -->
+  <div class="cta-block">
+    <a href="anmeldung.html" class="btn-anmelden">Jetzt Anmelden</a>
+    <p class="sub-info">Melde dich jetzt an für die nächste Tour in <span class="city">Münster</span></p>
+  </div>
+
   <a href="#termine" class="hero-scroll"><span class="line"></span>Termine ansehen</a>
 </div>
 
 <div class="marquee" aria-hidden="true">
-  <span>STRASSE STATT STADION &nbsp;&bull;&nbsp; MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp; STRASSE STATT STADION &nbsp;&bull;&nbsp; MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp; STRASSE STATT STADION &nbsp;&bull;&nbsp; MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp; </span>
-  <span>STRASSE STATT STADION &nbsp;&bull;&nbsp; MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp; STRASSE STATT STADION &nbsp;&bull;&nbsp; MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp; STRASSE STATT STADION &nbsp;&bull;&nbsp; MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp; </span>
+  <span>STRASSE STATT STADION &nbsp;&bull;&nbsp; MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp; STRASSE STATT STADION &nbsp;&bull;&nbsp; MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp;</span>
+  <span>STRASSE STATT STADION &nbsp;&bull;&nbsp; MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp; STRASSE STATT STADION &nbsp;&bull;&nbsp; MAKE THE STRRR GREAT AGAIN &nbsp;&bull;&nbsp;</span>
 </div>
 
-<section id="termine" class="dates">
+<section id="termine">
   <p class="kicker">2026 Tour</p>
-  <h2>Jeder Bolzplatz&nbsp;zählt</h2>
-
-  <a class="date-row" href="#">
+  <h2>Jeder Bolzplatz zählt</h2>
+  <a class="date-row" href="anmeldung.html">
     <div class="date-day">14<small>Mär</small></div>
-    <div class="date-info">
-      <div class="date-city">Münster</div>
-      <div class="date-venue">Bolzplatz Kreuzviertel</div>
-    </div>
-    <div class="date-status">Tickets</div>
+    <div class="date-info"><div class="date-city">Münster</div></div>
+    <div class="date-status">Anmelden</div>
   </a>
-  <a class="date-row" href="#">
-    <div class="date-day">28<small>Mär</small></div>
-    <div class="date-info">
-      <div class="date-city">Dortmund</div>
-      <div class="date-venue">Kaiserstraße Cage</div>
-    </div>
-    <div class="date-status">Tickets</div>
-  </a>
-  <a class="date-row" href="#">
-    <div class="date-day">11<small>Apr</small></div>
-    <div class="date-info">
-      <div class="date-city">Köln</div>
-      <div class="date-venue">Ebertplatz</div>
-    </div>
-    <div class="date-status sold">Ausverkauft</div>
-  </a>
-  <a class="date-row" href="#">
-    <div class="date-day">25<small>Apr</small></div>
-    <div class="date-info">
-      <div class="date-city">Berlin</div>
-      <div class="date-venue">Görlitzer Park Court</div>
-    </div>
-    <div class="date-status">Tickets</div>
-  </a>
-</section>
-
-<section class="about">
-  <p class="kicker">Über die Tour</p>
-  <h2>Zurück&nbsp;dahin, wo alles&nbsp;anfing</h2>
-  <p>Kein Stadion, kein Rasen unterm Flutlicht – nur Asphalt, ein Ball und die Leute aus der Nachbarschaft. Die Bolzplatz Tour bringt Freestyle-Football zurück an die Orte, an denen der Sport groß geworden ist.</p>
-  <p>Jede Station: eine andere Stadt, ein anderer Platz, dieselbe Energie.</p>
 </section>
 
 <footer class="footer">
-  <p class="kicker">Bleib dran</p>
   <h2>Make the<br><span class="accent">STRRR</span><br>great again</h2>
-
-  <form class="signup" onsubmit="return false;">
-    <input type="email" placeholder="Deine E-Mail-Adresse" required>
-    <button type="submit">Anmelden</button>
-  </form>
-
-  <div class="socials">
-    <a href="#">Instagram</a>
-    <a href="#">TikTok</a>
-    <a href="#">YouTube</a>
-  </div>
-
-  <div class="foot-meta">
-    <span>Bolzplatz Tour &copy; 2026</span>
-    <span>Streetfootball</span>
-  </div>
 </footer>
 
 </body>
