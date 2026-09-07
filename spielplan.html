@@ -39,7 +39,7 @@
       </div>
     </div>
 
-    <!-- LIVE MATCH DASHBOARD (NEU GANZ OBEN) -->
+    <!-- LIVE MATCH DASHBOARD (OBEN) -->
     <div id="liveMatchCard" class="bg-gradient-to-r from-pink-900/40 via-stone-800 to-stone-800 border-2 border-pink-500 rounded-2xl p-6 mb-8 shadow-2xl">
       <div class="flex justify-between items-center mb-3">
         <span id="liveMatchRound" class="text-xs font-black uppercase text-pink-400 tracking-wider">LADE LIVE MATCH...</span>
@@ -116,15 +116,30 @@
 
     async function loadTournament() {
       const treeGrid = document.getElementById('treeGrid');
-      treeGrid.innerHTML = `<div class="text-stone-400 text-sm">Berechne gemischten Turnierbaum...</div>`;
+      treeGrid.innerHTML = `<div class="text-stone-400 text-sm">Berechne gemischten Turnierbaum & lade Ergebnisse...</div>`;
 
-      // 1. Alle Teams (Männer & Frauen) holen
-      const { data: teams, error } = await db.from('teams').select('*');
+      // 1. Teams UND bereits gespeicherte Matches aus Supabase holen
+      const [teamsRes, matchesRes] = await Promise.all([
+        db.from('teams').select('*'),
+        db.from('matches').select('*')
+      ]);
 
-      if (error || !teams) {
-        treeGrid.innerHTML = `<div class="text-red-400 text-sm">Fehler beim Laden der Teams.</div>`;
-        return;
-      }
+      const teams = teamsRes.data || [];
+      const dbMatches = matchesRes.data || [];
+
+      // Gespeicherte Supabase Matches in den In-Memory-Speicher schreiben
+      dbMatches.forEach(m => {
+        tournamentTreeState[m.id] = {
+          teamA: m.team_a,
+          teamB: m.team_b,
+          scoreA: m.score_a,
+          scoreB: m.score_b,
+          winner: m.winner,
+          loser: m.loser,
+          roundTitle: m.round_name,
+          matchNumber: m.match_number
+        };
+      });
 
       const count = teams.length;
       document.getElementById('teamCountDisplay').innerText = `${count} Teams gesamt`;
@@ -155,6 +170,7 @@
       // 3. Erstes Runden-Feld initialisieren
       let currentSize = treeSize;
       let roundIndex = 0;
+      let globalMatchCounter = 1;
 
       while (currentSize >= 2) {
         let roundTitle = "";
@@ -169,6 +185,7 @@
 
         for (let m = 0; m < matchCount; m++) {
           const matchId = `r${roundIndex}_m${m}`;
+          const currentMatchNum = globalMatchCounter++;
           
           let teamA = "Gewinner";
           let teamB = "Gewinner";
@@ -177,13 +194,13 @@
             teamA = sortedTeams[m * 2] ? sortedTeams[m * 2].team_name : " Offen";
             teamB = sortedTeams[m * 2 + 1] ? sortedTeams[m * 2 + 1].team_name : " Offen";
 
-            // State im Speicher anlegen falls neu
             if (!tournamentTreeState[matchId]) {
-              tournamentTreeState[matchId] = { teamA, teamB, scoreA: null, scoreB: null, winner: null, roundTitle };
+              tournamentTreeState[matchId] = { teamA, teamB, scoreA: null, scoreB: null, winner: null, loser: null, roundTitle, matchNumber: currentMatchNum };
             } else {
               tournamentTreeState[matchId].teamA = teamA;
               tournamentTreeState[matchId].teamB = teamB;
               tournamentTreeState[matchId].roundTitle = roundTitle;
+              tournamentTreeState[matchId].matchNumber = currentMatchNum;
             }
           } else {
             // Folgerunden: Sieger aus vorherigen Matches holen
@@ -194,11 +211,12 @@
             teamB = prevMatchB && prevMatchB.winner ? prevMatchB.winner : `Sieger M${m * 2 + 2}`;
 
             if (!tournamentTreeState[matchId]) {
-              tournamentTreeState[matchId] = { teamA, teamB, scoreA: null, scoreB: null, winner: null, roundTitle };
+              tournamentTreeState[matchId] = { teamA, teamB, scoreA: null, scoreB: null, winner: null, loser: null, roundTitle, matchNumber: currentMatchNum };
             } else {
               tournamentTreeState[matchId].teamA = teamA;
               tournamentTreeState[matchId].teamB = teamB;
               tournamentTreeState[matchId].roundTitle = roundTitle;
+              tournamentTreeState[matchId].matchNumber = currentMatchNum;
             }
           }
 
@@ -236,7 +254,7 @@
 
       card.innerHTML = `
         <div class="flex justify-between items-center text-[10px] font-bold text-stone-500 uppercase">
-          <span>Spiel ${mIndex + 1}</span>
+          <span>Spiel ${match.matchNumber || mIndex + 1}</span>
           ${isFinished ? '<span class="text-pink-400 font-black">BEENDET</span>' : '<span class="group-hover:text-pink-400">✎ Eintragen</span>'}
         </div>
 
@@ -277,7 +295,28 @@
       document.getElementById('scoreModal').classList.add('hidden');
     }
 
-    function saveScore() {
+    async function saveMatchToSupabase(matchId, scoreA, scoreB) {
+      const match = tournamentTreeState[matchId];
+      match.scoreA = scoreA;
+      match.scoreB = scoreB;
+      match.winner = scoreA > scoreB ? match.teamA : match.teamB;
+      match.loser = scoreA > scoreB ? match.teamB : match.teamA;
+
+      // In Supabase in die 'matches' Tabelle speichern
+      await db.from('matches').upsert({
+        id: matchId,
+        match_number: match.matchNumber,
+        round_name: match.roundTitle,
+        team_a: match.teamA,
+        team_b: match.teamB,
+        score_a: scoreA,
+        score_b: scoreB,
+        winner: match.winner,
+        loser: match.loser
+      });
+    }
+
+    async function saveScore() {
       if (!currentEditingMatch) return;
 
       const scoreA = parseInt(document.getElementById('scoreA').value) || 0;
@@ -288,10 +327,7 @@
         return;
       }
 
-      const match = tournamentTreeState[currentEditingMatch];
-      match.scoreA = scoreA;
-      match.scoreB = scoreB;
-      match.winner = scoreA > scoreB ? match.teamA : match.teamB;
+      await saveMatchToSupabase(currentEditingMatch, scoreA, scoreB);
 
       closeModal();
       loadTournament(); // Baum neu zeichnen & Sieger weiterleiten!
@@ -322,7 +358,7 @@
 
       card.innerHTML = `
         <div class="flex justify-between items-center mb-3">
-          <span id="liveMatchRound" class="text-xs font-black uppercase text-pink-400 tracking-wider">NEXT MATCH: ${match.roundTitle || 'K.O. Spiel'}</span>
+          <span id="liveMatchRound" class="text-xs font-black uppercase text-pink-400 tracking-wider">SPIEL ${match.matchNumber}: ${match.roundTitle || 'K.O. Spiel'}</span>
           <span class="bg-pink-500/20 text-pink-300 border border-pink-500/30 text-[10px] font-bold px-2.5 py-1 rounded-full animate-pulse">● LIVE ON COURT</span>
         </div>
 
@@ -350,7 +386,7 @@
       `;
     }
 
-    function saveLiveScore() {
+    async function saveLiveScore() {
       if (!currentLiveMatchId) return;
 
       const inputA = document.getElementById('liveScoreA').value;
@@ -364,10 +400,7 @@
         return;
       }
 
-      const match = tournamentTreeState[currentLiveMatchId];
-      match.scoreA = scoreA;
-      match.scoreB = scoreB;
-      match.winner = scoreA > scoreB ? match.teamA : match.teamB;
+      await saveMatchToSupabase(currentLiveMatchId, scoreA, scoreB);
 
       loadTournament(); // Aktualisiert den Baum & schaltet sofort zum nächsten Match weiter!
     }
