@@ -10,15 +10,25 @@
 
 <script>
   // =========================================================
-  // TRAG HIER EINFACH NUR DEINEN BILDNAMEN EIN:
+  // TRAG HIER DEINE BILDNAMEN EIN:
   // =========================================================
-  const BILD_NAME = "bolzplatz_tour_1920x1080.jpg"; 
+  const BILD_DESKTOP = "bolzplatz_tour_1920x1080.jpg"; 
+  const BILD_MOBILE  = "bolzplatz-tour-original.webp"; // z. B. Hochformat 1080x1920
+
+  function updateHeroImage() {
+    const hero = document.getElementById("hero-section");
+    if (!hero) return;
+
+    // Prüft ob der Bildschirm schmaler als 768px ist
+    const isMobile = window.innerWidth <= 768;
+    const bild = isMobile ? BILD_MOBILE : BILD_DESKTOP;
+
+    hero.style.backgroundImage = `linear-gradient(to bottom, rgba(11, 20, 32, 0.2) 0%, rgba(11, 20, 32, 0.85) 90%), url('${bild}')`;
+  }
 
   document.addEventListener("DOMContentLoaded", function() {
-    const hero = document.getElementById("hero-section");
-    if (hero) {
-      hero.style.backgroundImage = `linear-gradient(to bottom, rgba(11, 20, 32, 0.2) 0%, rgba(11, 20, 32, 0.85) 90%), url('${BILD_NAME}')`;
-    }
+    updateHeroImage();
+    window.addEventListener("resize", updateHeroImage);
   });
 </script>
 
