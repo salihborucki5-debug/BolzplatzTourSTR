@@ -8,25 +8,49 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
 
+<!-- Swiper CSS & JS für den Swipe-Effekt -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
 <script>
   // =========================================================
   // TRAG HIER DEINE BILDNAMEN EIN:
   // =========================================================
   const BILD_DESKTOP = "bolzplatz_tour_1920x1080.jpg"; 
-  const BILD_MOBILE  = "bolzplatz-tour-original.webp"; // z. B. Hochformat 1080x1920
+  const BILD_MOBILE  = "bolzplatz-tour-original.webp"; 
+
+  // Bilderlisten für das Wischen / Swipen
+  const GALLERY_IMAGES = {
+    muenchen: [
+      "muenchen_1.HEIC",
+      "muenchen_2.PNG",
+      "muenchen_3.PNG",
+      "muenchen_4.jpg",
+      "muenchen_5.HEIC",
+      "muenchen_6.jpg"
+    ],
+    essen: [
+      "essen_1.jpg",
+      "essen_2.jpg",
+      "essen_3.jpg",
+      "essen_4.jpg",
+      "essen_5.jpg",
+      "essen_6.jpg"
+    ]
+  };
+
+  let swiperInstance = null;
 
   function updateHeroImage() {
     const hero = document.getElementById("hero-section");
     if (!hero) return;
 
-    // Prüft ob der Bildschirm schmaler als 768px ist
     const isMobile = window.innerWidth <= 768;
     const bild = isMobile ? BILD_MOBILE : BILD_DESKTOP;
 
     hero.style.backgroundImage = `linear-gradient(to bottom, rgba(11, 20, 32, 0.2) 0%, rgba(11, 20, 32, 0.85) 90%), url('${bild}')`;
   }
 
-  // Funktion zum Auf- und Zuklappen der Bildergalerien
   function toggleGallery(cityId) {
     const gallery = document.getElementById(cityId);
     if (gallery) {
@@ -34,12 +58,45 @@
     }
   }
 
-  // Funktionen für das Vollbild-Modal (Lightbox)
-  function openLightbox(imgSrc) {
+  // Öffnet den Swiper im Vollbild
+  function openLightbox(cityKey, initialIndex) {
     const lightbox = document.getElementById("lightbox");
-    const lightboxImg = document.getElementById("lightbox-img");
-    lightboxImg.src = imgSrc;
+    const swiperWrapper = document.getElementById("swiper-wrapper");
+    
+    // Leere alte Bilder
+    swiperWrapper.innerHTML = "";
+
+    // Bilder der Stadt einfügen
+    GALLERY_IMAGES[cityKey].forEach(src => {
+      const slide = document.createElement("div");
+      slide.className = "swiper-slide";
+      slide.innerHTML = `<img src="${src}" class="lightbox-img" alt="Bolzplatz Tour Bild">`;
+      swiperWrapper.appendChild(slide);
+    });
+
     lightbox.classList.add("active");
+
+    // Falls schon eine Instanz existiert, zerstören
+    if (swiperInstance) {
+      swiperInstance.destroy(true, true);
+    }
+
+    // Swiper neu initialisieren
+    swiperInstance = new Swiper('.swiper', {
+      initialSlide: initialIndex,
+      loop: false,
+      navigation: {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev',
+      },
+      pagination: {
+        el: '.swiper-pagination',
+        clickable: true,
+      },
+      keyboard: {
+        enabled: true,
+      }
+    });
   }
 
   function closeLightbox() {
@@ -51,7 +108,6 @@
     updateHeroImage();
     window.addEventListener("resize", updateHeroImage);
 
-    // ESC-Taste schließt das Vollbild
     document.addEventListener("keydown", function(e) {
       if (e.key === "Escape") {
         closeLightbox();
@@ -244,7 +300,6 @@
   .date-status.past{color:var(--slate);}
   .date-status.loading{color:var(--amber);}
 
-  /* Preview Thumbnail (Festes Bild) */
   .preview-thumb {
     width: 28px;
     height: 48px;
@@ -285,15 +340,15 @@
     filter: brightness(1.1);
   }
 
-  /* ---------- LIGHTBOX (VOLLBILD ANSICHT) ---------- */
+  /* ---------- SWIPER LIGHTBOX (VOLLBILD MIT SWIPE) ---------- */
   .lightbox {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(11, 20, 32, 0.95);
-    backdrop-filter: blur(8px);
+    background: rgba(11, 20, 32, 0.96);
+    backdrop-filter: blur(10px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -308,44 +363,62 @@
   }
   .lightbox-wrapper {
     position: relative;
-    max-width: 90vw;
-    max-height: 85vh;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .swiper {
+    width: 100%;
+    height: 85vh;
+  }
+  .swiper-slide {
     display: flex;
     justify-content: center;
     align-items: center;
   }
   .lightbox-img {
-    max-width: 100%;
-    max-height: 85vh;
-    aspect-ratio: 9 / 16; /* 1080:1920 Format */
+    max-width: 90vw;
+    max-height: 80vh;
+    aspect-ratio: 9 / 16;
     object-fit: contain;
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-    border: 1px solid rgba(255, 255, 255, 0.2);
   }
   .lightbox-close {
     position: absolute;
-    top: -18px;
-    right: -18px;
-    width: 40px;
-    height: 40px;
+    top: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
     background: var(--pink);
     color: var(--navy);
     border: 2px solid #000;
     border-radius: 50%;
-    font-size: 20px;
+    font-size: 22px;
     font-weight: bold;
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-    transition: transform 0.2s ease, background 0.2s ease;
-    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    z-index: 10001;
+    transition: transform 0.2s ease;
   }
   .lightbox-close:hover {
     transform: scale(1.1);
-    background: #ff4794;
+  }
+
+  /* Custom Swiper Buttons Farben */
+  .swiper-button-next, .swiper-button-prev {
+    color: var(--pink) !important;
+  }
+  .swiper-pagination-bullet-active {
+    background: var(--pink) !important;
+  }
+  .swiper-pagination-bullet {
+    background: var(--cream);
   }
 
   /* ---------- ABOUT ---------- */
@@ -445,12 +518,12 @@
     <!-- Ausklappbare Galerie -->
     <div id="gallery-muenchen" class="gallery-accordion">
       <div class="gallery-grid">
-        <img src="muenchen_1.HEIC" alt="München Bild 1" onclick="openLightbox(this.src)">
-        <img src="muenchen_2.PNG" alt="München Bild 2" onclick="openLightbox(this.src)">
-        <img src="muenchen_3.PNG" alt="München Bild 3" onclick="openLightbox(this.src)">
-        <img src="muenchen_4.jpg" alt="München Bild 4" onclick="openLightbox(this.src)">
-        <img src="muenchen_5.HEIC" alt="München Bild 5" onclick="openLightbox(this.src)">
-        <img src="muenchen_6.jpg" alt="München Bild 6" onclick="openLightbox(this.src)">
+        <img src="muenchen_1.HEIC" alt="München Bild 1" onclick="openLightbox('muenchen', 0)">
+        <img src="muenchen_2.PNG" alt="München Bild 2" onclick="openLightbox('muenchen', 1)">
+        <img src="muenchen_3.PNG" alt="München Bild 3" onclick="openLightbox('muenchen', 2)">
+        <img src="muenchen_4.jpg" alt="München Bild 4" onclick="openLightbox('muenchen', 3)">
+        <img src="muenchen_5.HEIC" alt="München Bild 5" onclick="openLightbox('muenchen', 4)">
+        <img src="muenchen_6.jpg" alt="München Bild 6" onclick="openLightbox('muenchen', 5)">
       </div>
     </div>
   </div>
@@ -469,12 +542,12 @@
     <!-- Ausklappbare Galerie -->
     <div id="gallery-essen" class="gallery-accordion">
       <div class="gallery-grid">
-        <img src="essen_1.jpg" alt="Essen Bild 1" onclick="openLightbox(this.src)">
-        <img src="essen_2.jpg" alt="Essen Bild 2" onclick="openLightbox(this.src)">
-        <img src="essen_3.jpg" alt="Essen Bild 3" onclick="openLightbox(this.src)">
-        <img src="essen_4.jpg" alt="Essen Bild 4" onclick="openLightbox(this.src)">
-        <img src="essen_5.jpg" alt="Essen Bild 5" onclick="openLightbox(this.src)">
-        <img src="essen_6.jpg" alt="Essen Bild 6" onclick="openLightbox(this.src)">
+        <img src="essen_1.jpg" alt="Essen Bild 1" onclick="openLightbox('essen', 0)">
+        <img src="essen_2.jpg" alt="Essen Bild 2" onclick="openLightbox('essen', 1)">
+        <img src="essen_3.jpg" alt="Essen Bild 3" onclick="openLightbox('essen', 2)">
+        <img src="essen_4.jpg" alt="Essen Bild 4" onclick="openLightbox('essen', 3)">
+        <img src="essen_5.jpg" alt="Essen Bild 5" onclick="openLightbox('essen', 4)">
+        <img src="essen_6.jpg" alt="Essen Bild 6" onclick="openLightbox('essen', 5)">
       </div>
     </div>
   </div>
@@ -538,11 +611,18 @@
   </div>
 </footer>
 
-<!-- VOLLBILD LIGHTBOX MODAL -->
-<div id="lightbox" class="lightbox" onclick="closeLightbox()">
-  <div class="lightbox-wrapper" onclick="event.stopPropagation()">
-    <button class="lightbox-close" onclick="closeLightbox()">✕</button>
-    <img id="lightbox-img" class="lightbox-img" src="" alt="Vollbild Ansicht">
+<!-- VOLLBILD LIGHTBOX SWIPER -->
+<div id="lightbox" class="lightbox">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <div class="lightbox-wrapper">
+    <div class="swiper">
+      <div class="swiper-wrapper" id="swiper-wrapper">
+        <!-- Dynamisch befüllt -->
+      </div>
+      <div class="swiper-button-next"></div>
+      <div class="swiper-button-prev"></div>
+      <div class="swiper-pagination"></div>
+    </div>
   </div>
 </div>
 
