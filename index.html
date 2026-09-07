@@ -218,31 +218,7 @@
     margin-bottom:28px;
   }
   .footer h2 .accent{color:var(--pink);}
-  .signup{
-    display:flex;
-    border-bottom:2px solid var(--cream);
-    padding-bottom:10px;
-    margin-bottom:28px;
-  }
-  .signup input{
-    flex:1;
-    background:none;
-    border:none;
-    color:var(--cream);
-    font-family:'Barlow', sans-serif;
-    font-size:16px;
-    outline:none;
-  }
-  .signup input::placeholder{color:var(--slate);}
-  .signup button{
-    background:none;
-    border:none;
-    color:var(--pink);
-    font-family:'Barlow Condensed', sans-serif;
-    font-weight:700;
-    font-size:15px;
-    letter-spacing:0.02em;
-  }
+  
   .socials{
     display:flex;
     gap:20px;
@@ -251,9 +227,13 @@
   .socials a{
     font-family:'Barlow Condensed', sans-serif;
     font-weight:600;
-    font-size:14px;
-    color:var(--slate);
+    font-size:16px;
+    color:var(--cream);
     text-decoration:none;
+    transition: color 0.2s ease;
+  }
+  .socials a:hover{
+    color:var(--pink);
   }
   .foot-meta{
     display:flex;
@@ -342,15 +322,10 @@
   <p class="kicker">Bleib dran</p>
   <h2>Make the<br><span class="accent">STRRR</span><br>great again</h2>
 
-  <form class="signup" onsubmit="return false;">
-    <input type="email" placeholder="Deine E-Mail-Adresse" required>
-    <button type="submit">Anmelden</button>
-  </form>
-
   <div class="socials">
-    <a href="#">Instagram</a>
-    <a href="#">TikTok</a>
-    <a href="#">YouTube</a>
+    <a href="https://www.instagram.com/steven.kodra/" target="_blank" rel="noopener">Instagram</a>
+    <a href="https://www.tiktok.com/@stevenkodra?lang=de-DE" target="_blank" rel="noopener">TikTok</a>
+    <a href="https://www.twitch.tv/stevenkodra" target="_blank" rel="noopener">Twitch</a>
   </div>
 
   <div class="foot-meta">
