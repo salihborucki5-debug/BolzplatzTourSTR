@@ -7,6 +7,14 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- EmailJS SDK -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script type="text/javascript">
+    (function(){
+      // Initalisierung mit deinem Public Key
+      emailjs.init("qaHT2ZHoQUD4XjI0K");
+    })();
+  </script>
 </head>
 <body class="bg-[#fcfbf7] text-gray-900 min-h-screen p-4 flex flex-col items-center justify-center">
 
@@ -61,7 +69,6 @@
       </div>
 
       <div class="space-y-2 pt-2 border-t border-stone-200">
-        
         <div class="flex items-start gap-2 bg-pink-50 p-3 rounded-xl border border-pink-200">
           <input type="checkbox" id="kaderCheck" required class="mt-1 accent-pink-500 h-4 w-4 rounded cursor-pointer">
           <label for="kaderCheck" class="text-xs text-stone-800 font-medium">
@@ -89,7 +96,7 @@
       <div class="p-4 bg-pink-50 border border-pink-200 rounded-2xl">
         <h2 class="text-xl font-bold text-pink-600 mb-1">🎉 Anmeldung Erfolgreich!</h2>
         <p class="text-sm font-bold text-gray-800" id="assignedTeamName"></p>
-        <p class="text-xs text-stone-600 mt-1">Mach jetzt einen <strong>Screenshot</strong> von diesem Ticket. Du brauchst den QR-Code zum Check-in am Turniertag!</p>
+        <p class="text-xs text-stone-600 mt-1">Wir haben dir deine Bestätigung & dein Ticket auch per E-Mail geschickt!</p>
       </div>
 
       <div class="bg-white p-4 rounded-xl inline-block shadow-md border border-stone-200">
@@ -166,9 +173,8 @@
       submitBtn.disabled = true;
       submitBtn.innerText = "Prüfe Plätze...";
 
-      const category = document.getElementById('category').value; // M oder F
+      const category = document.getElementById('category').value; 
 
-      // 1. Zählen, wie viele Teams in dieser Kategorie bereits angemeldet sind
       const { data: existingTeams, error: countError } = await db
         .from('teams')
         .select('team_name')
@@ -177,7 +183,7 @@
       if (countError) {
         alert("Fehler beim Abrufen der Anmeldungen: " + countError.message);
         submitBtn.disabled = false;
-        submitBtn.innerText = "🚀 Team verbindlich anmelden";
+        submitBtn.innerText = "Team anmelden";
         return;
       }
 
@@ -193,15 +199,11 @@
 
       submitBtn.innerText = "Speichere...";
 
-      // 2. Automatischer Name (z.B. F1 bis F8 oder M1 bis M24)
       const teamName = `${category}${count}`;
-
       const captainName = document.getElementById('captainName').value.trim();
       const captainEmail = document.getElementById('captainEmail').value.trim();
-
       const teamCode = "STR-" + Math.random().toString(36).substring(2, 6).toUpperCase();
 
-      // 3. In Datenbank speichern
       const { data, error } = await db.from('teams').insert([
         { 
           team_name: teamName,
@@ -216,7 +218,7 @@
       if (error) {
         alert("Fehler bei der Anmeldung: " + error.message);
         submitBtn.disabled = false;
-        submitBtn.innerText = "🚀 Team verbindlich anmelden";
+        submitBtn.innerText = "Team anmelden";
       } else {
         document.getElementById('regForm').classList.add('hidden');
         document.getElementById('successBox').classList.remove('hidden');
@@ -232,7 +234,30 @@
           colorLight: "#ffffff",
           correctLevel: QRCode.CorrectLevel.H
         });
+
+        // Automatisch die E-Mail rausschicken
+        sendEmail(captainEmail, captainName, teamName, teamCode);
       }
+    }
+
+    function sendEmail(email, name, teamName, teamCode) {
+      const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${teamCode}`;
+
+      const templateParams = {
+        to_email: email,
+        captain_name: name,
+        team_name: teamName,
+        team_code: teamCode,
+        qr_code_url: qrImageUrl
+      };
+
+      // Service-ID + deine Template-ID
+      emailjs.send('service_s6cohoe', 'template_e4mlh5a', templateParams)
+        .then(function(response) {
+           console.log('E-Mail erfolgreich versendet!', response.status, response.text);
+        }, function(error) {
+           console.log('Fehler beim E-Mail-Versand:', error);
+        });
     }
   </script>
 </body>
