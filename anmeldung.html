@@ -5,82 +5,87 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BolzplatzTour STR - Team Anmeldung</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Aktiviert Tailwind Dark Mode Unterstützung basierend auf den Systemeinstellungen des Handys
+    tailwind.config = {
+      darkMode: 'media'
+    }
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <!-- EmailJS SDK -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <script type="text/javascript">
     (function(){
-      // Initalisierung mit deinem Public Key
       emailjs.init("qaHT2ZHoQUD4XjI0K");
     })();
   </script>
 </head>
-<body class="bg-[#fcfbf7] text-gray-900 min-h-screen p-4 flex flex-col items-center justify-center">
+<body class="bg-[#fcfbf7] dark:bg-[#0d1117] text-gray-900 dark:text-gray-100 min-h-screen p-4 flex flex-col items-center justify-center transition-colors duration-300">
 
-  <div class="max-w-md w-full bg-white p-6 rounded-2xl shadow-xl border border-stone-200 my-4">
+  <div class="max-w-md w-full bg-white dark:bg-[#161b22] p-6 rounded-2xl shadow-xl border border-stone-200 dark:border-stone-800 my-4 transition-colors duration-300">
     <header class="text-center mb-6">
       <h1 class="text-2xl font-black text-pink-500 uppercase tracking-wider">BOLZPLATZTOUR STR</h1>
-      <p class="text-stone-500 text-xs mt-1">Team-Anmeldung</p>
+      <p class="text-stone-500 dark:text-stone-400 text-xs mt-1">Team-Anmeldung</p>
     </header>
 
     <form id="regForm" onsubmit="registerTeam(event)" class="space-y-4">
       
       <div>
-        <label class="block text-xs font-bold uppercase text-stone-600 mb-1">Turnier-Kategorie *</label>
-        <select id="category" required class="w-full bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-500 font-bold text-gray-900">
+        <label class="block text-xs font-bold uppercase text-stone-600 dark:text-stone-300 mb-1">Turnier-Kategorie *</label>
+        <select id="category" required class="w-full bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-500 font-bold text-gray-900 dark:text-white">
           <option value="M">Männer</option>
           <option value="F">Frauen</option>
         </select>
       </div>
 
       <div>
-        <label class="block text-xs font-bold uppercase text-stone-600 mb-1">Name des Kapitäns *</label>
+        <label class="block text-xs font-bold uppercase text-stone-600 dark:text-stone-300 mb-1">Name des Kapitäns *</label>
         <input type="text" id="captainName" required placeholder="z. B. Max Mustermann"
-          class="w-full bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-500 text-gray-900 placeholder-stone-400">
+          class="w-full bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-500 text-gray-900 dark:text-white placeholder-stone-400">
       </div>
 
       <div>
-        <label class="block text-xs font-bold uppercase text-stone-600 mb-1">E-Mail-Adresse *</label>
+        <label class="block text-xs font-bold uppercase text-stone-600 dark:text-stone-300 mb-1">E-Mail-Adresse *</label>
         <input type="email" id="captainEmail" required placeholder="z. B. max@beispiel.de"
-          class="w-full bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-500 text-gray-900 placeholder-stone-400">
+          class="w-full bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-500 text-gray-900 dark:text-white placeholder-stone-400">
       </div>
 
       <div>
-        <label class="block text-xs font-bold uppercase text-stone-600 mb-1">Sind Spieler unter 18 Jahren dabei? *</label>
+        <label class="block text-xs font-bold uppercase text-stone-600 dark:text-stone-300 mb-1">Sind Spieler unter 18 Jahren dabei? *</label>
         <select id="hasUnderage" onchange="toggleMuttizettelOption()" required
-          class="w-full bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-500 text-gray-900">
+          class="w-full bg-stone-50 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-500 text-gray-900 dark:text-white">
           <option value="false">Nein (Alle 18+)</option>
           <option value="true">Ja (Unter 18 dabei)</option>
         </select>
       </div>
 
-      <div id="muttizettelBox" class="hidden space-y-2 p-3 bg-amber-50 rounded-xl border border-amber-200 transition-all">
-        <p class="text-xs text-amber-900 font-medium">
+      <div id="muttizettelBox" class="hidden space-y-2 p-3 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-200 dark:border-amber-800 transition-all">
+        <p class="text-xs text-amber-900 dark:text-amber-200 font-medium">
           📄 Für alle Spieler unter 18 Jahren muss eine Einverständniserklärung vorliegen: 
-          <a href="muttizettel.pdf" target="_blank" download class="underline font-bold text-amber-950 hover:text-pink-600">Muttizettel herunterladen (PDF)</a>
+          <a href="muttizettel.pdf" target="_blank" download class="underline font-bold text-amber-950 dark:text-amber-100 hover:text-pink-500">Muttizettel herunterladen (PDF)</a>
         </p>
         <div class="flex items-start gap-2 pt-1">
           <input type="checkbox" id="muttizettelCheck" class="mt-1 accent-pink-500 rounded cursor-pointer">
-          <label for="muttizettelCheck" class="text-xs text-amber-900 font-semibold">
+          <label for="muttizettelCheck" class="text-xs text-amber-900 dark:text-amber-200 font-semibold">
             Ich bestätige, dass die Erziehungsberechtigten aller unter 18-jährigen Teammitglieder den Muttizettel erhalten, gelesen und ausdrücklich akzeptiert haben. *
           </label>
         </div>
       </div>
 
-      <div class="space-y-2 pt-2 border-t border-stone-200">
-        <div class="flex items-start gap-2 bg-pink-50 p-3 rounded-xl border border-pink-200">
+      <div class="space-y-2 pt-2 border-t border-stone-200 dark:border-stone-800">
+        <div class="flex items-start gap-2 bg-pink-50 dark:bg-pink-950/30 p-3 rounded-xl border border-pink-200 dark:border-pink-900/50">
           <input type="checkbox" id="kaderCheck" required class="mt-1 accent-pink-500 h-4 w-4 rounded cursor-pointer">
-          <label for="kaderCheck" class="text-xs text-stone-800 font-medium">
+          <label for="kaderCheck" class="text-xs text-stone-800 dark:text-stone-200 font-medium">
             Wir treten mit mindestens <strong>5+1 Spielern</strong> an. Mir ist bewusst, dass wir ohne vollzähliges Team nicht mitspielen können. *
           </label>
         </div>
 
         <div class="flex items-start gap-2 pt-1">
           <input type="checkbox" id="agbCheck" required class="mt-1 accent-pink-500 rounded cursor-pointer">
-          <label for="agbCheck" class="text-xs text-stone-600">
+          <label for="agbCheck" class="text-xs text-stone-600 dark:text-stone-400">
             Ich akzeptiere die 
-            <a href="agbs.pdf" target="_blank" class="text-pink-600 underline font-bold hover:text-pink-700">Turnierregeln & AGBs (PDF)</a> 
+            <a href="agbs.pdf" target="_blank" class="text-pink-600 dark:text-pink-400 underline font-bold hover:text-pink-500">Turnierregeln & AGBs (PDF)</a> 
             und bestätige die Richtigkeit der Angaben. *
           </label>
         </div>
@@ -93,10 +98,10 @@
     </form>
 
     <div id="successBox" class="hidden text-center space-y-4">
-      <div class="p-4 bg-pink-50 border border-pink-200 rounded-2xl">
-        <h2 class="text-xl font-bold text-pink-600 mb-1">🎉 Anmeldung Erfolgreich!</h2>
-        <p class="text-sm font-bold text-gray-800" id="assignedTeamName"></p>
-        <p class="text-xs text-stone-600 mt-1">Wir haben dir deine Bestätigung & dein Ticket auch per E-Mail geschickt!</p>
+      <div class="p-4 bg-pink-50 dark:bg-pink-950/40 border border-pink-200 dark:border-pink-900 rounded-2xl">
+        <h2 class="text-xl font-bold text-pink-600 dark:text-pink-400 mb-1">🎉 Anmeldung Erfolgreich!</h2>
+        <p class="text-sm font-bold text-gray-800 dark:text-gray-100" id="assignedTeamName"></p>
+        <p class="text-xs text-stone-600 dark:text-stone-400 mt-1">Wir haben dir deine Bestätigung & dein Ticket auch per E-Mail geschickt!</p>
       </div>
 
       <div class="bg-white p-4 rounded-xl inline-block shadow-md border border-stone-200">
@@ -104,32 +109,32 @@
       </div>
 
       <div>
-        <p class="text-xs text-stone-500">Dein Team-Code:</p>
-        <p id="teamCodeDisplay" class="text-xl font-mono font-bold text-pink-600"></p>
+        <p class="text-xs text-stone-500 dark:text-stone-400">Dein Team-Code:</p>
+        <p id="teamCodeDisplay" class="text-xl font-mono font-bold text-pink-600 dark:text-pink-400"></p>
       </div>
 
       <!-- ABSCHNITT: WICHTIGE INFOS & ZEITEN -->
-      <div class="text-left bg-stone-50 p-4 rounded-xl border border-stone-200 space-y-2 mt-4">
-        <h3 class="text-xs font-black uppercase text-pink-600 tracking-wider flex items-center gap-1">
+      <div class="text-left bg-stone-50 dark:bg-stone-800/60 p-4 rounded-xl border border-stone-200 dark:border-stone-700 space-y-2 mt-4">
+        <h3 class="text-xs font-black uppercase text-pink-600 dark:text-pink-400 tracking-wider flex items-center gap-1">
           <span>⏰</span> Wichtige Infos zum Turniertag
         </h3>
         
-        <ul class="text-xs text-stone-700 space-y-1.5 font-medium">
+        <ul class="text-xs text-stone-700 dark:text-stone-300 space-y-1.5 font-medium">
           <li class="flex items-start gap-2">
-            <span class="font-bold text-gray-900 min-w-[70px]">13:00 Uhr:</span> 
+            <span class="font-bold text-gray-900 dark:text-white min-w-[70px]">13:00 Uhr:</span> 
             <span>Einlass & Check-in vor Ort. Bitte pünktlich da sein!</span>
           </li>
           <li class="flex items-start gap-2">
-            <span class="font-bold text-pink-600 min-w-[70px]">14:30 Uhr:</span> 
-            <span class="font-bold text-red-600">CHECK-IN DEADLINE!</span> 
+            <span class="font-bold text-pink-600 dark:text-pink-400 min-w-[70px]">14:30 Uhr:</span> 
+            <span class="font-bold text-red-600 dark:text-red-400">CHECK-IN DEADLINE!</span> 
           </li>
           <li class="flex items-start gap-2">
-            <span class="font-bold text-gray-900 min-w-[70px]">15:00 Uhr:</span> 
+            <span class="font-bold text-gray-900 dark:text-white min-w-[70px]">15:00 Uhr:</span> 
             <span>Turnierbeginn & Anpfiff.</span>
           </li>
         </ul>
 
-        <div class="p-2.5 bg-red-50 border border-red-200 rounded-lg text-[11px] text-red-700 font-semibold leading-tight mt-2">
+        <div class="p-2.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-lg text-[11px] text-red-700 dark:text-red-300 font-semibold leading-tight mt-2">
           ⚠️ <strong>Wichtiger Hinweis:</strong> Wer bis <strong>14:30 Uhr</strong> nicht vor Ort eingecheckt ist, verliert seinen Turnierplatz! Freie Plätze werden ab 14:30 Uhr spontan an neue Teams vor Ort vergeben.
         </div>
       </div>
@@ -235,7 +240,7 @@
           correctLevel: QRCode.CorrectLevel.H
         });
 
-        // Automatisch die E-Mail rausschicken
+        // E-Mail versenden
         sendEmail(captainEmail, captainName, teamName, teamCode);
       }
     }
@@ -251,7 +256,6 @@
         qr_code_url: qrImageUrl
       };
 
-      // Service-ID + deine Template-ID
       emailjs.send('service_s6cohoe', 'template_e4mlh5a', templateParams)
         .then(function(response) {
            console.log('E-Mail erfolgreich versendet!', response.status, response.text);
