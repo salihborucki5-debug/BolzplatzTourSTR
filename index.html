@@ -14,7 +14,7 @@
 
 <script>
   // =========================================================
-  // TRAG HIER DEINE BILDNAMEN EIN:
+  // BILDNAMEN
   // =========================================================
   const BILD_DESKTOP = "bolzplatz_tour_1920x1080.jpg"; 
   const BILD_MOBILE  = "bolzplatz-tour-original.webp"; 
@@ -104,6 +104,17 @@
     lightbox.classList.remove("active");
   }
 
+  // Modals für Rechtliches öffnen/schließen
+  function openLegalModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) modal.classList.add("active");
+  }
+
+  function closeLegalModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) modal.classList.remove("active");
+  }
+
   document.addEventListener("DOMContentLoaded", function() {
     updateHeroImage();
     window.addEventListener("resize", updateHeroImage);
@@ -111,6 +122,9 @@
     document.addEventListener("keydown", function(e) {
       if (e.key === "Escape") {
         closeLightbox();
+        closeLegalModal('modal-impressum');
+        closeLegalModal('modal-teilnahme');
+        closeLegalModal('modal-datenschutz');
       }
     });
   });
@@ -340,7 +354,7 @@
     filter: brightness(1.1);
   }
 
-  /* ---------- SWIPER LIGHTBOX (VOLLBILD MIT SWIPE) ---------- */
+  /* ---------- SWIPER LIGHTBOX ---------- */
   .lightbox {
     position: fixed;
     top: 0;
@@ -410,16 +424,9 @@
     transform: scale(1.1);
   }
 
-  /* Custom Swiper Buttons Farben */
-  .swiper-button-next, .swiper-button-prev {
-    color: var(--pink) !important;
-  }
-  .swiper-pagination-bullet-active {
-    background: var(--pink) !important;
-  }
-  .swiper-pagination-bullet {
-    background: var(--cream);
-  }
+  .swiper-button-next, .swiper-button-prev { color: var(--pink) !important; }
+  .swiper-pagination-bullet-active { background: var(--pink) !important; }
+  .swiper-pagination-bullet { background: var(--cream); }
 
   /* ---------- ABOUT ---------- */
   .about p{
@@ -429,7 +436,7 @@
   }
   .about p + p{margin-top:14px;}
 
-  /* ---------- FOOTER & SOCIAL ICONS ---------- */
+  /* ---------- FOOTER & LEGAL ---------- */
   .footer{
     background:var(--navy-2);
     padding:64px 24px 40px;
@@ -457,29 +464,105 @@
     color:var(--cream);
     transition: transform 0.2s ease, color 0.2s ease;
   }
-  .social-icon svg{
-    width:28px;
-    height:28px;
-    fill:currentColor;
-  }
-  .social-icon:hover{
-    transform: translateY(-3px) scale(1.1);
-  }
+  .social-icon svg{ width:28px; height:28px; fill:currentColor; }
+  .social-icon:hover{ transform: translateY(-3px) scale(1.1); }
   .social-icon.instagram:hover{ color: #E1306C; }
   .social-icon.tiktok:hover{ color: #00F2FE; }
   .social-icon.twitch:hover{ color: #9146FF; }
+
+  .footer-legal-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 18px;
+    margin-bottom: 24px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .footer-legal-links button {
+    background: none;
+    border: none;
+    color: var(--slate);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+    text-transform: inherit;
+    padding: 0;
+    transition: color 0.2s ease;
+  }
+  .footer-legal-links button:hover {
+    color: var(--pink);
+  }
 
   .foot-meta{
     display:flex;
     justify-content:space-between;
     align-items:flex-end;
-    padding-top:24px;
+    padding-top:20px;
     border-top:1px solid rgba(245,241,232,0.1);
   }
-  .foot-meta span{
-    font-size:12px;
-    color:var(--slate);
+  .foot-meta span{ font-size:12px; color:var(--slate); }
+
+  /* ---------- LEGAL POPUP MODALS ---------- */
+  .legal-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(11, 20, 32, 0.95);
+    backdrop-filter: blur(8px);
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
   }
+  .legal-modal.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .legal-content {
+    background: var(--navy);
+    border: 1px solid rgba(245,241,232,0.15);
+    border-radius: 12px;
+    padding: 28px 24px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+  }
+  .legal-content h3 {
+    font-family: 'Anton', sans-serif;
+    font-size: 24px;
+    color: var(--pink);
+    margin-bottom: 16px;
+  }
+  .legal-content p, .legal-content ul {
+    font-size: 14px;
+    color: rgba(245,241,232,0.85);
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+  .legal-content ul { padding-left: 18px; }
+  .legal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    color: var(--slate);
+    font-size: 20px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  .legal-close:hover { color: var(--pink); }
 </style>
 </head>
 <body>
@@ -515,7 +598,6 @@
       <img src="muenchen_4.jpg" alt="Preview" class="preview-thumb">
       <div class="date-status past" style="margin-left: 8px;">Vorbei</div>
     </div>
-    <!-- Ausklappbare Galerie -->
     <div id="gallery-muenchen" class="gallery-accordion">
       <div class="gallery-grid">
         <img src="muenchen_1.HEIC" alt="München Bild 1" onclick="openLightbox('muenchen', 0)">
@@ -539,7 +621,6 @@
       <img src="essen_1.jpg" alt="Preview" class="preview-thumb">
       <div class="date-status past" style="margin-left: 8px;">Vorbei</div>
     </div>
-    <!-- Ausklappbare Galerie -->
     <div id="gallery-essen" class="gallery-accordion">
       <div class="gallery-grid">
         <img src="essen_1.jpg" alt="Essen Bild 1" onclick="openLightbox('essen', 0)">
@@ -552,7 +633,7 @@
     </div>
   </div>
 
-  <!-- Frankfurt (NÄCHSTER STOPP) -->
+  <!-- Frankfurt -->
   <div class="date-group">
     <a class="date-row" href="anmeldung.html">
       <div class="date-day">19<small>Sep</small></div>
@@ -564,7 +645,7 @@
     </a>
   </div>
 
-  <!-- ??? (LOADING) -->
+  <!-- LOADING -->
   <div class="date-group" style="opacity: 0.7;">
     <div class="date-row">
       <div class="date-day">--<small>TBA</small></div>
@@ -589,20 +670,24 @@
   <h2>Make the<br><span class="accent">STRRR</span><br>great again</h2>
 
   <div class="socials">
-    <!-- INSTAGRAM -->
     <a href="https://www.instagram.com/steven.kodra/" target="_blank" rel="noopener" class="social-icon instagram" aria-label="Instagram">
       <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
     </a>
-
-    <!-- TIKTOK -->
     <a href="https://www.tiktok.com/@stevenkodra?lang=de-DE" target="_blank" rel="noopener" class="social-icon tiktok" aria-label="TikTok">
       <svg viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
     </a>
-
-    <!-- TWITCH -->
     <a href="https://www.twitch.tv/stevenkodra" target="_blank" rel="noopener" class="social-icon twitch" aria-label="Twitch">
       <svg viewBox="0 0 24 24"><path d="M11.571 4.714h1.715v5.143H11.571zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>
     </a>
+  </div>
+
+  <!-- LEGAL LINKS (Im Footer eingebunden) -->
+  <div class="footer-legal-links">
+    <button onclick="openLegalModal('modal-impressum')">Impressum</button>
+    <span>&bull;</span>
+    <button onclick="openLegalModal('modal-teilnahme')">Teilnahmebedingungen</button>
+    <span>&bull;</span>
+    <button onclick="openLegalModal('modal-datenschutz')">Datenschutz</button>
   </div>
 
   <div class="foot-meta">
@@ -611,18 +696,54 @@
   </div>
 </footer>
 
-<!-- VOLLBILD LIGHTBOX SWIPER -->
+<!-- LIGHTBOX SWIPER -->
 <div id="lightbox" class="lightbox">
   <button class="lightbox-close" onclick="closeLightbox()">✕</button>
   <div class="lightbox-wrapper">
     <div class="swiper">
-      <div class="swiper-wrapper" id="swiper-wrapper">
-        <!-- Dynamisch befüllt -->
-      </div>
+      <div class="swiper-wrapper" id="swiper-wrapper"></div>
       <div class="swiper-button-next"></div>
       <div class="swiper-button-prev"></div>
       <div class="swiper-pagination"></div>
     </div>
+  </div>
+</div>
+
+<!-- POPUP: IMPRESSUM -->
+<div id="modal-impressum" class="legal-modal">
+  <div class="legal-content">
+    <button class="legal-close" onclick="closeLegalModal('modal-impressum')">✕</button>
+    <h3>Impressum</h3>
+    <p><strong>Angaben gemäß § 5 DDG:</strong></p>
+    <p>Steven Kodra<br>
+    [HIER DEINE ADRESSE ODER VIRTUELLE ADRESSE EINTRAGEN]<br>
+    E-Mail: bolzplatztouranmeldung@gmail.com</p>
+    <p><strong>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV:</strong></p>
+    <p>Steven Kodra</p>
+  </div>
+</div>
+
+<!-- POPUP: TEILNAHMEBEDINGUNGEN -->
+<div id="modal-teilnahme" class="legal-modal">
+  <div class="legal-content">
+    <button class="legal-close" onclick="closeLegalModal('modal-teilnahme')">✕</button>
+    <h3>Teilnahmebedingungen</h3>
+    <ul>
+      <li><strong>Teilnahme:</strong> Die Anmeldung über das Formular ist kostenlos.</li>
+      <li><strong>Haftung:</strong> Die Teilnahme am Turnier und den Events erfolgt auf eigene Gefahr. Der Veranstalter übernimmt keine Haftung für Verletzungen, Sachschäden oder den Verlust von Wertgegenständen.</li>
+      <li><strong>Foto- & Videoaufnahmen:</strong> Während des Events werden Aufnahmen gemacht, die auf den Social-Media-Kanälen der Bolzplatz Tour veröffentlicht werden können.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- POPUP: DATENSCHUTZ -->
+<div id="modal-datenschutz" class="legal-modal">
+  <div class="legal-content">
+    <button class="legal-close" onclick="closeLegalModal('modal-datenschutz')">✕</button>
+    <h3>Datenschutzerklärung</h3>
+    <p><strong>Erhebung von Daten:</strong> Die über das Anmeldeformular eingegebenen Daten (Name, E-Mail-Adresse etc.) werden ausschließlich für die Organisation der Bolzplatz Tour verwendet.</p>
+    <p><strong>Speicherung & Löschung:</strong> Die Daten werden vertraulich behandelt und nach Beendigung des jeweiligen Turniers wieder gelöscht.</p>
+    <p><strong>Keine Weitergabe:</strong> Es erfolgt keine Weitergabe der Daten an unbefugte Dritte.</p>
   </div>
 </div>
 
