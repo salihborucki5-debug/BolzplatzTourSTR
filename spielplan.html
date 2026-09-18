@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BolzplatzTour STR - Champions League Edition</title>
+  <title>BolzplatzTour STR - 32 Team KO Bracket Edition</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   
-  <!-- Custom Elite Fonts -->
+  <!-- Custom Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800;900&display=swap" rel="stylesheet">
@@ -23,7 +23,7 @@
           },
           colors: {
             brand: {
-              dark: '#0B0F17',
+              dark: '#080A0F',
               card: '#131926',
               gold: '#F59E0B',
               goldGlow: '#D97706',
@@ -37,7 +37,7 @@
   </script>
   
   <style>
-    /* Custom Glow & Glass Effects */
+    /* Custom Styling & Glassmorphism */
     body {
       background-color: #080A0F;
       background-image: 
@@ -48,17 +48,17 @@
     }
 
     .glass-panel {
-      background: rgba(19, 25, 38, 0.7);
+      background: rgba(19, 25, 38, 0.75);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .glass-panel-gold {
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(19, 25, 38, 0.8) 100%);
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(19, 25, 38, 0.85) 100%);
       backdrop-filter: blur(20px);
-      border: 1px solid rgba(245, 158, 11, 0.3);
-      box-shadow: 0 10px 30px -10px rgba(245, 158, 11, 0.2);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      box-shadow: 0 10px 30px -10px rgba(245, 158, 11, 0.25);
     }
 
     .gold-gradient-text {
@@ -76,7 +76,6 @@
       box-shadow: 0 6px 24px rgba(245, 158, 11, 0.5);
     }
 
-    /* Custom Scrollbars */
     ::-webkit-scrollbar { height: 8px; width: 8px; }
     ::-webkit-scrollbar-track { background: #080A0F; }
     ::-webkit-scrollbar-thumb { background: #1F293D; border-radius: 4px; }
@@ -85,7 +84,7 @@
 </head>
 <body class="text-slate-100 min-h-screen p-4 md:p-8 font-sans antialiased">
 
-  <div class="max-w-[1650px] mx-auto space-y-8">
+  <div class="max-w-[1750px] mx-auto space-y-8">
     
     <!-- HEADER -->
     <header class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col md:flex-row justify-between items-center gap-6 shadow-2xl relative overflow-hidden">
@@ -94,21 +93,21 @@
       <div class="space-y-1 text-center md:text-left z-10">
         <div class="flex items-center justify-center md:justify-start gap-3">
           <span class="px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase bg-amber-500/10 text-amber-400 border border-amber-500/20">
-            ELITE DIVISION 2026
+            CHAMPIONS LEAGUE EDITION • 32 BRACKET
           </span>
         </div>
         <h1 class="text-3xl md:text-5xl font-black tracking-tight uppercase gold-gradient-text">
           BOLZPLATZTOUR STR
         </h1>
         <p class="text-slate-400 text-xs md:text-sm font-semibold tracking-wide">
-          OFFIZIELLER KO-CHAMPIONSHIP PLAYOFF BAUM
+          OFFIZIELLER KO-TURNIERBAUM (1/16 FINALE BIS FINALE)
         </p>
       </div>
 
       <div class="flex flex-wrap gap-3 z-10 w-full md:w-auto justify-center">
         <button onclick="startNewTournament()" class="gold-button text-slate-950 px-6 py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all transform active:scale-95 flex items-center gap-2">
           <span>🚀</span>
-          <span>Turnier Generieren & Starten</span>
+          <span>32er Turnier Generieren</span>
         </button>
         <button onclick="loadTournament()" class="glass-panel hover:bg-slate-800/80 text-slate-300 border border-slate-700/60 px-5 py-3.5 rounded-2xl text-xs font-bold transition-all active:scale-95 flex items-center gap-2">
           <span>🔄</span>
@@ -121,7 +120,7 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div class="glass-panel p-5 rounded-2xl flex items-center justify-between border-l-4 border-l-amber-500">
         <div>
-          <span class="text-slate-400 text-[11px] uppercase font-bold tracking-wider block">TEAMS IM FELD</span>
+          <span class="text-slate-400 text-[11px] uppercase font-bold tracking-wider block">ANWESENDE TEAMS</span>
           <span id="teamCountDisplay" class="text-2xl font-black text-white mt-1 block">Lädt...</span>
         </div>
         <div class="text-3xl bg-amber-500/10 p-3 rounded-xl border border-amber-500/20">👥</div>
@@ -137,8 +136,8 @@
 
       <div class="glass-panel p-5 rounded-2xl flex items-center justify-between border-l-4 border-l-pink-500">
         <div>
-          <span class="text-slate-400 text-[11px] uppercase font-bold tracking-wider block">SEEDING MODUS</span>
-          <span class="text-lg font-extrabold text-pink-400 mt-1 block">Nach ID Sortiert (F ➔ M)</span>
+          <span class="text-slate-400 text-[11px] uppercase font-bold tracking-wider block">BRACKET MODUS</span>
+          <span class="text-sm font-extrabold text-pink-400 mt-1 block">Fester 32er Baum (Reihenfolge nach ID)</span>
         </div>
         <div class="text-3xl bg-pink-500/10 p-3 rounded-xl border border-pink-500/20">👑</div>
       </div>
@@ -147,7 +146,7 @@
     <!-- LIVE MATCH ARENA (MAIN FOCUS CARD) -->
     <div id="liveMatchCard" class="glass-panel-gold rounded-3xl p-6 md:p-8 shadow-2xl relative">
       <div class="text-center text-slate-400 font-semibold py-4">
-        ⏳ Turnier noch nicht gestartet. Klicke oben auf "Turnier Generieren & Starten".
+        ⏳ Turnier noch nicht gestartet. Klicke oben auf "32er Turnier Generieren".
       </div>
     </div>
 
@@ -155,14 +154,14 @@
     <div class="glass-panel rounded-3xl p-6 md:p-8 shadow-2xl overflow-hidden">
       <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-800">
         <h2 class="text-lg font-black uppercase tracking-wider text-slate-200 flex items-center gap-2">
-          <span>🏆</span> LIVE TURNIERBAUM
+          <span>🏆</span> LIVE KO-TURNIERBAUM
         </h2>
         <span class="text-xs font-semibold text-slate-500">Scrollbar horizontal ➔</span>
       </div>
 
       <div class="overflow-x-auto pb-4">
-        <div id="treeGrid" class="flex gap-8 min-w-[1000px] justify-start items-stretch">
-          <!-- Dynamisch -->
+        <div id="treeGrid" class="flex gap-8 min-w-[1200px] justify-start items-stretch">
+          <!-- Dynamisch durch JS befüllt -->
         </div>
       </div>
     </div>
@@ -223,9 +222,10 @@
     let currentEditingMatch = null;
     let currentLiveMatchId = null;
 
+    // Load state from DB
     async function loadTournament() {
       const treeGrid = document.getElementById('treeGrid');
-      treeGrid.innerHTML = `<div class="text-slate-400 text-sm animate-pulse">Lade Turnierdaten aus Supabase...</div>`;
+      treeGrid.innerHTML = `<div class="text-slate-400 text-sm animate-pulse">Lade Teams und Turnierbaum aus Supabase...</div>`;
 
       const [teamsRes, matchesRes] = await Promise.all([
         db.from('teams').select('*').order('id', { ascending: true }),
@@ -235,25 +235,19 @@
       const teams = teamsRes.data || [];
       const dbMatches = matchesRes.data || [];
 
-      document.getElementById('teamCountDisplay').innerText = `${teams.length} TEAMS`;
-
-      if (teams.length < 2) {
-        treeGrid.innerHTML = `<div class="text-slate-500 italic text-sm">Mindestens 2 Teams erforderlich.</div>`;
-        document.getElementById('phaseDisplay').innerText = "Warten";
-        return;
-      }
+      document.getElementById('teamCountDisplay').innerText = `${teams.length} VORHANDEN`;
 
       if (dbMatches.length === 0) {
-        document.getElementById('phaseDisplay').innerText = `Bereit (${teams.length} Teams)`;
+        document.getElementById('phaseDisplay').innerText = "Bereit zum Start";
         treeGrid.innerHTML = `
           <div class="glass-panel p-8 rounded-3xl text-center max-w-md mx-auto space-y-4 my-8 border border-slate-700/50">
             <div class="text-5xl">⚡</div>
-            <h3 class="text-xl font-black text-white uppercase tracking-wider">Bereit für den Start</h3>
+            <h3 class="text-xl font-black text-white uppercase tracking-wider">Bereit für den 32er Baum</h3>
             <p class="text-slate-400 text-xs leading-relaxed">
-              Es sind <strong>${teams.length} Teams</strong> vor Ort angemeldet. Klicke auf den Button, um den KO-Turnierbaum nach ID geordnet zu generieren.
+              Es befinden sich aktuell <strong>${teams.length} Teams</strong> in der Supabase-Datenbank.<br>Klicke auf Button oben, um den festen 32er KO-Baum zu generieren.
             </p>
             <button onclick="startNewTournament()" class="gold-button text-slate-950 font-black px-8 py-3.5 rounded-2xl text-xs uppercase tracking-wider transition-all shadow-lg">
-              🚀 Jetzt Generieren
+              🚀 32er Baum Generieren
             </button>
           </div>`;
         return;
@@ -278,39 +272,47 @@
     }
 
     async function startNewTournament() {
-      // Teams aufsteigend nach ID abfragen
-      const { data: teams } = await db.from('teams').select('*').order('id', { ascending: true });
+      // 1. Get present teams from Supabase ordered by ID
+      const { data: rawTeams, error } = await db.from('teams').select('*').order('id', { ascending: true });
       
-      if (!teams || teams.length < 2) {
-        alert("Es werden mindestens 2 Teams benötigt!");
+      if (error) {
+        alert("Fehler beim Abrufen der Teams aus Supabase!");
         return;
       }
 
-      if (!confirm("Turnier jetzt neu generieren? Alle bisherigen Ergebnisse werden gelöscht!")) {
+      const teamList = rawTeams || [];
+
+      if (!confirm(`Turnier mit den ${teamList.length} anwesenden Teams auf einen festen 32er KO-Baum verteilen?`)) {
         return;
       }
 
+      // Clear existing matches in Supabase
       await db.from('matches').delete().neq('id', '0');
 
-      // Strikte Sortierung nach ID: Erst Frauen (F...) nach ID, dann Männer (M...) nach ID
-      const femaleTeams = teams.filter(t => t.team_name.startsWith('F'));
-      const maleTeams = teams.filter(t => !t.team_name.startsWith('F'));
-      const sortedTeams = [...femaleTeams, ...maleTeams];
+      // Sort teams: F... first (ordered by ID), then M.../others (ordered by ID)
+      const femaleTeams = teamList.filter(t => t.team_name.startsWith('F'));
+      const maleTeams = teamList.filter(t => !t.team_name.startsWith('F'));
+      const sortedTeams = [...femaleTeams, ...maleTeams].map(t => t.team_name);
+
+      // Create fixed 32 slots mapping
+      const slots = new Array(32).fill("-");
+      for (let i = 0; i < 32; i++) {
+        if (i < sortedTeams.length) {
+          slots[i] = sortedTeams[i];
+        }
+      }
 
       tournamentTreeState = {};
       let matchCounter = 1;
 
-      const firstRoundMatchCount = Math.floor(sortedTeams.length / 2);
-      let roundTitle = getRoundTitle(sortedTeams.length);
-
-      // 1. Runde: Verbindet immer direkt die nächsten verfügbaren Teams
-      for (let m = 0; m < firstRoundMatchCount; m++) {
+      // Round 0: 16 Matches (1/16 Finale)
+      for (let m = 0; m < 16; m++) {
         const matchId = `r0_m${m}`;
         tournamentTreeState[matchId] = {
           matchNumber: matchCounter++,
-          roundTitle: roundTitle,
-          teamA: sortedTeams[m * 2].team_name,
-          teamB: sortedTeams[m * 2 + 1].team_name,
+          roundTitle: "1/16 Finale",
+          teamA: slots[m * 2],
+          teamB: slots[m * 2 + 1],
           scoreA: null,
           scoreB: null,
           winner: null,
@@ -318,35 +320,72 @@
         };
       }
 
-      let currentMatches = firstRoundMatchCount;
-      let rIndex = 1;
-
-      while (currentMatches >= 1) {
-        let nextMatchCount = Math.floor(currentMatches / 2);
-        if (nextMatchCount < 1) break;
-
-        let rTitle = getRoundTitle(nextMatchCount * 2);
-
-        for (let m = 0; m < nextMatchCount; m++) {
-          const matchId = `r${rIndex}_m${m}`;
-          const prevA = tournamentTreeState[`r${rIndex-1}_m${m*2}`];
-          const prevB = tournamentTreeState[`r${rIndex-1}_m${m*2+1}`];
-
-          tournamentTreeState[matchId] = {
-            matchNumber: matchCounter++,
-            roundTitle: rTitle,
-            teamA: `Sieger M${prevA ? prevA.matchNumber : ''}`,
-            teamB: `Sieger M${prevB ? prevB.matchNumber : ''}`,
-            scoreA: null,
-            scoreB: null,
-            winner: null,
-            loser: null
-          };
-        }
-        currentMatches = nextMatchCount;
-        rIndex++;
+      // Round 1: 8 Matches (Achtelfinale)
+      for (let m = 0; m < 8; m++) {
+        const matchId = `r1_m${m}`;
+        const prevA = tournamentTreeState[`r0_m${m*2}`];
+        const prevB = tournamentTreeState[`r0_m${m*2+1}`];
+        tournamentTreeState[matchId] = {
+          matchNumber: matchCounter++,
+          roundTitle: "Achtelfinale",
+          teamA: `Sieger M${prevA.matchNumber}`,
+          teamB: `Sieger M${prevB.matchNumber}`,
+          scoreA: null,
+          scoreB: null,
+          winner: null,
+          loser: null
+        };
       }
 
+      // Round 2: 4 Matches (Viertelfinale)
+      for (let m = 0; m < 4; m++) {
+        const matchId = `r2_m${m}`;
+        const prevA = tournamentTreeState[`r1_m${m*2}`];
+        const prevB = tournamentTreeState[`r1_m${m*2+1}`];
+        tournamentTreeState[matchId] = {
+          matchNumber: matchCounter++,
+          roundTitle: "Viertelfinale",
+          teamA: `Sieger M${prevA.matchNumber}`,
+          teamB: `Sieger M${prevB.matchNumber}`,
+          scoreA: null,
+          scoreB: null,
+          winner: null,
+          loser: null
+        };
+      }
+
+      // Round 3: 2 Matches (Halbfinale)
+      for (let m = 0; m < 2; m++) {
+        const matchId = `r3_m${m}`;
+        const prevA = tournamentTreeState[`r2_m${m*2}`];
+        const prevB = tournamentTreeState[`r2_m${m*2+1}`];
+        tournamentTreeState[matchId] = {
+          matchNumber: matchCounter++,
+          roundTitle: "Halbfinale",
+          teamA: `Sieger M${prevA.matchNumber}`,
+          teamB: `Sieger M${prevB.matchNumber}`,
+          scoreA: null,
+          scoreB: null,
+          winner: null,
+          loser: null
+        };
+      }
+
+      // Round 4: 1 Match (FINALE)
+      const prevA = tournamentTreeState[`r3_m0`];
+      const prevB = tournamentTreeState[`r3_m1`];
+      tournamentTreeState[`r4_m0`] = {
+        matchNumber: matchCounter++,
+        roundTitle: "FINALE 🏆",
+        teamA: `Sieger M${prevA.matchNumber}`,
+        teamB: `Sieger M${prevB.matchNumber}`,
+        scoreA: null,
+        scoreB: null,
+        winner: null,
+        loser: null
+      };
+
+      // Push all matches to Supabase
       const matchesToInsert = Object.keys(tournamentTreeState).map(id => ({
         id: id,
         match_number: tournamentTreeState[id].matchNumber,
@@ -363,14 +402,6 @@
       loadTournament();
     }
 
-    function getRoundTitle(teamsCount) {
-      if (teamsCount > 16) return "Vorrunde";
-      if (teamsCount > 8) return "Achtelfinale";
-      if (teamsCount > 4) return "Viertelfinale";
-      if (teamsCount > 2) return "Halbfinale";
-      return "FINALE 🏆";
-    }
-
     function renderTreeGUI() {
       const treeGrid = document.getElementById('treeGrid');
       treeGrid.innerHTML = '';
@@ -378,23 +409,22 @@
       const matchIds = Object.keys(tournamentTreeState);
       if (matchIds.length === 0) return;
 
-      const maxRound = Math.max(...matchIds.map(id => parseInt(id.split('_')[0].replace('r', ''))));
+      const rounds = ["1/16 Finale", "Achtelfinale", "Viertelfinale", "Halbfinale", "FINALE 🏆"];
 
-      for (let r = 0; r <= maxRound; r++) {
+      for (let r = 0; r < rounds.length; r++) {
         const roundMatches = matchIds.filter(id => id.startsWith(`r${r}_`));
         if (roundMatches.length === 0) continue;
 
-        const roundTitle = tournamentTreeState[roundMatches[0]].roundTitle;
-        const col = createColumn(roundTitle);
+        const col = createColumn(rounds[r]);
 
         roundMatches.forEach((matchId, mIndex) => {
-          col.appendChild(createMatchCard(matchId, r, mIndex, roundTitle));
+          col.appendChild(createMatchCard(matchId, rounds[r]));
         });
 
         treeGrid.appendChild(col);
       }
 
-      document.getElementById('phaseDisplay').innerText = "Aktiv";
+      document.getElementById('phaseDisplay').innerText = "Turnier Läuft";
     }
 
     function createColumn(title) {
@@ -409,7 +439,7 @@
       return col;
     }
 
-    function createMatchCard(matchId, rIndex, mIndex, roundTitle) {
+    function createMatchCard(matchId, roundTitle) {
       const match = tournamentTreeState[matchId];
       const card = document.createElement('div');
       
@@ -425,14 +455,14 @@
         </div>
 
         <div class="space-y-2">
-          <div class="flex justify-between items-center text-sm font-extrabold ${match.winner === match.teamA ? 'text-amber-400' : 'text-slate-200'}">
+          <div class="flex justify-between items-center text-sm font-extrabold ${match.winner === match.teamA ? 'text-amber-400' : (match.teamA === '-' ? 'text-slate-600' : 'text-slate-200')}">
             <span class="truncate pr-2">${match.teamA}</span>
             <span class="text-xs bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800 font-mono ${match.winner === match.teamA ? 'border-amber-500/40 text-amber-400' : ''}">${match.scoreA !== null ? match.scoreA : '-'}</span>
           </div>
 
           <div class="border-t border-slate-800/80"></div>
 
-          <div class="flex justify-between items-center text-sm font-extrabold ${match.winner === match.teamB ? 'text-amber-400' : 'text-slate-200'}">
+          <div class="flex justify-between items-center text-sm font-extrabold ${match.winner === match.teamB ? 'text-amber-400' : (match.teamB === '-' ? 'text-slate-600' : 'text-slate-200')}">
             <span class="truncate pr-2">${match.teamB}</span>
             <span class="text-xs bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800 font-mono ${match.winner === match.teamB ? 'border-amber-500/40 text-amber-400' : ''}">${match.scoreB !== null ? match.scoreB : '-'}</span>
           </div>
@@ -444,12 +474,8 @@
 
     function openScoreModal(matchId, roundTitle) {
       const match = tournamentTreeState[matchId];
-      if (match.teamA.includes("Sieger") || match.teamB.includes("Sieger")) {
-        alert("Dieses Match steht noch nicht fest!");
-        return;
-      }
-
       currentEditingMatch = matchId;
+
       document.getElementById('modalMatchTitle').innerText = `${roundTitle}`;
       document.getElementById('labelTeamA').innerText = match.teamA;
       document.getElementById('labelTeamB').innerText = match.teamB;
@@ -482,6 +508,7 @@
         loser: match.loser
       });
 
+      // Propagate winner to next round
       const parts = matchId.split('_');
       const r = parseInt(parts[0].replace('r', ''));
       const m = parseInt(parts[1].replace('m', ''));
@@ -501,7 +528,7 @@
         });
       }
 
-      if (match.roundTitle && match.roundTitle.includes("FINALE") && match.winner) {
+      if (match.roundTitle && match.roundTitle.includes("FINALE") && match.winner && match.winner !== '-') {
         triggerWinnerCelebration(match.winner);
       }
     }
@@ -534,7 +561,7 @@
       const card = document.getElementById('liveMatchCard');
 
       if (!nextMatchId) {
-        card.innerHTML = `<div class="text-center text-amber-400 font-extrabold py-4">🏆 Alle verbleibenden Spiele wurden absolviert!</div>`;
+        card.innerHTML = `<div class="text-center text-amber-400 font-extrabold py-4">🏆 Alle anstehenden Spiele wurden absolviert!</div>`;
         currentLiveMatchId = null;
         return;
       }
@@ -619,591 +646,7 @@
       document.getElementById('winnerOverlay').classList.add('hidden');
     }
 
-    loadTournament();
-  </script>
-</body>
-</html>  </script>
-  
-  <style>
-    /* Custom Glow & Glass Effects */
-    body {
-      background-color: #080A0F;
-      background-image: 
-        radial-gradient(at 0% 0%, rgba(245, 158, 11, 0.08) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.05) 0px, transparent 50%),
-        radial-gradient(at 50% 50%, rgba(16, 185, 129, 0.03) 0px, transparent 50%);
-      background-attachment: fixed;
-    }
-
-    .glass-panel {
-      background: rgba(19, 25, 38, 0.7);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .glass-panel-gold {
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(19, 25, 38, 0.8) 100%);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(245, 158, 11, 0.3);
-      box-shadow: 0 10px 30px -10px rgba(245, 158, 11, 0.2);
-    }
-
-    .gold-gradient-text {
-      background: linear-gradient(135deg, #FFF 30%, #FBBF24 70%, #F59E0B 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .gold-button {
-      background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
-      box-shadow: 0 4px 20px rgba(245, 158, 11, 0.35);
-    }
-    .gold-button:hover {
-      background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%);
-      box-shadow: 0 6px 24px rgba(245, 158, 11, 0.5);
-    }
-
-    /* Custom Scrollbars */
-    ::-webkit-scrollbar { height: 8px; width: 8px; }
-    ::-webkit-scrollbar-track { background: #080A0F; }
-    ::-webkit-scrollbar-thumb { background: #1F293D; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #F59E0B; }
-  </style>
-</head>
-<body class="text-slate-100 min-h-screen p-4 md:p-8 font-sans antialiased">
-
-  <div class="max-w-[1650px] mx-auto space-y-8">
-    
-    <!-- HEADER -->
-    <header class="glass-panel rounded-3xl p-6 md:p-8 flex flex-col md:flex-row justify-between items-center gap-6 shadow-2xl relative overflow-hidden">
-      <div class="absolute -top-10 -left-10 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
-      
-      <div class="space-y-1 text-center md:text-left z-10">
-        <div class="flex items-center justify-center md:justify-start gap-3">
-          <span class="px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase bg-amber-500/10 text-amber-400 border border-amber-500/20">
-            ELITE DIVISION 2026
-          </span>
-        </div>
-        <h1 class="text-3xl md:text-5xl font-black tracking-tight uppercase gold-gradient-text">
-          BOLZPLATZTOUR STR
-        </h1>
-        <p class="text-slate-400 text-xs md:text-sm font-semibold tracking-wide">
-          OFFIZIELLER KO-CHAMPIONSHIP PLAYOFF BAUM
-        </p>
-      </div>
-
-      <div class="flex flex-wrap gap-3 z-10 w-full md:w-auto justify-center">
-        <button onclick="startNewTournament()" class="gold-button text-slate-950 px-6 py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all transform active:scale-95 flex items-center gap-2">
-          <span>🚀</span>
-          <span>Turnier Generieren & Starten</span>
-        </button>
-        <button onclick="loadTournament()" class="glass-panel hover:bg-slate-800/80 text-slate-300 border border-slate-700/60 px-5 py-3.5 rounded-2xl text-xs font-bold transition-all active:scale-95 flex items-center gap-2">
-          <span>🔄</span>
-          <span>Aktualisieren</span>
-        </button>
-      </div>
-    </header>
-
-    <!-- STATUS DASHBOARD -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div class="glass-panel p-5 rounded-2xl flex items-center justify-between border-l-4 border-l-amber-500">
-        <div>
-          <span class="text-slate-400 text-[11px] uppercase font-bold tracking-wider block">TEAMS IM FELD</span>
-          <span id="teamCountDisplay" class="text-2xl font-black text-white mt-1 block">Lädt...</span>
-        </div>
-        <div class="text-3xl bg-amber-500/10 p-3 rounded-xl border border-amber-500/20">👥</div>
-      </div>
-
-      <div class="glass-panel p-5 rounded-2xl flex items-center justify-between border-l-4 border-l-emerald-500">
-        <div>
-          <span class="text-slate-400 text-[11px] uppercase font-bold tracking-wider block">TURNIER STATUS</span>
-          <span id="phaseDisplay" class="text-2xl font-black text-emerald-400 mt-1 block">-</span>
-        </div>
-        <div class="text-3xl bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20">⚡</div>
-      </div>
-
-      <div class="glass-panel p-5 rounded-2xl flex items-center justify-between border-l-4 border-l-pink-500">
-        <div>
-          <span class="text-slate-400 text-[11px] uppercase font-bold tracking-wider block">SEEDING MODUS</span>
-          <span class="text-lg font-extrabold text-pink-400 mt-1 block">Frauen Top-Seeded</span>
-        </div>
-        <div class="text-3xl bg-pink-500/10 p-3 rounded-xl border border-pink-500/20">👑</div>
-      </div>
-    </div>
-
-    <!-- LIVE MATCH ARENA (MAIN FOCUS CARD) -->
-    <div id="liveMatchCard" class="glass-panel-gold rounded-3xl p-6 md:p-8 shadow-2xl relative">
-      <div class="text-center text-slate-400 font-semibold py-4">
-        ⏳ Turnier noch nicht gestartet. Klicke oben auf "Turnier Generieren & Starten".
-      </div>
-    </div>
-
-    <!-- KO-BAUM CONTAINER -->
-    <div class="glass-panel rounded-3xl p-6 md:p-8 shadow-2xl overflow-hidden">
-      <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-800">
-        <h2 class="text-lg font-black uppercase tracking-wider text-slate-200 flex items-center gap-2">
-          <span>🏆</span> LIVE TURNIERBAUM
-        </h2>
-        <span class="text-xs font-semibold text-slate-500">Scrollbar horizontal ➔</span>
-      </div>
-
-      <div class="overflow-x-auto pb-4">
-        <div id="treeGrid" class="flex gap-8 min-w-[1000px] justify-start items-stretch">
-          <!-- Dynamisch -->
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: ERGEBNIS EINTRAGEN -->
-  <div id="scoreModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50 transition-all">
-    <div class="glass-panel border border-slate-700/80 p-6 md:p-8 rounded-3xl max-w-sm w-full space-y-6 shadow-2xl relative">
-      <div class="text-center space-y-1">
-        <span class="text-[10px] font-black uppercase tracking-widest text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">SCORE INPUT</span>
-        <h3 class="text-xl font-black text-white uppercase pt-2" id="modalMatchTitle">Ergebnis eintragen</h3>
-      </div>
-      
-      <div class="space-y-4">
-        <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
-          <label class="text-sm font-black text-slate-200 truncate pr-2" id="labelTeamA">Team 1</label>
-          <input type="number" id="scoreA" min="0" value="0" class="w-16 bg-slate-800 border border-slate-700 rounded-xl py-2 text-center text-xl font-black text-amber-400 focus:outline-none focus:border-amber-500 transition-all">
-        </div>
-
-        <div class="text-center font-black text-xs text-slate-600 tracking-widest uppercase">VS</div>
-
-        <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
-          <label class="text-sm font-black text-slate-200 truncate pr-2" id="labelTeamB">Team 2</label>
-          <input type="number" id="scoreB" min="0" value="0" class="w-16 bg-slate-800 border border-slate-700 rounded-xl py-2 text-center text-xl font-black text-amber-400 focus:outline-none focus:border-amber-500 transition-all">
-        </div>
-      </div>
-
-      <div class="flex gap-3 pt-2">
-        <button onclick="closeModal()" class="flex-1 glass-panel hover:bg-slate-800 text-slate-400 font-bold py-3 rounded-2xl text-xs uppercase tracking-wider transition-all">Abbrechen</button>
-        <button onclick="saveScore()" class="flex-1 gold-button text-slate-950 font-black py-3 rounded-2xl text-xs uppercase tracking-wider transition-all">Speichern</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- SIEGER-CELEBRATION OVERLAY -->
-  <div id="winnerOverlay" class="fixed inset-0 bg-slate-950/95 backdrop-blur-xl hidden flex flex-col items-center justify-center p-6 z-50 transition-all duration-500">
-    <div class="relative glass-panel-gold p-10 md:p-14 rounded-3xl max-w-lg w-full text-center space-y-6 shadow-[0_0_100px_rgba(245,158,11,0.4)] animate-bounce-short">
-      <div class="text-7xl md:text-9xl animate-pulse">🏆</div>
-      <div class="space-y-2">
-        <span class="text-amber-400 text-xs font-black uppercase tracking-[0.4em] block">CHAMPIONS OF STR 2026</span>
-        <h2 id="winnerTeamName" class="text-3xl md:text-5xl font-black text-white uppercase tracking-wider gold-gradient-text">TEAM NAME</h2>
-      </div>
-      <p class="text-slate-300 text-sm font-medium">
-        👑 Ungekrönte Könige des Platzes!
-      </p>
-      <button onclick="closeWinnerOverlay()" class="mt-4 gold-button text-slate-950 font-black px-10 py-4 rounded-2xl text-xs uppercase tracking-widest transition-all hover:scale-105">
-        Turnier Abschließen
-      </button>
-    </div>
-  </div>
-
-  <!-- JS CODE UNVERÄNDERT MIT ERWEITERTEN STYLES PER JS -->
-  <script>
-    const SUPABASE_URL = "https://rsujqzvudncqrpdwikyr.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_9c2p0DsLdUh4K4wq3xYIHw_ah2wyOQu";
-    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    let tournamentTreeState = {};
-    let currentEditingMatch = null;
-    let currentLiveMatchId = null;
-
-    async function loadTournament() {
-      const treeGrid = document.getElementById('treeGrid');
-      treeGrid.innerHTML = `<div class="text-slate-400 text-sm animate-pulse">Lade Turnierdaten aus Supabase...</div>`;
-
-      const [teamsRes, matchesRes] = await Promise.all([
-        db.from('teams').select('*'),
-        db.from('matches').select('*')
-      ]);
-
-      const teams = teamsRes.data || [];
-      const dbMatches = matchesRes.data || [];
-
-      document.getElementById('teamCountDisplay').innerText = `${teams.length} TEAMS`;
-
-      if (teams.length < 2) {
-        treeGrid.innerHTML = `<div class="text-slate-500 italic text-sm">Mindestens 2 Teams erforderlich.</div>`;
-        document.getElementById('phaseDisplay').innerText = "Warten";
-        return;
-      }
-
-      if (dbMatches.length === 0) {
-        document.getElementById('phaseDisplay').innerText = `Bereit (${teams.length} Teams)`;
-        treeGrid.innerHTML = `
-          <div class="glass-panel p-8 rounded-3xl text-center max-w-md mx-auto space-y-4 my-8 border border-slate-700/50">
-            <div class="text-5xl">⚡</div>
-            <h3 class="text-xl font-black text-white uppercase tracking-wider">Bereit für den Start</h3>
-            <p class="text-slate-400 text-xs leading-relaxed">
-              Es sind <strong>${teams.length} Teams</strong> vor Ort angemeldet. Klicke auf den Button, um den KO-Turnierbaum offiziell auszulosen und zu starten.
-            </p>
-            <button onclick="startNewTournament()" class="gold-button text-slate-950 font-black px-8 py-3.5 rounded-2xl text-xs uppercase tracking-wider transition-all shadow-lg">
-              🚀 Jetzt Generieren
-            </button>
-          </div>`;
-        return;
-      }
-
-      tournamentTreeState = {};
-      dbMatches.forEach(m => {
-        tournamentTreeState[m.id] = {
-          teamA: m.team_a,
-          teamB: m.team_b,
-          scoreA: m.score_a,
-          scoreB: m.score_b,
-          winner: m.winner,
-          loser: m.loser,
-          roundTitle: m.round_name,
-          matchNumber: m.match_number
-        };
-      });
-
-      renderTreeGUI();
-      updateLiveMatchDashboard();
-    }
-
-    async function startNewTournament() {
-      const { data: teams } = await db.from('teams').select('*');
-      if (!teams || teams.length < 2) {
-        alert("Es werden mindestens 2 Teams benötigt!");
-        return;
-      }
-
-      if (!confirm("Turnier jetzt neu generieren? Alle bisherigen Ergebnisse werden gelöscht!")) {
-        return;
-      }
-
-      await db.from('matches').delete().neq('id', '0');
-
-      const femaleTeams = teams.filter(t => t.team_name.startsWith('F'));
-      const maleTeams = teams.filter(t => t.team_name.startsWith('M'));
-      const sortedTeams = [...femaleTeams, ...maleTeams];
-
-      tournamentTreeState = {};
-      let matchCounter = 1;
-
-      const firstRoundMatchCount = Math.floor(sortedTeams.length / 2);
-      let roundTitle = getRoundTitle(sortedTeams.length);
-
-      for (let m = 0; m < firstRoundMatchCount; m++) {
-        const matchId = `r0_m${m}`;
-        tournamentTreeState[matchId] = {
-          matchNumber: matchCounter++,
-          roundTitle: roundTitle,
-          teamA: sortedTeams[m * 2].team_name,
-          teamB: sortedTeams[m * 2 + 1].team_name,
-          scoreA: null,
-          scoreB: null,
-          winner: null,
-          loser: null
-        };
-      }
-
-      let currentMatches = firstRoundMatchCount;
-      let rIndex = 1;
-
-      while (currentMatches >= 1) {
-        let nextMatchCount = Math.floor(currentMatches / 2);
-        if (nextMatchCount < 1) break;
-
-        let rTitle = getRoundTitle(nextMatchCount * 2);
-
-        for (let m = 0; m < nextMatchCount; m++) {
-          const matchId = `r${rIndex}_m${m}`;
-          const prevA = tournamentTreeState[`r${rIndex-1}_m${m*2}`];
-          const prevB = tournamentTreeState[`r${rIndex-1}_m${m*2+1}`];
-
-          tournamentTreeState[matchId] = {
-            matchNumber: matchCounter++,
-            roundTitle: rTitle,
-            teamA: `Sieger M${prevA ? prevA.matchNumber : ''}`,
-            teamB: `Sieger M${prevB ? prevB.matchNumber : ''}`,
-            scoreA: null,
-            scoreB: null,
-            winner: null,
-            loser: null
-          };
-        }
-        currentMatches = nextMatchCount;
-        rIndex++;
-      }
-
-      const matchesToInsert = Object.keys(tournamentTreeState).map(id => ({
-        id: id,
-        match_number: tournamentTreeState[id].matchNumber,
-        round_name: tournamentTreeState[id].roundTitle,
-        team_a: tournamentTreeState[id].teamA,
-        team_b: tournamentTreeState[id].teamB,
-        score_a: tournamentTreeState[id].scoreA,
-        score_b: tournamentTreeState[id].scoreB,
-        winner: tournamentTreeState[id].winner,
-        loser: tournamentTreeState[id].loser
-      }));
-
-      await db.from('matches').insert(matchesToInsert);
-      loadTournament();
-    }
-
-    function getRoundTitle(teamsCount) {
-      if (teamsCount > 16) return "Vorrunde";
-      if (teamsCount > 8) return "Achtelfinale";
-      if (teamsCount > 4) return "Viertelfinale";
-      if (teamsCount > 2) return "Halbfinale";
-      return "FINALE 🏆";
-    }
-
-    function renderTreeGUI() {
-      const treeGrid = document.getElementById('treeGrid');
-      treeGrid.innerHTML = '';
-
-      const matchIds = Object.keys(tournamentTreeState);
-      if (matchIds.length === 0) return;
-
-      const maxRound = Math.max(...matchIds.map(id => parseInt(id.split('_')[0].replace('r', ''))));
-
-      for (let r = 0; r <= maxRound; r++) {
-        const roundMatches = matchIds.filter(id => id.startsWith(`r${r}_`));
-        if (roundMatches.length === 0) continue;
-
-        const roundTitle = tournamentTreeState[roundMatches[0]].roundTitle;
-        const col = createColumn(roundTitle);
-
-        roundMatches.forEach((matchId, mIndex) => {
-          col.appendChild(createMatchCard(matchId, r, mIndex, roundTitle));
-        });
-
-        treeGrid.appendChild(col);
-      }
-
-      document.getElementById('phaseDisplay').innerText = "Aktiv";
-    }
-
-    function createColumn(title) {
-      const col = document.createElement('div');
-      col.className = "flex-1 min-w-[260px] flex flex-col justify-around bg-slate-900/40 p-4 rounded-3xl border border-slate-800/80";
-      
-      const header = document.createElement('h3');
-      header.className = "text-center text-[11px] font-black uppercase text-amber-400 tracking-widest mb-4 bg-slate-900/90 py-2.5 rounded-xl border border-slate-800 shadow-inner";
-      header.innerText = title;
-      
-      col.appendChild(header);
-      return col;
-    }
-
-    function createMatchCard(matchId, rIndex, mIndex, roundTitle) {
-      const match = tournamentTreeState[matchId];
-      const card = document.createElement('div');
-      
-      const isFinished = match.winner !== null;
-
-      card.className = `glass-panel hover:border-amber-500/60 transition-all duration-300 rounded-2xl p-4 my-2 shadow-lg space-y-3 cursor-pointer group hover:scale-[1.02] ${isFinished ? 'border-amber-500/30' : ''}`;
-      card.onclick = () => openScoreModal(matchId, roundTitle);
-
-      card.innerHTML = `
-        <div class="flex justify-between items-center text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-          <span>MATCH #${match.matchNumber}</span>
-          ${isFinished ? '<span class="text-amber-400 font-black bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">BEENDET</span>' : '<span class="group-hover:text-amber-400 transition-colors">✎ EINTRAGEN</span>'}
-        </div>
-
-        <div class="space-y-2">
-          <div class="flex justify-between items-center text-sm font-extrabold ${match.winner === match.teamA ? 'text-amber-400' : 'text-slate-200'}">
-            <span class="truncate pr-2">${match.teamA}</span>
-            <span class="text-xs bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800 font-mono ${match.winner === match.teamA ? 'border-amber-500/40 text-amber-400' : ''}">${match.scoreA !== null ? match.scoreA : '-'}</span>
-          </div>
-
-          <div class="border-t border-slate-800/80"></div>
-
-          <div class="flex justify-between items-center text-sm font-extrabold ${match.winner === match.teamB ? 'text-amber-400' : 'text-slate-200'}">
-            <span class="truncate pr-2">${match.teamB}</span>
-            <span class="text-xs bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800 font-mono ${match.winner === match.teamB ? 'border-amber-500/40 text-amber-400' : ''}">${match.scoreB !== null ? match.scoreB : '-'}</span>
-          </div>
-        </div>
-      `;
-
-      return card;
-    }
-
-    function openScoreModal(matchId, roundTitle) {
-      const match = tournamentTreeState[matchId];
-      if (match.teamA.includes("Sieger") || match.teamB.includes("Sieger")) {
-        alert("Dieses Match steht noch nicht fest!");
-        return;
-      }
-
-      currentEditingMatch = matchId;
-      document.getElementById('modalMatchTitle').innerText = `${roundTitle}`;
-      document.getElementById('labelTeamA').innerText = match.teamA;
-      document.getElementById('labelTeamB').innerText = match.teamB;
-      document.getElementById('scoreA').value = match.scoreA !== null ? match.scoreA : 0;
-      document.getElementById('scoreB').value = match.scoreB !== null ? match.scoreB : 0;
-
-      document.getElementById('scoreModal').classList.remove('hidden');
-    }
-
-    function closeModal() {
-      document.getElementById('scoreModal').classList.add('hidden');
-    }
-
-    async function saveMatchToSupabase(matchId, scoreA, scoreB) {
-      const match = tournamentTreeState[matchId];
-      match.scoreA = scoreA;
-      match.scoreB = scoreB;
-      match.winner = scoreA > scoreB ? match.teamA : match.teamB;
-      match.loser = scoreA > scoreB ? match.teamB : match.teamA;
-
-      await db.from('matches').upsert({
-        id: matchId,
-        match_number: match.matchNumber,
-        round_name: match.roundTitle,
-        team_a: match.teamA,
-        team_b: match.teamB,
-        score_a: scoreA,
-        score_b: scoreB,
-        winner: match.winner,
-        loser: match.loser
-      });
-
-      const parts = matchId.split('_');
-      const r = parseInt(parts[0].replace('r', ''));
-      const m = parseInt(parts[1].replace('m', ''));
-
-      const nextRoundId = `r${r + 1}_m${Math.floor(m / 2)}`;
-      if (tournamentTreeState[nextRoundId]) {
-        const isTeamA = m % 2 === 0;
-        if (isTeamA) tournamentTreeState[nextRoundId].teamA = match.winner;
-        else tournamentTreeState[nextRoundId].teamB = match.winner;
-
-        await db.from('matches').upsert({
-          id: nextRoundId,
-          match_number: tournamentTreeState[nextRoundId].matchNumber,
-          round_name: tournamentTreeState[nextRoundId].roundTitle,
-          team_a: tournamentTreeState[nextRoundId].teamA,
-          team_b: tournamentTreeState[nextRoundId].teamB
-        });
-      }
-
-      if (match.roundTitle && match.roundTitle.includes("FINALE") && match.winner) {
-        triggerWinnerCelebration(match.winner);
-      }
-    }
-
-    async function saveScore() {
-      if (!currentEditingMatch) return;
-
-      const scoreA = parseInt(document.getElementById('scoreA').value) || 0;
-      const scoreB = parseInt(document.getElementById('scoreB').value) || 0;
-
-      if (scoreA === scoreB) {
-        alert("Im K.o.-System muss es einen Sieger geben!");
-        return;
-      }
-
-      await saveMatchToSupabase(currentEditingMatch, scoreA, scoreB);
-
-      closeModal();
-      loadTournament();
-    }
-
-    function updateLiveMatchDashboard() {
-      const matchIds = Object.keys(tournamentTreeState);
-      
-      const nextMatchId = matchIds.find(id => {
-        const m = tournamentTreeState[id];
-        return m.winner === null && !m.teamA.includes("Sieger") && !m.teamB.includes("Sieger");
-      });
-
-      const card = document.getElementById('liveMatchCard');
-
-      if (!nextMatchId) {
-        card.innerHTML = `<div class="text-center text-amber-400 font-extrabold py-4">🏆 Alle verbleibenden Spiele wurden absolviert!</div>`;
-        currentLiveMatchId = null;
-        return;
-      }
-
-      currentLiveMatchId = nextMatchId;
-      const match = tournamentTreeState[nextMatchId];
-
-      card.innerHTML = `
-        <div class="flex justify-between items-center mb-4">
-          <span id="liveMatchRound" class="text-xs font-black uppercase text-amber-400 tracking-widest bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
-            SPIEL #${match.matchNumber} • ${match.roundTitle || 'K.O. MATCH'}
-          </span>
-          <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-black px-3 py-1 rounded-full animate-pulse flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-emerald-400"></span> LIVE ARENA
-          </span>
-        </div>
-
-        <div class="flex flex-col md:flex-row justify-between items-center gap-6 my-6">
-          <div class="flex-1 text-center md:text-right">
-            <div id="liveTeamA" class="text-2xl md:text-4xl font-black text-white tracking-wide">${match.teamA}</div>
-          </div>
-
-          <div class="flex items-center gap-4 bg-slate-950/80 px-6 py-4 rounded-3xl border border-slate-800 shadow-2xl">
-            <input type="number" id="liveScoreA" placeholder="0" min="0" value="${match.scoreA !== null ? match.scoreA : ''}" class="w-16 bg-slate-900 border border-slate-700 rounded-2xl py-2 text-center text-3xl font-black text-amber-400 focus:outline-none focus:border-amber-500 transition-all">
-            <span class="text-3xl font-black text-slate-600">:</span>
-            <input type="number" id="liveScoreB" placeholder="0" min="0" value="${match.scoreB !== null ? match.scoreB : ''}" class="w-16 bg-slate-900 border border-slate-700 rounded-2xl py-2 text-center text-3xl font-black text-amber-400 focus:outline-none focus:border-amber-500 transition-all">
-          </div>
-
-          <div class="flex-1 text-center md:text-left">
-            <div id="liveTeamB" class="text-2xl md:text-4xl font-black text-white tracking-wide">${match.teamB}</div>
-          </div>
-        </div>
-
-        <div class="flex justify-end gap-3 pt-2">
-          <button onclick="saveLiveScore()" class="gold-button text-slate-950 font-black px-8 py-4 rounded-2xl text-xs uppercase tracking-widest transition-all shadow-xl flex items-center gap-2">
-            <span>💾</span>
-            <span>Ergebnis Speichern & Weiter ➔</span>
-          </button>
-        </div>
-      `;
-    }
-
-    async function saveLiveScore() {
-      if (!currentLiveMatchId) return;
-
-      const inputA = document.getElementById('liveScoreA').value;
-      const inputB = document.getElementById('liveScoreB').value;
-
-      const scoreA = inputA === "" ? 0 : parseInt(inputA);
-      const scoreB = inputB === "" ? 0 : parseInt(inputB);
-
-      if (scoreA === scoreB) {
-        alert("Im K.o.-System muss es einen Sieger geben!");
-        return;
-      }
-
-      await saveMatchToSupabase(currentLiveMatchId, scoreA, scoreB);
-      loadTournament();
-    }
-
-    function triggerWinnerCelebration(winnerTeam) {
-      document.getElementById('winnerTeamName').innerText = winnerTeam;
-      const overlay = document.getElementById('winnerOverlay');
-      overlay.classList.remove('hidden');
-
-      const duration = 5 * 1000;
-      const animationEnd = Date.now() + duration;
-
-      const interval = setInterval(function() {
-        const timeLeft = animationEnd - Date.now();
-        if (timeLeft <= 0) return clearInterval(interval);
-
-        const particleCount = 50 * (timeLeft / duration);
-        confetti({ particleCount, startVelocity: 30, spread: 360, origin: { x: Math.random() * 0.4 + 0.1, y: Math.random() - 0.2 }, colors: ['#F59E0B', '#FBBF24', '#FFFFFF'] });
-        confetti({ particleCount, startVelocity: 30, spread: 360, origin: { x: Math.random() * 0.4 + 0.5, y: Math.random() - 0.2 }, colors: ['#F59E0B', '#FBBF24', '#FFFFFF'] });
-      }, 250);
-
-      setTimeout(() => closeWinnerOverlay(), 6000);
-    }
-
-    function closeWinnerOverlay() {
-      document.getElementById('winnerOverlay').classList.add('hidden');
-    }
-
+    // Initial load
     loadTournament();
   </script>
 </body>
