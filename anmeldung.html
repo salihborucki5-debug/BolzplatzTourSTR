@@ -180,11 +180,10 @@
 
       const category = document.getElementById('category').value; 
 
-      // 1. Alle existierenden Teams der gewählten Kategorie (M oder F) abrufen
+      // 1. Alle aktuell vergebenen Teams / IDs aus Supabase abrufen
       const { data: existingTeams, error: countError } = await db
         .from('teams')
-        .select('team_name')
-        .like('team_name', `${category}%`);
+        .select('id, team_name');
       
       if (countError) {
         alert("Fehler beim Abrufen der Anmeldungen: " + countError.message);
@@ -193,46 +192,63 @@
         return;
       }
 
-      const limit = category === 'M' ? 24 : 8;
+      // IDs & Nummern extrahieren, die aktuell vergeben sind
+      const takenIds = existingTeams ? existingTeams.map(t => Number(t.id)) : [];
+      const categoryTeams = existingTeams ? existingTeams.filter(t => t.team_name && t.team_name.startsWith(category)) : [];
+      const takenCategoryNumbers = categoryTeams.map(t => parseInt(t.team_name.replace(category, ''), 10)).filter(n => !isNaN(n));
 
-      // 2. Bereits vergebene Zahlen extrahieren (z. B. aus "F1", "F3" -> [1, 3])
-      const takenNumbers = existingTeams
-        ? existingTeams
-            .map(t => parseInt(t.team_name.replace(category, ''), 10))
-            .filter(n => !isNaN(n))
-        : [];
+      let assignedNum = 0;
+      let assignedId = 0;
 
-      // Prüfen, ob die maximale Anzahl der Plätze belegt ist
-      if (takenNumbers.length >= limit) {
-        alert(`Leider sind bereits alle ${limit} Plätze für ${category === 'M' ? 'Männer' : 'Frauen'} vergeben!`);
-        submitBtn.disabled = false;
-        submitBtn.innerText = "❌ Platz ausgebucht";
-        return;
-      }
+      if (category === 'F') {
+        // Frauen: Maximale Team-Nummer F1 - F8 | IDs: 1 bis 8
+        const maxLimit = 8;
+        for (let i = 1; i <= maxLimit; i++) {
+          if (!takenCategoryNumbers.includes(i) && !takenIds.includes(i)) {
+            assignedNum = i;
+            assignedId = i; // ID 1 bis 8
+            break;
+          }
+        }
 
-      // 3. Kleinste verfügbare Zahl ermitteln (Lücken auffüllen)
-      let assignedNumber = 1;
-      while (takenNumbers.includes(assignedNumber)) {
-        assignedNumber++;
-      }
+        if (assignedNum === 0) {
+          alert("Leider sind bereits alle 8 Frauen-Plätze vergeben!");
+          submitBtn.disabled = false;
+          submitBtn.innerText = "❌ Platz ausgebucht";
+          return;
+        }
 
-      // Falls die kleinste freie Zahl das Limit übersteigt
-      if (assignedNumber > limit) {
-        alert(`Leider sind alle Plätze belegt!`);
-        submitBtn.disabled = false;
-        submitBtn.innerText = "❌ Platz ausgebucht";
-        return;
+      } else {
+        // Männer: Maximale Team-Nummer M1 - M24 | IDs: 9 bis 32
+        const maxLimit = 24;
+        for (let i = 1; i <= maxLimit; i++) {
+          const targetId = i + 8; // M1 = ID 9, M2 = ID 10, ..., M24 = ID 32
+          if (!takenCategoryNumbers.includes(i) && !takenIds.includes(targetId)) {
+            assignedNum = i;
+            assignedId = targetId; // ID 9 bis 32
+            break;
+          }
+        }
+
+        if (assignedNum === 0) {
+          alert("Leider sind bereits alle 24 Männer-Plätze vergeben!");
+          submitBtn.disabled = false;
+          submitBtn.innerText = "❌ Platz ausgebucht";
+          return;
+        }
       }
 
       submitBtn.innerText = "Speichere...";
 
-      const teamName = `${category}${assignedNumber}`;
+      const teamName = `${category}${assignedNum}`;
       const captainName = document.getElementById('captainName').value.trim();
       const captainEmail = document.getElementById('captainEmail').value.trim();
       const teamCode = "STR-" + Math.random().toString(36).substring(2, 6).toUpperCase();
 
+      // Explizite Übergabe der berechneten `id` an Supabase
       const { data, error } = await db.from('teams').insert([
         { 
+          id: assignedId,
           team_name: teamName,
           captain_info: `${captainName} (${captainEmail})`,
           player_count: 6,
