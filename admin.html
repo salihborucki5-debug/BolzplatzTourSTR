@@ -37,6 +37,7 @@
         <table class="w-full text-left text-xs">
           <thead>
             <tr class="text-stone-500 border-b border-stone-200">
+              <th class="p-2">ID</th>
               <th class="p-2">Status</th>
               <th class="p-2">Team & Kapitän</th>
               <th class="p-2 text-center">U18</th>
@@ -44,7 +45,7 @@
             </tr>
           </thead>
           <tbody id="teamTableBody">
-            <tr><td colspan="4" class="p-4 text-center text-stone-400">Lade Teams...</td></tr>
+            <tr><td colspan="5" class="p-4 text-center text-stone-400">Lade Teams...</td></tr>
           </tbody>
         </table>
       </div>
@@ -58,16 +59,18 @@
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function loadTeamList() {
-      const { data: teams, error } = await db.from('teams').select('*').order('created_at', { ascending: false });
+      // WICHTIG: Hier wird nun nach 'id' aufsteigend (1, 2, 3...) sortiert
+      const { data: teams, error } = await db.from('teams').select('*').order('id', { ascending: true });
       const tbody = document.getElementById('teamTableBody');
 
       if (!teams || teams.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-stone-400">Noch keine Teams angemeldet.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-stone-400">Noch keine Teams angemeldet.</td></tr>';
         return;
       }
 
       tbody.innerHTML = teams.map(t => `
         <tr class="border-b border-stone-100 hover:bg-stone-50">
+          <td class="p-2 font-mono font-bold text-stone-400">#${t.id}</td>
           <td class="p-2 font-bold">${t.checked_in ? '🟢 Anwesend' : '🔴 Ausstehend'}</td>
           <td class="p-2 font-bold text-gray-900">${t.team_name} <span class="font-normal text-stone-500">(${t.captain_info || 'Kein Kapitän'})</span></td>
           <td class="p-2 text-center">${t.has_underage ? 'Ja' : 'Nein'}</td>
