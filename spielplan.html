@@ -78,21 +78,25 @@
       <div class="space-y-1 text-center md:text-left z-10">
         <div class="flex items-center justify-center md:justify-start gap-3">
           <span class="px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase bg-amber-500/10 text-amber-400 border border-amber-500/20">
-            REALTIME DYNAMISCHER TURNIERBAUM
+            ZUFALLS-AUSLOSUNG (M/M & F/F IN RUNDE 1)
           </span>
         </div>
         <h1 class="text-3xl md:text-5xl font-black tracking-tight uppercase gold-gradient-text">
           BOLZPLATZTOUR STR
         </h1>
         <p class="text-slate-400 text-xs md:text-sm font-semibold tracking-wide">
-          KEINE FREILOSE • ECHTZEIT-SYNCHRONISATION MIT SUPABASE
+          WILLKÜRLICHE VERTEILUNG • ECHTZEIT-SYNCHRONISATION MIT SUPABASE
         </p>
       </div>
 
       <div class="flex flex-wrap gap-3 z-10 w-full md:w-auto justify-center">
-        <button onclick="createNewMatchModal()" class="gold-button text-slate-950 px-6 py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all transform active:scale-95 flex items-center gap-2">
+        <button onclick="generateRandomTournament()" class="gold-button text-slate-950 px-6 py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all transform active:scale-95 flex items-center gap-2">
+          <span>🔀</span>
+          <span>Zufällig Auslosen</span>
+        </button>
+        <button onclick="createNewMatchModal()" class="glass-panel hover:bg-slate-800/80 text-slate-300 border border-slate-700/60 px-5 py-3.5 rounded-2xl text-xs font-bold transition-all active:scale-95 flex items-center gap-2">
           <span>➕</span>
-          <span>Neues Match Anlegen</span>
+          <span>Einzelnes Match Anlegen</span>
         </button>
       </div>
     </header>
@@ -119,10 +123,10 @@
 
       <div class="glass-panel p-5 rounded-2xl flex items-center justify-between border-l-4 border-l-pink-500">
         <div>
-          <span class="text-slate-400 text-[11px] uppercase font-bold tracking-wider block">MODUS</span>
-          <span class="text-sm font-extrabold text-pink-400 mt-1 block">Dynamische Erweiterung</span>
+          <span class="text-slate-400 text-[11px] uppercase font-bold tracking-wider block">SEEDING REGEL</span>
+          <span class="text-sm font-extrabold text-pink-400 mt-1 block">Runde 1: MvsM & FvsF getrennt</span>
         </div>
-        <div class="text-3xl bg-pink-500/10 p-3 rounded-xl border border-pink-500/20">🏆</div>
+        <div class="text-3xl bg-pink-500/10 p-3 rounded-xl border border-pink-500/20">🎲</div>
       </div>
     </div>
 
@@ -132,7 +136,7 @@
         <h2 class="text-lg font-black uppercase tracking-wider text-slate-200 flex items-center gap-2">
           <span>🏆</span> LIVE TURNIERBAUM
         </h2>
-        <span class="text-xs font-semibold text-slate-500">Ergebnisse ändern sich sofort live beim Eintragen</span>
+        <span class="text-xs font-semibold text-slate-500">Klicke auf ein Spiel, um Scores direkt einzutragen</span>
       </div>
 
       <div class="overflow-x-auto pb-4">
@@ -150,7 +154,6 @@
       </div>
       
       <div class="space-y-4">
-        <!-- RUNDENAUSWAHL -->
         <div class="bg-slate-900/80 p-3 rounded-2xl border border-slate-800 space-y-1">
           <label class="text-[11px] font-bold text-slate-400 uppercase block">Runde / Ebene</label>
           <select id="modalRoundNumber" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-white focus:outline-none focus:border-amber-500">
@@ -162,7 +165,6 @@
           </select>
         </div>
 
-        <!-- TEAM A -->
         <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-800 space-y-2">
           <label class="text-xs font-bold text-slate-400 uppercase block">Team A (Oben)</label>
           <div class="flex gap-2">
@@ -173,7 +175,6 @@
 
         <div class="text-center font-black text-xs text-slate-600 tracking-widest uppercase">VS</div>
 
-        <!-- TEAM B -->
         <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-800 space-y-2">
           <label class="text-xs font-bold text-slate-400 uppercase block">Team B (Unten)</label>
           <div class="flex gap-2">
@@ -185,7 +186,7 @@
 
       <div class="flex gap-3 pt-2">
         <button onclick="closeModal()" class="flex-1 glass-panel hover:bg-slate-800 text-slate-400 font-bold py-3 rounded-2xl text-xs uppercase tracking-wider transition-all">Abbrechen</button>
-        <button onclick="saveMatchToSupabase()" class="flex-1 gold-button text-slate-950 font-black py-3 rounded-2xl text-xs uppercase tracking-wider transition-all">In Supabase Speichern</button>
+        <button onclick="saveMatchToSupabase()" class="flex-1 gold-button text-slate-950 font-black py-3 rounded-2xl text-xs uppercase tracking-wider transition-all">Speichern</button>
       </div>
     </div>
   </div>
@@ -198,13 +199,11 @@
     let allMatches = [];
     let editingMatchId = null;
 
-    // INITIALISIERUNG
     async function init() {
       await fetchMatches();
       subscribeToRealtime();
     }
 
-    // 1. MATCHES AUS SUPABASE LADEN
     async function fetchMatches() {
       const { data, error } = await db
         .from('matches')
@@ -222,11 +221,9 @@
       renderTree();
     }
 
-    // 2. SUPABASE REALTIME SUBSCRIPTION (Kein Neuladen nötig!)
     function subscribeToRealtime() {
       db.channel('public:matches')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, payload => {
-          console.log("Realtime Update empfangen:", payload);
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, () => {
           fetchMatches();
         })
         .subscribe((status) => {
@@ -241,7 +238,78 @@
         });
     }
 
-    // 3. TURNIERBAUM RENDERN (Dynamisch ohne Freilose)
+    // FISCHER-YATES SHUFFLE ZUM PERFEKTEN ZUFÄLLIGEN MISCHEN
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    // ZUFÄLLIGE AUSLOSUNG MIT MÄNNER/FRAUEN SEEDING
+    async function generateRandomTournament() {
+      const { data: rawTeams, error } = await db.from('teams').select('*');
+      if (error || !rawTeams || rawTeams.length === 0) {
+        alert("Fehler oder keine Teams in der 'teams'-Tabelle gefunden!");
+        return;
+      }
+
+      if (!confirm(`Möchtest du alle bisherigen Spiele löschen und ein neues Turnier mit ${rawTeams.length} Teams zufällig auslosen?`)) {
+        return;
+      }
+
+      // Alte Spiele löschen
+      await db.from('matches').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+
+      // Trennen nach Frauenteams (fangen mit F an) und Männerteams
+      const femaleTeams = rawTeams.filter(t => t.team_name.trim().toUpperCase().startsWith('F')).map(t => t.team_name.trim());
+      const maleTeams = rawTeams.filter(t => !t.team_name.trim().toUpperCase().startsWith('F')).map(t => t.team_name.trim());
+
+      // Willkürlich durchmischen (Zufallsprinzip)
+      const shuffledFemales = shuffleArray([...femaleTeams]);
+      const shuffledMales = shuffleArray([...maleTeams]);
+
+      const round1Matches = [];
+      let matchCounter = 1;
+
+      // 1. Männer-Paarungen bilden (Männer vs Männer)
+      for (let i = 0; i < shuffledMales.length; i += 2) {
+        if (i + 1 < shuffledMales.length) {
+          round1Matches.push({
+            round_number: 1,
+            match_number: matchCounter++,
+            team_a: shuffledMales[i],
+            team_b: shuffledMales[i + 1],
+            player1_name: shuffledMales[i],
+            player2_name: shuffledMales[i + 1]
+          });
+        }
+      }
+
+      // 2. Frauen-Paarungen bilden (Frauen vs Frauen)
+      for (let i = 0; i < shuffledFemales.length; i += 2) {
+        if (i + 1 < shuffledFemales.length) {
+          round1Matches.push({
+            round_number: 1,
+            match_number: matchCounter++,
+            team_a: shuffledFemales[i],
+            team_b: shuffledFemales[i + 1],
+            player1_name: shuffledFemales[i],
+            player2_name: shuffledFemales[i + 1]
+          });
+        }
+      }
+
+      // In Supabase einfügen
+      if (round1Matches.length > 0) {
+        const { error: insertErr } = await db.from('matches').insert(round1Matches);
+        if (insertErr) alert("Fehler beim Erstellen der Paarungen: " + insertErr.message);
+      }
+
+      fetchMatches();
+    }
+
     function renderTree() {
       const treeGrid = document.getElementById('treeGrid');
       treeGrid.innerHTML = '';
@@ -249,16 +317,15 @@
       if (allMatches.length === 0) {
         treeGrid.innerHTML = `
           <div class="glass-panel p-8 rounded-3xl text-center max-w-md mx-auto space-y-4 my-8 border border-slate-700/50 w-full">
-            <div class="text-5xl">⚡</div>
-            <h3 class="text-xl font-black text-white uppercase tracking-wider">Keine Matches in Supabase</h3>
+            <div class="text-5xl">🎲</div>
+            <h3 class="text-xl font-black text-white uppercase tracking-wider">Bereit für die Auslosung</h3>
             <p class="text-slate-400 text-xs leading-relaxed">
-              Trage Spiele direkt in deiner Supabase-Datenbank ein oder klicke oben auf <strong>"Neues Match Anlegen"</strong>.
+              Klicke oben auf <strong>"🔀 Zufällig Auslosen"</strong>, um Männer und Frauen zufällig zu mischen und die erste Runde zu starten!
             </p>
           </div>`;
         return;
       }
 
-      // Gruppieren nach Runden
       const roundsMap = {};
       allMatches.forEach(m => {
         const r = m.round_number || 1;
@@ -267,7 +334,7 @@
       });
 
       const roundNames = {
-        1: "Runde 1",
+        1: "Runde 1 (Geschlechter getrennt)",
         2: "Achtelfinale",
         3: "Viertelfinale",
         4: "Halbfinale",
@@ -293,7 +360,6 @@
       });
     }
 
-    // 4. MATCH CARD ERSTELLEN
     function createMatchCard(m) {
       const card = document.createElement('div');
       const hasWinner = m.winner !== null && m.winner !== undefined && m.winner !== '';
@@ -301,15 +367,15 @@
       card.className = `glass-panel hover:border-amber-500/60 transition-all duration-300 rounded-2xl p-4 shadow-lg space-y-3 cursor-pointer group hover:scale-[1.02] ${hasWinner ? 'border-amber-500/30' : ''}`;
       card.onclick = () => openEditModal(m);
 
-      const teamA = m.team_a || m.player1_name || 'TBD';
-      const teamB = m.team_b || m.player2_name || 'TBD';
+      const teamA = m.team_a || m.player1_name || 'Offen';
+      const teamB = m.team_b || m.player2_name || 'Offen';
       const scoreA = m.score_a !== undefined && m.score_a !== null ? m.score_a : (m.score1 !== undefined ? m.score1 : '-');
       const scoreB = m.score_b !== undefined && m.score_b !== null ? m.score_b : (m.score2 !== undefined ? m.score2 : '-');
 
       card.innerHTML = `
         <div class="flex justify-between items-center text-[10px] font-bold text-slate-500 uppercase tracking-wider">
           <span>MATCH #${m.match_number || m.id.substring(0, 4)}</span>
-          ${hasWinner ? '<span class="text-amber-400 font-black bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">BEENDET</span>' : '<span class="group-hover:text-amber-400 transition-colors">✎ BEARBEITEN</span>'}
+          ${hasWinner ? '<span class="text-amber-400 font-black bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">BEENDET</span>' : '<span class="group-hover:text-amber-400 transition-colors">✎ SCORE EINTRAGEN</span>'}
         </div>
 
         <div class="space-y-2">
@@ -330,20 +396,18 @@
       return card;
     }
 
-    // MODAL OEFFNEN: BEARBEITEN
     function openEditModal(m) {
       editingMatchId = m.id;
       document.getElementById('modalTitle').innerText = `Match #${m.match_number || ''} bearbeiten`;
       document.getElementById('modalRoundNumber').value = m.round_number || 1;
       document.getElementById('modalTeamA').value = m.team_a || m.player1_name || '';
       document.getElementById('modalTeamB').value = m.team_b || m.player2_name || '';
-      document.getElementById('modalScoreA').value = m.score_a !== undefined ? m.score_a : (m.score1 || 0);
-      document.getElementById('modalScoreB').value = m.score_b !== undefined ? m.score_b : (m.score2 || 0);
+      document.getElementById('modalScoreA').value = m.score_a !== undefined && m.score_a !== null ? m.score_a : (m.score1 || '');
+      document.getElementById('modalScoreB').value = m.score_b !== undefined && m.score_b !== null ? m.score_b : (m.score2 || '');
 
       document.getElementById('matchModal').classList.remove('hidden');
     }
 
-    // MODAL OEFFNEN: NEUES MATCH
     function createNewMatchModal() {
       editingMatchId = null;
       document.getElementById('modalTitle').innerText = "Neues Match Anlegen";
@@ -360,7 +424,6 @@
       document.getElementById('matchModal').classList.add('hidden');
     }
 
-    // 5. IN SUPABASE SPEICHERN (UPDATE ODER INSERT)
     async function saveMatchToSupabase() {
       const roundNum = parseInt(document.getElementById('modalRoundNumber').value) || 1;
       const teamA = document.getElementById('modalTeamA').value.trim();
@@ -395,21 +458,52 @@
       };
 
       if (editingMatchId) {
-        // Update bestehendes Match
         const { error } = await db.from('matches').update(matchData).eq('id', editingMatchId);
         if (error) alert("Fehler beim Speichern: " + error.message);
       } else {
-        // Neues Match einfügen
         matchData.match_number = allMatches.length + 1;
         const { error } = await db.from('matches').insert([matchData]);
         if (error) alert("Fehler beim Anlegen: " + error.message);
+      }
+
+      // AUTOMATISCHER VORMARSCH IN DIE NÄCHSTE RUNDE
+      if (winner && editingMatchId) {
+        await checkAndAdvanceWinner(roundNum, winner);
       }
 
       closeModal();
       fetchMatches();
     }
 
-    // Starten
+    // AUTOMATISCH NÄCHSTE RUNDE ERWEITERN BEI SIEG
+    async function checkAndAdvanceWinner(currentRoundNum, winnerName) {
+      const nextRoundNum = currentRoundNum + 1;
+      const nextRoundMatches = allMatches.filter(m => m.round_number === nextRoundNum);
+
+      // Suchen, ob in der nächsten Runde ein Match noch einen freien Platz hat
+      const openMatch = nextRoundMatches.find(m => !m.team_a || !m.team_b || m.team_a === 'Offen' || m.team_b === 'Offen');
+
+      if (openMatch) {
+        const fieldToUpdate = (!openMatch.team_a || openMatch.team_a === 'Offen') ? 'team_a' : 'team_b';
+        const fallbackField = fieldToUpdate === 'team_a' ? 'player1_name' : 'player2_name';
+
+        await db.from('matches').update({
+          [fieldToUpdate]: winnerName,
+          [fallbackField]: winnerName
+        }).eq('id', openMatch.id);
+      } else {
+        // Falls noch kein Spiel existiert, lege ein neues Spiel für die nächste Runde an
+        await db.from('matches').insert([{
+          round_number: nextRoundNum,
+          match_number: nextRoundMatches.length + 1,
+          team_a: winnerName,
+          player1_name: winnerName,
+          team_b: 'Offen',
+          player2_name: 'Offen'
+        }]);
+      }
+    }
+
     init();
   </script>
 </body>
