@@ -175,28 +175,6 @@
     z-index: 2;
   }
 
-  .btn-anmelden {
-    display: inline-block;
-    background: var(--pink);
-    color: var(--navy);
-    font-family: 'Anton', sans-serif;
-    font-size: clamp(1.2rem, 4vw, 1.6rem);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    padding: 16px 48px;
-    border-radius: 12px;
-    text-decoration: none;
-    box-shadow: 0 0 25px rgba(255, 38, 128, 0.7), 0 4px 0 #000;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
-    border: 2px solid #000;
-  }
-
-  .btn-anmelden:hover {
-    transform: translateY(-3px) scale(1.03);
-    box-shadow: 0 0 35px rgba(255, 38, 128, 0.9), 0 6px 0 #000;
-    background: #ff4794;
-  }
-
   .sub-info {
     font-family: 'Barlow Condensed', sans-serif;
     font-weight: 600;
@@ -567,12 +545,6 @@
 </head>
 <body>
 
-<div class="hero" id="hero-section">
-  <div class="cta-block">
-    <a href="anmeldung.l" class="btn-anmelden">Jetzt Anmelden</a>
-    <p class="sub-info">Melde dich jetzt an für den nächsten Stop in <span class="city">Frankfurt</span></p>
-  </div>
-
   <a href="#termine" class="hero-scroll"><span class="line"></span>Termine ansehen</a>
 </div>
 
@@ -635,13 +607,13 @@
 
   <!-- Frankfurt -->
   <div class="date-group">
-    <a class="date-row" href="anmeldung.l">
+    <a class="date-row" 
       <div class="date-day">19<small>Sep</small></div>
       <div class="date-info">
         <div class="date-city">Frankfurt</div>
         <div class="date-venue">Nächster Stopp</div>
       </div>
-      <div class="date-status">Anmelden</div>
+      <div class="date-status">Vorbei</div>
     </a>
   </div>
 
